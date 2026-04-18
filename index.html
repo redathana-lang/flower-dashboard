@@ -565,7 +565,7 @@ function renderOV(all,dates,from,to,todayD){
   const fo=ld.frontoffice||{};const fn=ld.fnb||{};const fi=ld.finance||{};const sp=ld.spa||{};
   const dhZena=fo.dhoma_zena_total||(fo.dhoma_zena||0);
   const dhLira=fo.dhoma_lira||0;
-  const occ=dhZena?Math.round(dhZena/160*100):0;
+  const occ=dhZena?Math.round(dhZena/110*100):0;
   const arkTotal=fi.arketime_totale_lek||0;
   const barLabels=['Flower Rest.','Pool Bar','Brutal','PBar Gdn','Beach Bar','SPA'];
   const barData=[fn.xhiro_flower||0,fn.xhiro_pool_bar||0,fn.xhiro_brutal||0,fn.xhiro_pool_bar_garden||0,fn.xhiro_beach_bar||0,sp.ardhura_ditore||0];
@@ -584,9 +584,9 @@ function renderOV(all,dates,from,to,todayD){
   el.innerHTML=`
   <div class="sh">Raporti — ${isToday?'Sot '+fmtD(td()):fmtD(from)+' → '+fmtD(to)}</div>
   <div class="kgrid2">
-    <div class="kpi cg"><div class="kl">Dhoma të Zëna</div><div class="kv">${dhZena}<span style="font-size:13px;color:var(--muted)"> /160</span></div><div class="ks">Flower+Garden</div></div>
+    <div class="kpi cg"><div class="kl">Dhoma të Zëna</div><div class="kv">${dhZena}<span style="font-size:13px;color:var(--muted)"> /110</span></div><div class="ks">Flower+Garden</div></div>
     <div class="kpi ct"><div class="kl">Dhoma të Lira</div><div class="kv">${dhLira}</div><div class="ks">Disponibël</div></div>
-    <div class="kpi ${occ>=70?'cgr':occ>=50?'ca':'cr'}"><div class="kl">Okupanca</div><div class="kv">${occ}%</div><div class="ks">${dhZena}/160 dhoma</div></div>
+    <div class="kpi ${occ>=70?'cgr':occ>=50?'ca':'cr'}"><div class="kl">Okupanca</div><div class="kv">${occ}%</div><div class="ks">${dhZena}/110 dhoma</div></div>
     <div class="kpi ca"><div class="kl">Arkëtime (Lek)</div><div class="kv">${arkTotal>=1000?Math.round(arkTotal/1000)+'K':arkTotal}</div><div class="ks">Finance sot</div></div>
   </div>
   <div class="mcol">
