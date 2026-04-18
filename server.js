@@ -1,86 +1,989 @@
-const express = require('express');
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#071026">
+<title>Flower Hotels</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#071026;--navy2:#0D1B3E;--card:#112250;--card2:#0a1830;--card3:#0e1d3a;
+  --gold:#C49A2C;--gold2:#E8B84B;--gold3:rgba(200,154,44,0.12);
+  --teal:#176B63;--lteal:#1FA896;--lteal2:rgba(31,168,150,0.12);
+  --green:#2DB87A;--green2:rgba(45,184,122,0.12);
+  --red:#E05050;--red2:rgba(224,80,80,0.12);
+  --amber:#F0A030;--amber2:rgba(240,160,48,0.12);
+  --purple:#9B7CE8;
+  --white:#EEE8DC;--off:#C8D0DC;
+  --muted:#8DA3BD;--muted2:#5A6E88;
+  --border:rgba(31,168,150,0.15);--border3:rgba(255,255,255,0.06);--border2:rgba(200,154,44,0.2);
+  --f-serif:'Cormorant Garamond',Georgia,serif;
+  --f-sans:'DM Sans',-apple-system,sans-serif;
+  --f-mono:'DM Mono',monospace;
+  --r:10px;
+  --nav-h:64px;
+  --top-h:52px;
+}
+html,body{height:100%;background:var(--navy);color:var(--white);font-family:var(--f-sans);font-size:14px;overflow:hidden}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--card2);border-radius:99px}
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'data.json');
+/* ══ LOGIN ══ */
+#loginScreen{position:fixed;inset:0;background:var(--navy);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px}
+.lw{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:100%;max-width:420px}
+.ll{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.li{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.li svg{width:18px;height:18px;stroke:#071026;stroke-width:2;fill:none;stroke-linecap:round}
+.lt{font-family:var(--f-serif);font-size:19px;font-weight:600}
+.ls{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:2px}
+.llbl{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted2);display:block;margin-bottom:7px;margin-top:16px}
+.lsel,.linp{width:100%;background:var(--card);border:1px solid var(--border3);border-radius:8px;padding:13px 14px;color:var(--white);font-family:var(--f-sans);font-size:15px;outline:none;-webkit-appearance:none}
+.lsel:focus,.linp:focus{border-color:var(--lteal)}
+.lsel option{background:var(--card2)}
+.lbtn{margin-top:20px;width:100%;background:linear-gradient(135deg,var(--teal),var(--lteal));border:none;border-radius:10px;padding:14px;color:var(--white);font-size:15px;font-weight:500;cursor:pointer;font-family:var(--f-sans);letter-spacing:.2px}
+.lerr{font-size:12px;color:var(--red);margin-top:8px;display:none;text-align:center}
 
-// Serve static files from public/ or root
-const publicDir = fs.existsSync(path.join(__dirname, 'public'))
-  ? path.join(__dirname, 'public')
-  : __dirname;
+/* ══ APP SHELL ══ */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 
-app.use(cors());
-app.use(express.json());
-app.use(express.static(publicDir));
+/* ══ TOPBAR ══ */
+.topbar{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 16px;height:var(--top-h);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:100}
+.tb-brand{display:flex;align-items:center;gap:10px}
+.tb-ico{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tb-ico svg{width:15px;height:15px;stroke:#071026;stroke-width:2;fill:none;stroke-linecap:round}
+.tb-nm{font-family:var(--f-serif);font-size:15px;font-weight:600;line-height:1.1}
+.tb-sb{font-size:9px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
+.tb-r{display:flex;align-items:center;gap:8px}
+.ub{background:var(--lteal2);border:1px solid rgba(31,168,150,.25);border-radius:99px;padding:4px 10px;font-size:11px;color:var(--lteal);white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+.outbtn{background:transparent;border:1px solid var(--border3);border-radius:6px;padding:5px 10px;color:var(--muted);font-size:11px;cursor:pointer;font-family:var(--f-sans);white-space:nowrap}
 
-/* ── DATA STORE ── */
-function loadData() {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-    }
-  } catch (e) { console.error('Load error:', e.message); }
-  return {};
+/* ══ BODY (desktop: sidebar+main, mobile: main+bottom-nav) ══ */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* ══ DESKTOP SIDEBAR ══ */
+.sidebar{width:210px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0}
+.sb-s{padding:12px 12px 4px;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted2)}
+.dbt{display:flex;align-items:center;gap:9px;padding:9px 12px;cursor:pointer;transition:all .15s;border-left:2px solid transparent}
+.dbt:hover{background:rgba(255,255,255,.03)}
+.dbt.active{background:var(--lteal2);border-left-color:var(--lteal)}
+.dico{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.dnm{font-size:11px;color:var(--muted)}
+.dbt.active .dnm{color:var(--white);font-weight:500}
+.dsb{font-size:9px;color:var(--muted2);margin-top:1px}
+.ddot{margin-left:auto;width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-g{background:var(--green)}
+.dot-e{background:var(--muted2);opacity:.4}
+
+/* ══ MOBILE BOTTOM NAV ══ */
+#mobileNav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--navy2);border-top:1px solid var(--border);z-index:200;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;display:none;align-items:stretch;padding-bottom:env(safe-area-inset-bottom)}
+#mobileNav::-webkit-scrollbar{display:none}
+.mn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 10px;cursor:pointer;border-top:2px solid transparent;flex-shrink:0;min-width:64px;transition:all .15s}
+.mn-item.active{border-top-color:var(--gold2);background:rgba(200,154,44,.06)}
+.mn-item span:first-child{font-size:20px;position:relative}
+.mn-item span:last-child{font-size:9px;color:var(--muted);white-space:nowrap}
+.mn-item.active span:last-child{color:var(--gold2)}
+.mn-dot{position:absolute;top:-2px;right:-4px;width:7px;height:7px;border-radius:50%}
+
+/* ══ MAIN ══ */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ══ FILTER BAR ══ */
+.fbar{background:var(--card2);border-bottom:1px solid var(--border3);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap}
+.fl{font-size:11px;color:var(--muted)}
+.fi{background:var(--card);border:1px solid var(--border3);border-radius:7px;padding:8px 10px;color:var(--white);font-family:var(--f-mono);font-size:12px;outline:none;flex:1;min-width:120px}
+.fi:focus{border-color:var(--lteal)}
+.fsel{background:var(--card);border:1px solid var(--border3);border-radius:7px;padding:8px 10px;color:var(--white);font-family:var(--f-sans);font-size:12px;outline:none;cursor:pointer;-webkit-appearance:none;flex:1}
+.fsel option{background:var(--card2)}
+.fapp{background:linear-gradient(135deg,var(--teal),var(--lteal));border:none;border-radius:7px;padding:9px 18px;color:var(--white);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap}
+
+/* ══ CONTENT ══ */
+.cnt{flex:1;overflow-y:auto;padding:14px 14px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+
+/* ══ SECTION HEADER ══ */
+.sh{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted2)}
+
+/* ══ KPI GRID — 2 col mobile, 4 desktop ══ */
+.kgrid2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--border3);border-radius:var(--r);padding:14px;position:relative;overflow:hidden}
+.kpi:before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.kpi.cg:before{background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.kpi.ct:before{background:linear-gradient(90deg,var(--teal),var(--lteal))}
+.kpi.cgr:before{background:var(--green)}
+.kpi.ca:before{background:var(--amber)}
+.kpi.cr:before{background:var(--red)}
+.kpi.cp:before{background:var(--purple)}
+.kl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:6px}
+.kv{font-family:var(--f-serif);font-size:22px;font-weight:600;color:var(--white);line-height:1}
+.ks{font-size:10px;color:var(--muted2);margin-top:4px}
+
+/* ══ PANELS ══ */
+.panel{background:var(--card);border:1px solid var(--border3);border-radius:var(--r);padding:14px}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
+.pt{font-size:12px;font-weight:500;color:var(--white)}
+.pp{font-size:10px;padding:3px 9px;border-radius:99px;background:var(--lteal2);color:var(--lteal);border:1px solid rgba(31,168,150,.2);white-space:nowrap}
+.pp.gold{background:var(--gold3);color:var(--gold2);border-color:rgba(200,154,44,.25)}
+.pp.amber{background:var(--amber2);color:var(--amber)}
+.pp.red{background:rgba(224,80,80,.12);color:var(--red)}
+
+/* ══ COLUMNS ══ */
+.mcol{display:flex;flex-direction:column;gap:12px}
+
+/* ══ TABLE (scrollable on mobile) ══ */
+.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dt{width:100%;border-collapse:collapse;min-width:400px}
+.dt th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);padding:6px 10px;border-bottom:1px solid var(--border3);text-align:left;font-weight:400;white-space:nowrap}
+.dt td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.035);font-size:12px;vertical-align:middle}
+.dt tr:last-child td{border-bottom:none}
+.dm{color:var(--muted)}
+.dn{font-family:var(--f-mono);font-size:11px;color:var(--off)}
+.badge{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
+.badge.ok{background:var(--green2);color:var(--green)}
+.badge.miss{background:var(--red2);color:var(--red)}
+.edit-btn{background:transparent;border:1px solid var(--border3);border-radius:5px;padding:5px 12px;color:var(--muted);font-size:11px;cursor:pointer;font-family:var(--f-sans)}
+.edit-btn:active{background:var(--card2)}
+
+/* ══ DETAIL ROWS ══ */
+.det-grid{display:flex;flex-direction:column;gap:0}
+.det-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border3)}
+.det-row.tot-row{border-bottom:none;border-top:1px solid var(--border2);margin-top:4px;padding-top:10px}
+.det-lbl{font-size:12px;color:var(--muted);padding-right:12px}
+.det-val{font-size:12px;font-family:var(--f-mono);color:var(--off);flex-shrink:0}
+.det-val.tot{color:var(--gold2);font-weight:500;font-size:14px}
+
+/* ══ RING ══ */
+.ring-wrap{display:flex;align-items:center;justify-content:center;gap:20px;padding:8px 0}
+.ri-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:3px 0}
+.ri-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* ══ INPUT VIEW ══ */
+.inv{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+.in-hdr{margin-bottom:16px}
+.in-hdr h2{font-family:var(--f-serif);font-size:20px;font-weight:600}
+.in-hdr p{font-size:12px;color:var(--muted);margin-top:3px}
+.fsec{margin-bottom:14px}
+.fsec-t{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--gold2);padding-bottom:8px;border-bottom:1px solid var(--border2);margin-bottom:10px}
+.fgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.fgrid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ff{display:flex;flex-direction:column;gap:5px}
+.ff.full{grid-column:1/-1}
+.ff label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.ff input,.ff textarea{background:var(--card);border:1px solid var(--border3);border-radius:8px;padding:12px 14px;color:var(--white);font-family:var(--f-sans);font-size:16px;outline:none;width:100%;-webkit-appearance:none}
+.ff input::placeholder,.ff textarea::placeholder{color:var(--muted2)}
+.ff input:focus,.ff textarea:focus{border-color:var(--lteal);background:var(--card3)}
+.ff input[readonly]{background:var(--card2);color:var(--gold2);font-family:var(--f-mono);border-color:var(--border2)}
+.ff textarea{resize:none;min-height:80px;font-size:14px}
+.sub-row{display:flex;align-items:center;gap:12px;margin-top:12px;padding-bottom:24px}
+.sub-btn{flex:1;background:linear-gradient(135deg,var(--teal),var(--lteal));border:none;border-radius:10px;padding:14px;color:var(--white);font-size:15px;font-weight:500;cursor:pointer;font-family:var(--f-sans);letter-spacing:.2px}
+.sub-btn:active{transform:scale(.98);opacity:.9}
+.save-ok{font-size:12px;display:none;flex-shrink:0}
+
+/* ══ EDIT BANNER ══ */
+.edit-banner{background:rgba(240,160,48,.1);border:1px solid rgba(240,160,48,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:4px}
+
+/* ══ EMPTY ══ */
+.empty{display:flex;align-items:center;justify-content:center;padding:28px;color:var(--muted2);font-size:12px}
+
+/* ══ RESPONSIVE ══ */
+@media (max-width:640px){
+  .sidebar{display:none}
+  #mobileNav{display:flex}
+  .cnt{padding-bottom:calc(var(--nav-h) + 16px)}
+  .inv{padding-bottom:calc(var(--nav-h) + 16px)}
+  .kgrid2{grid-template-columns:repeat(2,1fr)}
+  .fbar{padding:10px 14px;gap:8px}
+  .fi,.fsel{font-size:13px;padding:9px 10px}
+  .mcol{flex-direction:column}
+  .dt{min-width:340px}
+}
+@media (min-width:641px){
+  .sidebar{display:flex}
+  #mobileNav{display:none !important}
+  .kgrid2{grid-template-columns:repeat(4,1fr)}
+  .fgrid{grid-template-columns:repeat(3,1fr)}
+  .mcol{flex-direction:row}
+  .mcol > *{flex:1}
+  .mcol > *:first-child{flex:1.4}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="lw">
+    <div class="ll">
+      <div class="li"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
+      <div><div class="lt">Flower Hotels & Resorts</div><div class="ls">Raporti Ditor Operacional</div></div>
+    </div>
+    <label class="llbl">Zgjidh Përdoruesin</label>
+    <select class="lsel" id="loginUser">
+      <option value="">— Zgjidh —</option>
+      <option value="MANAGER">MANAGER — Ernest Caci</option>
+      <option value="FO">FO — Franka / Sara / Xhiku</option>
+      <option value="Edisona">Edisona — SPA</option>
+      <option value="Klajdi">Klajdi — F&B</option>
+      <option value="Erinda">Erinda — All Inclusive / HK / Guest</option>
+      <option value="Bruna">Bruna — Finance</option>
+      <option value="Xhina">Xhina — Finance F&B</option>
+    </select>
+    <label class="llbl">Fjalëkalimi</label>
+    <input class="linp" type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="lerr" id="loginErr">⚠ Fjalëkalim i gabuar.</div>
+    <button class="lbtn" onclick="doLogin()">Hyr në Dashboard</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appShell" style="display:none">
+  <div class="topbar">
+    <div class="tb-brand">
+      <div class="tb-ico"><svg viewBox="0 0 24 24"><path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
+      <div><div class="tb-nm">Flower Hotels</div><div class="tb-sb">Raporti Ditor</div></div>
+    </div>
+    <div class="tb-r">
+      <span class="ub" id="topUser"></span>
+      <button class="outbtn" onclick="doLogout()">Dil</button>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main" id="mainArea"></div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAV (manager only) -->
+  <div id="mobileNav" style="display:none"></div>
+</div>
+
+<script>
+
+
+/* ════ USERS ════ */
+const USERS={
+  MANAGER: {pass:'Ernest2026',  name:'Ernest Caci — GM',      role:'manager'},
+  FO:      {pass:'FO2026',      name:'Franka / Sara / Xhiku', role:'input', dept:'frontoffice'},
+  Edisona: {pass:'Edisona2026', name:'Edisona — SPA',          role:'input', dept:'spa'},
+  Klajdi:  {pass:'Klajdi2026',  name:'Klajdi — F&B',           role:'input', dept:'fnb'},
+  Erinda:  {pass:'Erinda2026',  name:'Erinda',                 role:'input', dept:'allinclusive'},
+  Bruna:   {pass:'Bruna2026',   name:'Bruna — Finance',         role:'input', dept:'finance'},
+  Xhina:   {pass:'Xhina2026',   name:'Xhina — Finance F&B',    role:'input', dept:'financefnb'},
+};
+
+/* ════ DEPT CONFIG ════ */
+const DEPTS={
+  frontoffice:{label:'Front Office',mgr:'Franka/Sara/Xhiku',icon:'🗝️',color:'#1FA896',
+    sections:[
+      {title:'🏨 Dhoma sipas Godinës',cols:3,fields:[
+        {id:'dhoma_zena_flower',lb:'Dhoma të Zëna — Flower',type:'number',onchange:'calcFOTotal()'},
+        {id:'dhoma_zena_garden',lb:'Dhoma të Zëna — Garden',type:'number',onchange:'calcFOTotal()'},
+        {id:'dhoma_zena_total',lb:'Dhoma të Zëna — Total (Auto)',type:'number',readonly:true},
+      ]},
+      {title:'📊 Statusi i Dhomave',cols:3,fields:[
+        {id:'dhoma_lira',lb:'Dhoma të Lira',type:'number'},
+        {id:'mbivendosje',lb:'Mbivendosje',type:'number'},
+        {id:'dhoma_jashte_pune',lb:'Dhoma Jashtë Pune (OOO)',type:'number'},
+      ]},
+      {title:'💶 Të Ardhura',cols:2,fields:[
+        {id:'ardhura_totale_euro',lb:'Të Ardhura Totale Ditore (€)',type:'number'},
+      ]},
+      {title:'📝 Shënime',cols:1,fields:[{id:'notes',lb:'Shënime / Probleme',type:'textarea'}]},
+    ]},
+
+  spa:{label:'SPA',mgr:'Edisona',icon:'💆',color:'#9B7CE8',
+    sections:[
+      {title:'💆 SPA',cols:2,fields:[
+        {id:'sherbime_dite',lb:'Shërbime të Bëra Sot',type:'number'},
+        {id:'ardhura_ditore',lb:'Të Ardhura Ditore (Lek)',type:'number'},
+        {id:'notes',lb:'Shënime',type:'textarea'},
+      ]},
+    ]},
+
+  fnb:{label:'F&B',mgr:'Klajdi',icon:'🍽️',color:'#F0A030',
+    sections:[
+      {title:'🍽️ Xhiro F&B',cols:3,fields:[
+        {id:'xhiro_flower',lb:'Xhiro Flower Restorant (Lek)',type:'number',onchange:'calcFnbTotal()'},
+        {id:'xhiro_pool_bar',lb:'Xhiro Pool Bar (Lek)',type:'number',onchange:'calcFnbTotal()'},
+        {id:'xhiro_brutal',lb:'Xhiro Brutal (Lek)',type:'number',onchange:'calcFnbTotal()'},
+        {id:'xhiro_pool_bar_garden',lb:'Xhiro Pool Bar Garden (Lek)',type:'number',onchange:'calcFnbTotal()'},
+        {id:'xhiro_beach_bar',lb:'Xhiro Beach Bar (Lek)',type:'number',onchange:'calcFnbTotal()'},
+        {id:'xhiro_familje',lb:'Xhiro Familje (Lek)',type:'number',onchange:'calcFnbTotal()'},
+      ]},
+      {title:'📊 Totale (Auto-llogaritet)',cols:3,fields:[
+        {id:'xhiro_totale',lb:'Xhiro Totale (Lek) = Σ',type:'number',readonly:true},
+        {id:'ardhura_neto',lb:'Të Ardhura Neto (Totale − Familja) (Lek)',type:'number',readonly:true},
+      ]},
+      {title:'🪑 Tavolina',cols:3,fields:[
+        {id:'tavolina_flower',lb:'Tavolina Shërbyera — Flower',type:'number'},
+        {id:'tavolina_brutal',lb:'Tavolina Shërbyera — Brutal',type:'number'},
+        {id:'notes',lb:'Shënime',type:'textarea'},
+      ]},
+    ]},
+
+  allinclusive:{label:'All Inclusive / HK / Guest',mgr:'Erinda',icon:'⭐',color:'#C49A2C',
+    sections:[
+      {title:'🏨 Mysafirë sipas Llojit',cols:3,fields:[
+        {id:'ai_guests',lb:'Mysafirë All Inclusive',type:'number'},
+        {id:'bb_guests',lb:'Mysafirë BB',type:'number'},
+        {id:'hb_guests',lb:'Mysafirë HB',type:'number'},
+        {id:'romantic_guests',lb:'Mysafirë Romantic Package',type:'number'},
+      ]},
+      {title:'🍴 PAX / Vaktet',cols:3,fields:[
+        {id:'pax_mengjesi_flower',lb:'PAX / Mëngjes Flower',type:'number'},
+        {id:'pax_mengjesi_garden',lb:'PAX / Mëngjes Garden',type:'number'},
+        {id:'pax_lunch',lb:'PAX / Drekë',type:'number'},
+        {id:'pax_snack',lb:'PAX / Snack',type:'number'},
+        {id:'pax_dinner',lb:'PAX / Darkë',type:'number'},
+      ]},
+      {title:'🧹 Housekeeping',cols:3,fields:[
+        {id:'dhoma_ditore_garden',lb:'Dhoma Ditore Garden',type:'number'},
+        {id:'dhoma_totale_garden',lb:'Dhoma Totale Garden',type:'number'},
+        {id:'dhoma_ditore_flower',lb:'Dhoma Ditore FLOWER',type:'number'},
+        {id:'dhoma_totale_flower',lb:'Dhoma Totale FLOWER',type:'number'},
+      ]},
+      {title:'⭐ Kënaqësia e Mysafirëve',cols:3,fields:[
+        {id:'reviews',lb:'Vlerësime (sot)',type:'number'},
+        {id:'avg_rate',lb:'Nota Mesatare (0–10)',type:'number'},
+        {id:'notes',lb:'Shënime',type:'textarea'},
+      ]},
+    ]},
+
+  finance:{label:'Finance',mgr:'Bruna',icon:'💰',color:'#C49A2C',
+    sections:[
+      {title:'💰 Arkëtime & Pagesa (Lek)',cols:3,fields:[
+        {id:'arketime_totale_lek',lb:'Arkëtime Ditore Totale (Lek)',type:'number'},
+        {id:'pagesa_totale_lek',lb:'Pagesa Ditore Totale (Lek)',type:'number'},
+        {id:'zbritje_xhiro',lb:'Zbritje nga Xhiro Ditore (Lek)',type:'number'},
+      ]},
+      {title:'💵 Cash & Non-Cash — Arkëtime',cols:3,fields:[
+        {id:'cash_euro_ark',lb:'Cash Euro',type:'number'},
+        {id:'cash_lek_ark',lb:'Cash Lek',type:'number'},
+        {id:'noncash_euro_ark',lb:'Non-Cash Euro',type:'number'},
+        {id:'noncash_lek_ark',lb:'Non-Cash Lek',type:'number'},
+      ]},
+      {title:'💳 Cash & Non-Cash — Pagesa',cols:3,fields:[
+        {id:'cash_euro_pag',lb:'Cash Euro',type:'number'},
+        {id:'cash_lek_pag',lb:'Cash Lek',type:'number'},
+        {id:'noncash_euro_pag',lb:'Non-Cash Euro',type:'number'},
+        {id:'noncash_lek_pag',lb:'Non-Cash Lek',type:'number'},
+        {id:'notes',lb:'Shënime / Diferenca',type:'textarea'},
+      ]},
+    ]},
+
+  financefnb:{label:'Finance F&B',mgr:'Xhina',icon:'🧾',color:'#2DB87A',
+    sections:[
+      {title:'📦 Shpenzime Ditore për Magazinë',cols:2,fields:[
+        {id:'shp_hoteli',lb:'Shpenzime Hoteli (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'shp_ai_fnb',lb:'Hotel All Inclusive F&B (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'shp_flower',lb:'Flower Restoranti (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'shp_pool_bar',lb:'Pool Bar (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'shp_pool_bar_garden',lb:'Pool Bar Garden (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'shp_garden_brutal',lb:'Garden Brutal (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'shp_beach_bar',lb:'Beach Bar (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'shp_te_tjera',lb:'Të Tjera (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'shp_totali',lb:'TOTALI Shpenzime (Auto)',type:'number',readonly:true},
+      ]},
+      {title:'📈 Të Ardhura Ditore për Magazinë',cols:2,fields:[
+        {id:'ard_room_revenue',lb:'Room Revenue (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_flower_rest',lb:'Flower Restaurant (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_pool_bar',lb:'Pool Bar (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_garden_brutal',lb:'Garden Brutal (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_pool_bar_garden',lb:'Pool Bar Garden (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_beach_bar',lb:'Beach Bar (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_spa_flower',lb:'Spa Flower (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_spa_garden',lb:'Spa Garden (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_other',lb:'Other Revenue (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'ard_totali',lb:'TOTALI Të Ardhura (Auto)',type:'number',readonly:true},
+      ]},
+      {title:'🏠 Zbritje',cols:2,fields:[
+        {id:'zb_vila1',lb:'Vila 1 (€)',type:'number',onchange:'calcXhina()'},
+        {id:'zb_vila2',lb:'Vila 2 (€)',type:'number',onchange:'calcXhina()'},
+        {id:'zb_313',lb:'313 (€)',type:'number',onchange:'calcXhina()'},
+        {id:'zb_fatura_qerasje',lb:'Faturë Qërasje (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'zb_totali',lb:'TOTALI Zbritje (Auto)',type:'number',readonly:true},
+        {id:'notes',lb:'Shënime',type:'textarea'},
+      ]},
+    ]},
+};
+const ALL_DEPTS=['frontoffice','spa','fnb','allinclusive','finance','financefnb'];
+
+let CU=null,CD='overview',revChart=null,barChart=null;
+
+/* ════ API CONFIG ════ */
+const API_BASE = window.location.origin;
+
+/* ════ API STORE ════ */
+const Store={
+  async get(key){
+    // key format: daily:DATE:DEPT
+    const parts = key.split(':');
+    const date = parts[1]; const dept = parts[2];
+    try{
+      const r = await fetch(`${API_BASE}/api/reports?date=${date}`);
+      const data = await r.json();
+      if(data[dept]) return {value: JSON.stringify(data[dept])};
+    }catch(e){}
+    return null;
+  },
+  async set(key, value){
+    // key format: daily:DATE:DEPT
+    try{
+      const body = JSON.parse(value);
+      const r = await fetch(`${API_BASE}/api/report`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      const res = await r.json();
+      return res.success;
+    }catch(e){console.error('API save error',e);return false;}
+  }
+};
+
+/* ════ LOGIN ════ */
+function doLogin(){
+  const uid=document.getElementById('loginUser').value;
+  const pw=document.getElementById('loginPass').value;
+  const u=USERS[uid];
+  if(!u||pw!==u.pass){document.getElementById('loginErr').style.display='block';return;}
+  document.getElementById('loginErr').style.display='none';
+  CU={...u,uid};
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appShell').style.display='flex';
+  document.getElementById('topUser').textContent=u.name;
+  document.getElementById('topDate').textContent=fmtD(td());
+  initApp();
+}
+function doLogout(){
+  CU=null;CD='overview';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('appShell').style.display='none';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginUser').value='';
 }
 
-function saveData(data) {
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-    return true;
-  } catch (e) {
-    console.error('Save error:', e.message);
-    return false;
-  }
-}
-
-let DB = loadData();
-
-/* ── API: Save report ── */
-app.post('/api/report', (req, res) => {
-  const { dept, date, ...fields } = req.body;
-  if (!dept || !date) return res.status(400).json({ error: 'dept dhe date janë të detyrueshme' });
-  if (!DB[date]) DB[date] = {};
-  DB[date][dept] = { dept, date, ...fields, saved_at: new Date().toISOString() };
-  const ok = saveData(DB);
-  res.json({ success: ok, key: `${date}:${dept}` });
-});
-
-/* ── API: Get one date ── */
-app.get('/api/reports', (req, res) => {
-  const { date } = req.query;
-  if (!date) return res.status(400).json({ error: 'date e nevojshme' });
-  res.json(DB[date] || {});
-});
-
-/* ── API: Get date range ── */
-app.get('/api/reports/range', (req, res) => {
-  const { from, to } = req.query;
-  if (!from || !to) return res.status(400).json({ error: 'from dhe to të nevojshme' });
-  const result = {};
-  const cur = new Date(from);
-  const end = new Date(to);
-  while (cur <= end) {
-    const d = cur.toISOString().split('T')[0];
-    result[d] = DB[d] || {};
-    cur.setDate(cur.getDate() + 1);
-  }
-  res.json(result);
-});
-
-/* ── API: Health check ── */
-app.get('/api/ping', (req, res) => res.json({ status: 'ok', records: Object.keys(DB).length }));
-
-/* ── Serve frontend for all routes ── */
-app.get('*', (req, res) => {
-  const indexPath = path.join(publicDir, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
+/* ════ INIT ════ */
+function initApp(){
+  if(CU.role==='manager'){
+    document.getElementById('mobileNav').style.display='flex';
+    buildMgrSidebar();selMgrDept('overview');seedDemo();
   } else {
-    res.status(404).send('index.html not found. Kontrolloni strukturën e GitHub repo.');
+    buildInpSidebar();renderInpView(CU.dept,null,null);
   }
-});
+}
 
-app.listen(PORT, () => console.log(`Flower Dashboard running on port ${PORT}`));
+/* ════ SIDEBARS ════ */
+function buildMgrSidebar(){
+  // Desktop sidebar
+  let h=`<div class="sb-s">Pamja Gjeneral</div>
+  <div class="dbt active" id="sb-overview" onclick="selMgrDept('overview')">
+    <div class="dico" style="background:rgba(200,154,44,.15)">📊</div>
+    <div><div class="dnm">Overview</div><div class="dsb">Të gjitha dept.</div></div>
+  </div><div class="sb-s">Departamente</div>`;
+  for(const[id,d] of Object.entries(DEPTS)){
+    h+=`<div class="dbt" id="sb-${id}" onclick="selMgrDept('${id}')">
+      <div class="dico" style="background:${d.color}20">${d.icon}</div>
+      <div><div class="dnm">${d.label}</div><div class="dsb">${d.mgr}</div></div>
+      <div class="ddot dot-e" id="dot-${id}"></div>
+    </div>`;
+  }
+  document.getElementById('sidebar').innerHTML=h;
+
+  // Mobile bottom nav
+  let mn=`<div class="mn-item active" id="mn-overview" onclick="selMgrDept('overview')"><span>📊</span><span>Overview</span></div>`;
+  for(const[id,d] of Object.entries(DEPTS)){
+    mn+=`<div class="mn-item" id="mn-${id}" onclick="selMgrDept('${id}')"><span style="position:relative">${d.icon}<span class="mn-dot dot-e" id="mdot-${id}"></span></span><span style="font-size:9px">${d.label.split('/')[0].trim()}</span></div>`;
+  }
+  document.getElementById('mobileNav').innerHTML=mn;
+  updateDots(td());
+}
+function buildInpSidebar(){
+  document.getElementById('mobileNav').style.display='none';
+  const d=DEPTS[CU.dept];
+  document.getElementById('sidebar').innerHTML=`
+  <div class="sb-s">Departamenti Im</div>
+  <div class="dbt active">
+    <div class="dico" style="background:${d.color}20">${d.icon}</div>
+    <div><div class="dnm">${d.label}</div><div class="dsb">${d.mgr}</div></div>
+  </div>
+  <div style="margin-top:auto;padding:12px;border-top:1px solid var(--border3)">
+    <div style="font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px">Data</div>
+    <div style="font-family:var(--f-mono);font-size:12px;color:var(--gold2)">${fmtD(td())}</div>
+  </div>`;
+}
+
+/* ════ MANAGER SELECT DEPT ════ */
+function selMgrDept(dept){
+  CD=dept;
+  document.querySelectorAll('.dbt').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('sb-'+dept);if(el)el.classList.add('active');
+  document.querySelectorAll('.mn-item').forEach(b=>b.classList.remove('active'));
+  const mn=document.getElementById('mn-'+dept);if(mn)mn.classList.add('active');
+  document.getElementById('mainArea').innerHTML=`
+  <div class="fbar">
+    <span class="fl">Nga</span><input type="date" class="fi" id="fF" value="${td()}">
+    <span class="fl">deri</span><input type="date" class="fi" id="fT" value="${td()}">
+    <select class="fsel" onchange="applyQF(this.value)">
+      <option value="today">Sot</option><option value="yesterday">Dje</option>
+      <option value="week">Kjo Javë</option><option value="month">Ky Muaj</option>
+    </select>
+    <button class="fapp" onclick="renderMgr()">Filtro</button>
+  </div>
+  <div class="cnt" id="mc"></div>`;
+  renderMgr();
+}
+
+function applyQF(v){
+  const t=new Date();const fmt=d=>d.toISOString().split('T')[0];
+  if(v==='today'){document.getElementById('fF').value=fmt(t);document.getElementById('fT').value=fmt(t);}
+  else if(v==='yesterday'){const y=new Date(t);y.setDate(y.getDate()-1);document.getElementById('fF').value=fmt(y);document.getElementById('fT').value=fmt(y);}
+  else if(v==='week'){const s=new Date(t);s.setDate(s.getDate()-Math.max(0,s.getDay()-1));document.getElementById('fF').value=fmt(s);document.getElementById('fT').value=fmt(t);}
+  else if(v==='month'){document.getElementById('fF').value=`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-01`;document.getElementById('fT').value=fmt(t);}
+  renderMgr();
+}
+
+/* ════ RENDER MANAGER ════ */
+async function renderMgr(){
+  const from=document.getElementById('fF').value;
+  const to=document.getElementById('fT').value;
+  const dates=getDates(from,to);
+  let all={};
+  try{
+    const r=await fetch(`${API_BASE}/api/reports/range?from=${from}&to=${to}`);
+    all=await r.json();
+    // ensure all dates exist
+    for(const d of dates){ if(!all[d]) all[d]={}; }
+  }catch(e){
+    for(const date of dates){ all[date]={}; }
+  }
+  const todayD=all[td()]||{};
+  updateDots(td(),todayD);
+  if(CD==='overview') renderOV(all,dates,from,to,todayD);
+  else renderDD(CD,all,dates,from,to,todayD);
+}
+
+/* ════ OVERVIEW ════ */
+function renderOV(all,dates,from,to,todayD){
+  const isToday=(from===to&&to===td());
+  const d=isToday?todayD:(all[to]||{});
+
+  // Today's main KPIs from latest available date
+  const latestDate=dates.slice().reverse().find(dt=>all[dt]&&(all[dt].frontoffice||all[dt].finance))||td();
+  const ld=all[latestDate]||{};
+  const fo=ld.frontoffice||{};
+  const fn=ld.fnb||{};
+  const fi=ld.finance||{};
+  const sp=ld.spa||{};
+  const ai=ld.allinclusive||{};
+
+  const dhZena=fo.dhoma_zena_total||(fo.dhoma_zena||0);
+  const dhLira=fo.dhoma_lira||0;
+  const occ=dhZena?Math.round(dhZena/160*100):0;
+  const arkTotal=fi.arketime_totale_lek||0;
+
+  // Bar chart data (F&B revenues)
+  const barLabels=['Flower Rest.','Pool Bar','Brutal','Pool Bar Gdn','Beach Bar','SPA','Hotel'];
+  const barData=[
+    fn.xhiro_flower||0,
+    fn.xhiro_pool_bar||0,
+    fn.xhiro_brutal||0,
+    fn.xhiro_pool_bar_garden||0,
+    fn.xhiro_beach_bar||0,
+    sp.ardhura_ditore||0,
+    dhZena*(fi.arketime_totale_lek?(fi.arketime_totale_lek/Math.max(dhZena,1)):0)||0
+  ];
+  const barColors=['#C49A2C','#1FA896','#E05050','#176B63','#2DB87A','#9B7CE8','#F0A030'];
+
+  // Totals over date range
+  let totArk=0,totFnb=0,sSum=0,sCnt=0;
+  for(const date of dates){
+    const dd=all[date]||{};
+    totArk+=(dd.finance?.arketime_totale_lek||0);
+    totFnb+=(dd.fnb?.ardhura_neto||0);
+    if(dd.allinclusive?.avg_rate){sSum+=parseFloat(dd.allinclusive.avg_rate);sCnt++;}
+  }
+  const avgScore=sCnt?(sSum/sCnt).toFixed(1):'—';
+  const sub=ALL_DEPTS.filter(id=>todayD[id]).length;
+  const subPct=Math.round(sub/ALL_DEPTS.length*100);
+
+  const el=document.getElementById('mc');
+  el.innerHTML=`
+  <div class="sh">Raporti Ditor — ${isToday?'Sot '+fmtD(td()):fmtD(from)+' → '+fmtD(to)}</div>
+
+  <div class="kgrid2">
+    <div class="kpi cg"><div class="kl">Dhoma të Zëna</div><div class="kv">${dhZena}<span style="font-size:13px;color:var(--muted)"> / 160</span></div><div class="ks">${fmtD(latestDate)}</div></div>
+    <div class="kpi ct"><div class="kl">Dhoma të Lira</div><div class="kv">${dhLira}</div><div class="ks">Disponibël sot</div></div>
+    <div class="kpi ${occ>=70?'cgr':occ>=50?'ca':'cr'}"><div class="kl">Okupanca Ditore</div><div class="kv">${occ}%</div><div class="ks">${dhZena} dhoma / 160</div></div>
+    <div class="kpi ca"><div class="kl">Arkëtime Ditore Totale</div><div class="kv">${arkTotal.toLocaleString()}<span style="font-size:11px;color:var(--muted)"> Lek</span></div><div class="ks">Finance — Bruna</div></div>
+  </div>
+
+  <div class="mcol">
+    <div class="panel">
+      <div class="ph"><span class="pt">Të Ardhurat sipas Departamentit</span><span class="pp gold">${fmtD(latestDate)}</span></div>
+      <div style="position:relative;height:180px"><canvas id="bc" role="img" aria-label="Bar chart te ardhurat sipas departamentit">Chart</canvas></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="pt">Statusi Dorëzimeve — Sot</span><span class="pp ${subPct===100?'':'amber'}">${sub}/${ALL_DEPTS.length} dorëzuar</span></div>
+      <div class="ring-wrap">
+        <svg width="76" height="76" viewBox="0 0 76 76">
+          <circle cx="38" cy="38" r="28" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="7"/>
+          <circle cx="38" cy="38" r="28" fill="none" stroke="${subPct===100?'#2DB87A':subPct>50?'#F0A030':'#E05050'}" stroke-width="7"
+            stroke-dasharray="${2*Math.PI*28}" stroke-dashoffset="${2*Math.PI*28*(1-subPct/100)}"
+            stroke-linecap="round" transform="rotate(-90 38 38)"/>
+          <text x="38" y="43" text-anchor="middle" fill="white" font-family="Georgia,serif" font-size="15" font-weight="600">${subPct}%</text>
+        </svg>
+        <div>
+          ${ALL_DEPTS.map(id=>{const dd=DEPTS[id];const ok=!!todayD[id];return`<div class="ri-row"><div class="ri-dot" style="background:${ok?'#2DB87A':'#5A6E88'}"></div><span style="color:${ok?'var(--white)':'var(--muted)'}">${dd.icon} ${dd.label}</span></div>`;}).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ph"><span class="pt">Departamentet — Sot ${fmtD(td())}</span><span class="pp">Klikoni "Edito" për korrektim</span></div>
+    <table class="dt">
+      <thead><tr><th>Departamenti</th><th>Përgjegjësi</th><th>Metrika Kryesore</th><th>Status</th><th>Veprim</th></tr></thead>
+      <tbody>
+        ${ALL_DEPTS.map(id=>{
+          const dd=DEPTS[id];const dat=todayD[id];
+          let m='—';
+          if(dat){
+            if(id==='frontoffice')m=`Flower:${dat.dhoma_zena_flower||0} Garden:${dat.dhoma_zena_garden||0} · Tot:${dat.dhoma_zena_total||0} · Lira:${dat.dhoma_lira||0} · OOO:${dat.dhoma_jashte_pune||0} · €${dat.ardhura_totale_euro||0}`;
+            if(id==='spa')m=`${dat.sherbime_dite||0} shërbime · ${(dat.ardhura_ditore||0).toLocaleString()} Lek`;
+            if(id==='fnb')m=`Neto ${(dat.ardhura_neto||0).toLocaleString()} Lek · Tot. ${(dat.xhiro_totale||0).toLocaleString()} Lek`;
+            if(id==='allinclusive')m=`AI:${dat.ai_guests||0} BB:${dat.bb_guests||0} HB:${dat.hb_guests||0} · Nota:${dat.avg_rate||'—'}`;
+            if(id==='finance')m=`Ark. ${(dat.arketime_totale_lek||0).toLocaleString()} Lek`;
+            if(id==='financefnb')m=`Ard. ${(dat.ard_totali||0).toLocaleString()} · Shp. ${(dat.shp_totali||0).toLocaleString()} Lek`;
+          }
+          return`<tr>
+            <td><span style="margin-right:6px">${dd.icon}</span><b style="font-size:11px">${dd.label}</b></td>
+            <td><span class="dm">${dd.mgr}</span></td>
+            <td><span class="dn">${m}</span></td>
+            <td><span class="badge ${dat?'ok':'miss'}">${dat?'✓ Dorëzuar':'Në pritje'}</span></td>
+            <td>${dat?`<button class="edit-btn" onclick="openEdit('${id}','${td()}')">✏ Edito</button>`:'—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  ${dates.length>1?`
+  <div class="panel">
+    <div class="ph"><span class="pt">Totalet Periudhës</span><span class="pp">${fmtD(from)} → ${fmtD(to)}</span></div>
+    <div style="display:flex;gap:0;overflow:hidden;border-radius:6px;border:1px solid var(--border2)">
+      ${[
+        {l:'Arkëtime Totale',v:`${totArk.toLocaleString()} Lek`},
+        {l:'Xhiro F&B Neto',v:`${totFnb.toLocaleString()} Lek`},
+        {l:'Avg Score Guest',v:avgScore},
+        {l:'Ditë me të Dhëna',v:`${dates.filter(dt=>all[dt]&&Object.keys(all[dt]).length).length} / ${dates.length}`},
+      ].map((x,i)=>`<div style="flex:1;padding:10px 12px;text-align:center;${i<3?'border-right:1px solid var(--border3)':''}">
+        <div style="font-family:var(--f-serif);font-size:16px;font-weight:600;color:var(--gold2)">${x.v}</div>
+        <div style="font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:.5px;margin-top:2px">${x.l}</div>
+      </div>`).join('')}
+    </div>
+  </div>`:``}`;
+
+  setTimeout(()=>{
+    const ctx=document.getElementById('bc');if(!ctx)return;
+    if(barChart)barChart.destroy();
+    barChart=new Chart(ctx,{type:'bar',data:{
+      labels:barLabels,
+      datasets:[{
+        data:barData,
+        backgroundColor:barColors,
+        borderRadius:4,
+        borderSkipped:false
+      }]
+    },options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.raw.toLocaleString()} Lek`}}},
+      scales:{
+        x:{ticks:{color:'#8DA3BD',font:{size:9},maxRotation:30},grid:{color:'rgba(255,255,255,.03)'}},
+        y:{ticks:{color:'#8DA3BD',font:{size:9},callback:v=>v>=1000?Math.round(v/1000)+'K':v},grid:{color:'rgba(255,255,255,.05)'}}
+      }
+    }});
+  },80);
+}
+
+/* ════ DEPT DETAIL (read-only + edit buttons) ════ */
+async function renderDD(deptId,all,dates,from,to,todayD){
+  const cfg=DEPTS[deptId];
+  const todayDat=todayD[deptId]||null;
+  const el=document.getElementById('mc');
+
+  // Today detail card
+  let todayCard='';
+  if(todayDat){
+    let fields='';
+    for(const sec of cfg.sections){
+      fields+=`<div style="margin-bottom:8px"><div style="font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--gold2);padding-bottom:5px;border-bottom:1px solid var(--border2);margin-bottom:6px">${sec.title}</div><div class="det-grid">`;
+      for(const f of sec.fields){
+        if(f.type!=='textarea'&&todayDat[f.id]!==undefined){
+          const isTot=f.id.includes('totali')||f.id.includes('neto');
+          const fCur=f.lb.includes('(Lek)')?'Lek':f.lb.includes('(€)')?'€':'';
+          const fVal=Number(todayDat[f.id]||0).toLocaleString()+(fCur?' '+fCur:'');
+          fields+=`<div class="det-row${isTot?' tot-row':''}"><span class="det-lbl">${f.lb}</span><span class="det-val${isTot?' tot':''}">${fVal}</span></div>`;
+        }
+      }
+      if(todayDat.notes&&sec.fields.some(f=>f.type==='textarea'))
+        fields+=`</div><div style="grid-column:1/-1;margin-top:5px;padding:6px 9px;background:var(--card2);border-radius:4px;border-left:2px solid var(--gold)"><span style="font-size:9px;color:var(--muted)">SHËNIME: </span><span style="font-size:11px">${todayDat.notes}</span></div><div style="display:none">`;
+      fields+=`</div></div>`;
+    }
+    todayCard=`<div class="panel"><div class="ph"><span class="pt">${cfg.icon} ${cfg.label} — Sot ${fmtD(td())}</span><div style="display:flex;gap:6px;align-items:center"><span class="pp gold">✓ Dorëzuar</span><button class="edit-btn" onclick="openEdit('${deptId}','${td()}')">✏ Edito</button></div></div>${fields}</div>`;
+  } else {
+    todayCard=`<div class="panel"><div class="ph"><span class="pt">${cfg.icon} ${cfg.label} — Sot</span><span class="badge miss">Nuk është dorëzuar</span></div><div class="empty">Raporti i sotëm nuk është dorëzuar ende.</div></div>`;
+  }
+
+  // History rows
+  let rows='';
+  for(const date of [...dates].reverse()){
+    const dat=all[date]?.[deptId];if(!dat)continue;
+    let cells=[];
+    for(const sec of cfg.sections){
+      for(const f of sec.fields){
+        if(f.type!=='textarea'&&dat[f.id]!==undefined&&dat[f.id]!==0&&!f.readonly){
+          const hCur=f.lb.includes('(Lek)')?'Lek':f.lb.includes('(€)')?'€':'';
+          cells.push(`<span style="color:var(--muted);font-size:10px">${f.lb.split('(')[0].trim().slice(0,20)}:</span> <span class="dn">${Number(dat[f.id]||0).toLocaleString()}${hCur?' '+hCur:''}</span>`);
+        }
+      }
+    }
+    rows+=`<tr>
+      <td class="dn">${fmtD(date)}</td>
+      <td style="font-size:10px;line-height:1.9">${cells.slice(0,5).join(' &nbsp;·&nbsp; ')}</td>
+      <td><span class="badge ok">✓</span></td>
+      <td><button class="edit-btn" onclick="openEdit('${deptId}','${date}')">✏ Edito</button></td>
+    </tr>`;
+  }
+  if(!rows)rows=`<tr><td colspan="4"><div class="empty">Nuk ka të dhëna për këtë periudhë.</div></td></tr>`;
+
+  el.innerHTML=`
+  <div class="sh">${cfg.icon} ${cfg.label} — ${cfg.mgr}</div>
+  ${todayCard}
+  <div class="panel">
+    <div class="ph"><span class="pt">Historiku Raporteve</span><span class="pp">${from===to?fmtD(from):fmtD(from)+' → '+fmtD(to)}</span></div>
+    <table class="dt"><thead><tr><th>Data</th><th>Të Dhënat</th><th>Status</th><th>Veprim</th></tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+/* ════ OPEN EDIT (manager edits any date/dept) ════ */
+async function openEdit(deptId,date){
+  let existing={};
+  try{const r=await Store.get(`daily:${date}:${deptId}`);if(r)existing=JSON.parse(r.value);}catch(e){}
+  const cfg=DEPTS[deptId];
+  const main=document.getElementById('mainArea');
+
+  // Preserve filter bar
+  const fbarHtml=document.querySelector('.fbar')?.outerHTML||'';
+  main.innerHTML=fbarHtml+`
+  <div class="cnt">
+    <div class="edit-banner">✏ Modaliteti i Editimit — ${cfg.icon} ${cfg.label} · ${fmtD(date)} · Të gjitha ndryshimet ruhen menjëherë</div>
+    <div class="panel">
+      <div class="ph">
+        <div><span class="pt">${cfg.icon} ${cfg.label} — ${fmtD(date)}</span></div>
+        <button class="edit-btn" style="border-color:var(--muted);padding:4px 12px" onclick="renderMgr()">← Kthehu</button>
+      </div>
+      <form onsubmit="saveEdit(event,'${deptId}','${date}')">
+        ${buildFormHtml(cfg,existing,true)}
+        <div class="sub-row">
+          <button type="submit" class="sub-btn">💾 Ruaj Ndryshimet</button>
+          <span class="save-ok" id="sOk">✓ U ruajt!</span>
+        </div>
+      </form>
+    </div>
+  </div>`;
+  attachAutoCalc(deptId);
+}
+
+async function saveEdit(e,deptId,date){
+  e.preventDefault();
+  const form=e.target;
+  let existing={};
+  try{const r=await Store.get(`daily:${date}:${deptId}`);if(r)existing=JSON.parse(r.value);}catch(e){}
+  let data={...existing,dept:deptId,date,edited_at:new Date().toISOString()};
+  for(const el of form.elements){if(el.name&&!el.readOnly)data[el.name]=el.type==='number'?(parseFloat(el.value)||0):el.value;}
+  // recalc totals
+  data=recalcTotals(deptId,data,form);
+  const ok=await Store.set(`daily:${date}:${deptId}`,JSON.stringify(data));
+  const m=document.getElementById('sOk');
+  m.textContent=ok?'✓ U ruajt me sukses!':'⚠ Gabim ruajtjeje';
+  m.style.color=ok?'#2DB87A':'#F0A030';
+  m.style.display='inline';
+  setTimeout(()=>m.style.display='none',3000);
+  updateDots(td());
+}
+
+/* ════ INPUT VIEW (staff) ════ */
+async function renderInpView(deptId,existingOverride,dateOverride){
+  const cfg=DEPTS[deptId];
+  const dateStr=dateOverride||td();
+  let ex=existingOverride||{};
+  if(!existingOverride){
+    try{const r=await Store.get(`daily:${dateStr}:${deptId}`);if(r)ex=JSON.parse(r.value);}catch(e){}
+  }
+  document.getElementById('mainArea').innerHTML=`
+  <div class="inv">
+    <div class="in-hdr">
+      <div><h2>${cfg.icon} ${cfg.label} — Raporti Ditor</h2><p>Data: ${fmtD(dateStr)} · Fuso të dhënat e sotme</p></div>
+    </div>
+    <form onsubmit="saveInp(event,'${deptId}','${dateStr}')">
+      ${buildFormHtml(cfg,ex,false)}
+      <div class="sub-row">
+        <button type="submit" class="sub-btn">💾 Ruaj Raportin</button>
+        <span class="save-ok" id="sOk">✓ U ruajt me sukses!</span>
+      </div>
+    </form>
+  </div>`;
+  attachAutoCalc(deptId);
+}
+
+/* ════ BUILD FORM HTML ════ */
+function buildFormHtml(cfg,ex,inPanel){
+  let h='';
+  for(const sec of cfg.sections){
+    const cols=sec.cols||3;
+    h+=`<div class="fsec"><div class="fsec-t">${sec.title}</div><div class="${cols===2?'fgrid2':'fgrid'}">`;
+    for(const f of sec.fields){
+      const val=ex[f.id]!==undefined?ex[f.id]:'';
+      const full=f.type==='textarea';
+      const ro=f.readonly?'readonly':'';
+      const oc=f.onchange?`oninput="${f.onchange}"`:'';;
+      h+=`<div class="ff${full?' full':''}"><label>${f.lb}</label>`;
+      if(f.type==='textarea')h+=`<textarea name="${f.id}" placeholder="...">${val}</textarea>`;
+      else h+=`<input type="number" name="${f.id}" min="0" step="any" value="${val||''}" placeholder="0" ${ro} ${oc}>`;
+      h+=`</div>`;
+    }
+    h+=`</div></div>`;
+  }
+  return h;
+}
+
+/* ════ AUTO-CALC FORMULAS ════ */
+function attachAutoCalc(deptId){
+  if(deptId==='frontoffice') calcFOTotal();
+  if(deptId==='fnb') calcFnbTotal();
+  if(deptId==='financefnb') calcXhina();
+}
+
+function calcFOTotal(){
+  const flower=parseFloat(document.querySelector('[name="dhoma_zena_flower"]')?.value)||0;
+  const garden=parseFloat(document.querySelector('[name="dhoma_zena_garden"]')?.value)||0;
+  const tot=document.querySelector('[name="dhoma_zena_total"]');
+  if(tot) tot.value=flower+garden;
+}
+
+function calcFnbTotal(){
+  const ids=['xhiro_flower','xhiro_pool_bar','xhiro_brutal','xhiro_pool_bar_garden','xhiro_beach_bar','xhiro_familje'];
+  const vals=ids.map(id=>{const el=document.querySelector(`[name="${id}"]`);return el?parseFloat(el.value)||0:0;});
+  const total=vals.reduce((a,b)=>a+b,0);
+  const familje=parseFloat(document.querySelector('[name="xhiro_familje"]')?.value)||0;
+  const neto=total-familje;
+  const tot=document.querySelector('[name="xhiro_totale"]');if(tot)tot.value=total.toFixed(2);
+  const net=document.querySelector('[name="ardhura_neto"]');if(net)net.value=neto.toFixed(2);
+}
+
+function calcXhina(){
+  // Shpenzime total
+  const shpIds=['shp_hoteli','shp_ai_fnb','shp_flower','shp_pool_bar','shp_pool_bar_garden','shp_garden_brutal','shp_beach_bar','shp_te_tjera'];
+  const shpTotal=shpIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const st=document.querySelector('[name="shp_totali"]');if(st)st.value=shpTotal.toFixed(0);
+  // Ardhura total
+  const ardIds=['ard_room_revenue','ard_flower_rest','ard_pool_bar','ard_garden_brutal','ard_pool_bar_garden','ard_beach_bar','ard_spa_flower','ard_spa_garden','ard_other'];
+  const ardTotal=ardIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const at=document.querySelector('[name="ard_totali"]');if(at)at.value=ardTotal.toFixed(0);
+  // Zbritje total (mix € and Lek — just sum numerically)
+  const zbIds=['zb_vila1','zb_vila2','zb_313','zb_fatura_qerasje'];
+  const zbTotal=zbIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const zt=document.querySelector('[name="zb_totali"]');if(zt)zt.value=zbTotal.toFixed(0);
+}
+
+function recalcTotals(deptId,data,form){
+  if(deptId==='frontoffice'){
+    data.dhoma_zena_total=(parseFloat(data.dhoma_zena_flower)||0)+(parseFloat(data.dhoma_zena_garden)||0);
+  }
+  if(deptId==='fnb'){
+    const ids=['xhiro_flower','xhiro_pool_bar','xhiro_brutal','xhiro_pool_bar_garden','xhiro_beach_bar','xhiro_familje'];
+    const total=ids.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    data.xhiro_totale=total;
+    data.ardhura_neto=total-(parseFloat(data.xhiro_familje)||0);
+  }
+  if(deptId==='financefnb'){
+    const shpIds=['shp_hoteli','shp_ai_fnb','shp_flower','shp_pool_bar','shp_pool_bar_garden','shp_garden_brutal','shp_beach_bar','shp_te_tjera'];
+    data.shp_totali=shpIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    const ardIds=['ard_room_revenue','ard_flower_rest','ard_pool_bar','ard_garden_brutal','ard_pool_bar_garden','ard_beach_bar','ard_spa_flower','ard_spa_garden','ard_other'];
+    data.ard_totali=ardIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    const zbIds=['zb_vila1','zb_vila2','zb_313','zb_fatura_qerasje'];
+    data.zb_totali=zbIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+  }
+  return data;
+}
+
+/* ════ SAVE INPUT (staff) ════ */
+async function saveInp(e,deptId,dateStr){
+  e.preventDefault();
+  const form=e.target;
+  let data={dept:deptId,date:dateStr,submitted_at:new Date().toISOString()};
+  for(const el of form.elements){if(el.name&&!el.readOnly)data[el.name]=el.type==='number'?(parseFloat(el.value)||0):el.value;}
+  data=recalcTotals(deptId,data,form);
+  const ok=await Store.set(`daily:${dateStr}:${deptId}`,JSON.stringify(data));
+  const m=document.getElementById('sOk');
+  m.textContent=ok?'✓ U ruajt me sukses!':'⚠ Gabim — provoni sërisht';
+  m.style.color=ok?'#2DB87A':'#F0A030';
+  m.style.display='inline';
+  setTimeout(()=>m.style.display='none',4000);
+  updateDots(dateStr);
+}
+
+/* ════ DOTS ════ */
+async function updateDots(date,preloaded){
+  let dayData = preloaded;
+  if(!dayData){
+    try{
+      const r=await fetch(`${API_BASE}/api/reports?date=${date}`);
+      dayData=await r.json();
+    }catch(e){ dayData={}; }
+  }
+  for(const id of ALL_DEPTS){
+    const el=document.getElementById('dot-'+id);if(!el)continue;
+    el.className='ddot '+(dayData[id]?'dot-g':'dot-e');
+    const mel=document.getElementById('mdot-'+id);if(!mel)continue;
+    mel.className='mn-dot '+(dayData[id]?'dot-g':'dot-e');
+  }
+}
+
+/* ════ DEMO SEED ════ */
+async function seedDemo(){
+  const t=td();
+  const check=await Store.get(`daily:${t}:frontoffice`);if(check)return;
+  const s={
+    frontoffice:{dhoma_zena_flower:68,dhoma_zena_garden:30,dhoma_zena_total:98,dhoma_lira:62,mbivendosje:0,dhoma_jashte_pune:2,ardhura_totale_euro:4800,notes:'Operacione normale.'},
+    spa:{sherbime_dite:12,ardhura_ditore:480,notes:''},
+    fnb:{xhiro_flower:1800,xhiro_pool_bar:420,xhiro_brutal:650,xhiro_pool_bar_garden:280,xhiro_beach_bar:140,xhiro_familje:320,xhiro_totale:3610,ardhura_neto:3290,tavolina_flower:48,tavolina_brutal:22,notes:''},
+    allinclusive:{ai_guests:85,bb_guests:28,hb_guests:12,romantic_guests:4,pax_mengjesi_flower:90,pax_mengjesi_garden:50,pax_lunch:100,pax_snack:60,pax_dinner:130,dhoma_ditore_garden:28,dhoma_totale_garden:350,dhoma_ditore_flower:70,dhoma_totale_flower:820,reviews:5,avg_rate:8.6,notes:''},
+    finance:{arketime_totale_lek:820000,pagesa_totale_lek:610000,zbritje_xhiro:24000,cash_euro_ark:2100,cash_lek_ark:120000,noncash_euro_ark:3800,noncash_lek_ark:80000,cash_euro_pag:1200,cash_lek_pag:90000,noncash_euro_pag:2400,noncash_lek_pag:60000,notes:''},
+    financefnb:{shp_hoteli:12000,shp_ai_fnb:8000,shp_flower:6000,shp_pool_bar:2000,shp_pool_bar_garden:1500,shp_garden_brutal:2500,shp_beach_bar:1000,shp_te_tjera:500,shp_totali:33500,ard_room_revenue:280000,ard_flower_rest:270000,ard_pool_bar:63000,ard_garden_brutal:97500,ard_pool_bar_garden:42000,ard_beach_bar:21000,ard_spa_flower:50000,ard_spa_garden:20000,ard_other:10000,ard_totali:853500,zb_vila1:320,zb_vila2:280,zb_313:150,zb_fatura_qerasje:22000,zb_totali:22750,notes:''},
+  };
+  for(const[dept,data] of Object.entries(s)){
+    await Store.set(`daily:${t}:${dept}`,JSON.stringify({...data,dept,date:t,submitted_at:new Date().toISOString()}));
+  }
+  updateDots(t);renderMgr();
+}
+
+/* ════ HELPERS ════ */
+function td(){return new Date().toISOString().split('T')[0];}
+function getDates(from,to){
+  const ds=[];const c=new Date(from);const e=new Date(to);
+  while(c<=e){ds.push(c.toISOString().split('T')[0]);c.setDate(c.getDate()+1);}
+  return ds;
+}
+function fmtD(d){
+  try{return new Date(d+'T00:00:00').toLocaleDateString('sq-AL',{day:'2-digit',month:'short',year:'numeric'});}
+  catch(e){return d;}
+}
+
+</script>
+</body>
+</html>
