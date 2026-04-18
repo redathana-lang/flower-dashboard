@@ -162,6 +162,8 @@ html,body{height:100%;background:var(--navy);color:var(--white);font-family:var(
 .save-ok{font-size:12px;display:none;flex-shrink:0}
 .edit-banner{background:rgba(240,160,48,.1);border:1px solid rgba(240,160,48,.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:4px}
 .empty{display:flex;align-items:center;justify-content:center;padding:28px;color:var(--muted2);font-size:12px}
+.export-btn{background:rgba(45,184,122,.15);border:1px solid rgba(45,184,122,.3);border-radius:8px;padding:10px 16px;color:var(--green);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--f-sans);white-space:nowrap}
+.export-btn:active{opacity:.8}
 /* RESPONSIVE */
 @media (min-width:768px){
   .sidebar{display:flex !important}
@@ -196,8 +198,8 @@ html,body{height:100%;background:var(--navy);color:var(--white);font-family:var(
       <option value="Edisona">Edisona — SPA</option>
       <option value="Klajdi">Klajdi — F&amp;B</option>
       <option value="Erinda">Erinda — All Inclusive / HK / Guest</option>
-      <option value="Bruna">Bruna — Finance</option>
-      <option value="Xhina">Xhina — Finance F&amp;B</option>
+      <option value="Bruna">Bruna — Cash Flow</option>
+      <option value="Xhina">Xhina — Finance</option>
     </select>
     <label class="llbl">Fjalëkalimi</label>
     <input class="linp" type="password" id="loginPass" placeholder="••••••">
@@ -232,8 +234,8 @@ const USERS={
   Edisona:{pass:'Edisona2026',name:'Edisona — SPA',role:'input',dept:'spa'},
   Klajdi:{pass:'Klajdi2026',name:'Klajdi — F&B',role:'input',dept:'fnb'},
   Erinda:{pass:'Erinda2026',name:'Erinda',role:'input',dept:'allinclusive'},
-  Bruna:{pass:'Bruna2026',name:'Bruna — Finance',role:'input',dept:'finance'},
-  Xhina:{pass:'Xhina2026',name:'Xhina — Finance F&B',role:'input',dept:'financefnb'},
+  Bruna:{pass:'Bruna2026',name:'Bruna — Cash Flow',role:'input',dept:'finance'},
+  Xhina:{pass:'Xhina2026',name:'Xhina — Finance',role:'input',dept:'financefnb'},
 };
 
 const DEPTS={
@@ -309,28 +311,37 @@ const DEPTS={
         {id:'notes',lb:'Shënime',type:'textarea'},
       ]},
     ]},
-  finance:{label:'Finance',mgr:'Bruna',icon:'💰',color:'#C49A2C',
+  finance:{label:'Cash Flow',mgr:'Bruna',icon:'💰',color:'#C49A2C',
     sections:[
-      {title:'💰 Arkëtime & Pagesa (Lek)',cols:2,fields:[
-        {id:'arketime_totale_lek',lb:'Arkëtime Ditore Totale (Lek)',type:'number'},
-        {id:'pagesa_totale_lek',lb:'Pagesa Ditore Totale (Lek)',type:'number'},
-        {id:'zbritje_xhiro',lb:'Zbritje nga Xhiro Ditore (Lek)',type:'number'},
+      {title:'📥 Arkëtime',cols:2,fields:[
+        {id:'ark_noncash_lek',lb:'Non Cash Lek — Bank + POS (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_noncash_euro',lb:'Non Cash Euro — Bank + POS (€)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_cash_euro',lb:'Reception Cash Euro (€)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_cash_lek',lb:'Reception Cash Lek (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_allotment',lb:'Allotment Contracts (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_itaka',lb:'Itaka (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_loan',lb:'Financial Disbursment — Loan (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_fnb_cash',lb:'F&B Cash Lek (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_mice_euro',lb:'MICE Bank Euro (€)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_mice_lek',lb:'MICE Bank Lek (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_totale',lb:'TOTALI Arkëtime (Auto)',type:'number',readonly:true},
       ]},
-      {title:'💵 Cash & Non-Cash — Arkëtime',cols:2,fields:[
-        {id:'cash_euro_ark',lb:'Cash Euro',type:'number'},
-        {id:'cash_lek_ark',lb:'Cash Lek',type:'number'},
-        {id:'noncash_euro_ark',lb:'Non-Cash Euro',type:'number'},
-        {id:'noncash_lek_ark',lb:'Non-Cash Lek',type:'number'},
-      ]},
-      {title:'💳 Cash & Non-Cash — Pagesa',cols:2,fields:[
-        {id:'cash_euro_pag',lb:'Cash Euro',type:'number'},
-        {id:'cash_lek_pag',lb:'Cash Lek',type:'number'},
-        {id:'noncash_euro_pag',lb:'Non-Cash Euro',type:'number'},
-        {id:'noncash_lek_pag',lb:'Non-Cash Lek',type:'number'},
+      {title:'📤 Pagesa',cols:2,fields:[
+        {id:'pag_paga',lb:'Paga (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_taxes',lb:'Taxes & Utilities (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_loan_euro',lb:'Loan Euro (€)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_loan_lek',lb:'Loan Lek (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_house_use',lb:'House Use (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_purch_cash',lb:'Purchases Cash (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_purch_bank',lb:'Purchases Bank (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_inv_lek',lb:'Investments Lek (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_inv_euro',lb:'Investments Euro (€)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_inv_cash',lb:'Investments Cash (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'pag_totale',lb:'TOTALI Pagesa (Auto)',type:'number',readonly:true},
         {id:'notes',lb:'Shënime / Diferenca',type:'textarea'},
       ]},
     ]},
-  financefnb:{label:'Finance F&B',mgr:'Xhina',icon:'🧾',color:'#2DB87A',
+  financefnb:{label:'Finance',mgr:'Xhina',icon:'🧾',color:'#2DB87A',
     sections:[
       {title:'📦 Shpenzime Ditore Magazinë',cols:2,fields:[
         {id:'shp_hoteli',lb:'Shpenzime Hoteli (Lek)',type:'number',onchange:'calcXhina()'},
@@ -568,7 +579,7 @@ function renderOV(all,dates,from,to,todayD){
           if(id==='spa')m=`${dat.sherbime_dite||0} shërbime`;
           if(id==='fnb')m=`Neto ${(dat.ardhura_neto||0).toLocaleString()} L`;
           if(id==='allinclusive')m=`AI:${dat.ai_guests||0} Score:${dat.avg_rate||'—'}`;
-          if(id==='finance')m=`${(dat.arketime_totale_lek||0).toLocaleString()} L`;
+          if(id==='finance')m=`Ark. ${(dat.ark_totale||0).toLocaleString()} · Pag. ${(dat.pag_totale||0).toLocaleString()} Lek`;
           if(id==='financefnb')m=`Ard:${(dat.ard_totali||0).toLocaleString()} L`;
         }
         return`<tr><td><b>${dd.icon} ${dd.label.split('/')[0].trim()}</b></td><td class="dn">${m}</td><td><span class="badge ${dat?'ok':'miss'}">${dat?'✓':'Pritje'}</span></td><td>${dat?`<button class="edit-btn" onclick="openEdit('${id}','${td()}')">✏</button>`:'—'}</td></tr>`;
@@ -674,9 +685,18 @@ async function renderInpView(deptId,existingOverride,dateOverride){
   const cfg=DEPTS[deptId];const dateStr=dateOverride||td();
   let ex=existingOverride||{};
   if(!existingOverride){try{const r=await Store.get(`daily:${dateStr}:${deptId}`);if(r)ex=JSON.parse(r.value);}catch(e){}}
+  const exportBtn=deptId==='finance'?`<button type="button" class="export-btn" onclick="exportFinanceExcel('${dateStr}')">📊 Excel</button>`:'';
   document.getElementById('mainArea').innerHTML=`
   <div class="inv">
-    <div class="in-hdr"><h2>${cfg.icon} ${cfg.label}</h2><p>Data: ${fmtD(dateStr)} · Fuso të dhënat e sotme</p></div>
+    <div class="in-hdr">
+      <div><h2>${cfg.icon} ${cfg.label}</h2><p>Duke futur të dhënat · Zgjidhni datën</p></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Data</label>
+      <input type="date" id="inpDatePicker" value="${dateStr}" style="background:var(--card);border:1px solid var(--border3);border-radius:8px;padding:10px 12px;color:var(--white);font-family:var(--f-mono);font-size:14px;outline:none;flex:1"
+        onchange="renderInpView('${deptId}',null,this.value)">
+      ${exportBtn}
+    </div>
     <form onsubmit="saveInp(event,'${deptId}','${dateStr}')">
       ${buildFormHtml(cfg,ex)}
       <div class="sub-row"><button type="submit" class="sub-btn">💾 Ruaj Raportin</button><span class="save-ok" id="sOk"></span></div>
@@ -707,12 +727,21 @@ function buildFormHtml(cfg,ex){
 function attachAutoCalc(deptId){
   if(deptId==='frontoffice')calcFOTotal();
   if(deptId==='fnb')calcFnbTotal();
+  if(deptId==='finance')calcFinance();
   if(deptId==='financefnb')calcXhina();
 }
 function calcFOTotal(){
   const f=parseFloat(document.querySelector('[name="dhoma_zena_flower"]')?.value)||0;
   const g=parseFloat(document.querySelector('[name="dhoma_zena_garden"]')?.value)||0;
   const t=document.querySelector('[name="dhoma_zena_total"]');if(t)t.value=f+g;
+}
+function calcFinance(){
+  const arkIds=['ark_noncash_lek','ark_noncash_euro','ark_cash_euro','ark_cash_lek','ark_allotment','ark_itaka','ark_loan','ark_fnb_cash','ark_mice_euro','ark_mice_lek'];
+  const arkT=arkIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const at=document.querySelector('[name="ark_totale"]');if(at)at.value=Math.round(arkT);
+  const pagIds=['pag_paga','pag_taxes','pag_loan_euro','pag_loan_lek','pag_house_use','pag_purch_cash','pag_purch_bank','pag_inv_lek','pag_inv_euro','pag_inv_cash'];
+  const pagT=pagIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const pt=document.querySelector('[name="pag_totale"]');if(pt)pt.value=Math.round(pagT);
 }
 function calcFnbTotal(){
   const ids=['xhiro_flower','xhiro_pool_bar','xhiro_brutal','xhiro_pool_bar_garden','xhiro_beach_bar','xhiro_familje'];
@@ -738,6 +767,12 @@ function recalcTotals(deptId,data){
     const ids=['xhiro_flower','xhiro_pool_bar','xhiro_brutal','xhiro_pool_bar_garden','xhiro_beach_bar','xhiro_familje'];
     const total=ids.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
     data.xhiro_totale=total;data.ardhura_neto=total-(parseFloat(data.xhiro_familje)||0);
+  }
+  if(deptId==='finance'){
+    const arkIds=['ark_noncash_lek','ark_noncash_euro','ark_cash_euro','ark_cash_lek','ark_allotment','ark_itaka','ark_loan','ark_fnb_cash','ark_mice_euro','ark_mice_lek'];
+    data.ark_totale=arkIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    const pagIds=['pag_paga','pag_taxes','pag_loan_euro','pag_loan_lek','pag_house_use','pag_purch_cash','pag_purch_bank','pag_inv_lek','pag_inv_euro','pag_inv_cash'];
+    data.pag_totale=pagIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
   }
   if(deptId==='financefnb'){
     const shpIds=['shp_hoteli','shp_ai_fnb','shp_flower','shp_pool_bar','shp_pool_bar_garden','shp_garden_brutal','shp_beach_bar','shp_te_tjera'];
@@ -788,6 +823,51 @@ async function seedDemo(){
     await Store.set(`daily:${t}:${dept}`,JSON.stringify({...data,dept,date:t,submitted_at:new Date().toISOString()}));
   }
   updateDots(t);renderMgr();
+}
+
+async function exportFinanceExcel(dateStr){
+  const r=await Store.get(`daily:${dateStr}:finance`);
+  if(!r){alert('Nuk ka të dhëna për këtë datë.');return;}
+  const d=JSON.parse(r.value);
+  const rows=[
+    ['FLOWER HOTELS & RESORTS — CASH FLOW'],
+    ['Data:',fmtD(dateStr)],[''],
+    ['ARKËTIME','','Vlera'],
+    ['Non Cash Lek — Bank + POS (Lek)','',d.ark_noncash_lek||0],
+    ['Non Cash Euro — Bank + POS (€)','',d.ark_noncash_euro||0],
+    ['Reception Cash Euro (€)','',d.ark_cash_euro||0],
+    ['Reception Cash Lek (Lek)','',d.ark_cash_lek||0],
+    ['Allotment Contracts (Lek)','',d.ark_allotment||0],
+    ['Itaka (Lek)','',d.ark_itaka||0],
+    ['Financial Disbursment — Loan (Lek)','',d.ark_loan||0],
+    ['F&B Cash Lek (Lek)','',d.ark_fnb_cash||0],
+    ['MICE Bank Euro (€)','',d.ark_mice_euro||0],
+    ['MICE Bank Lek (Lek)','',d.ark_mice_lek||0],
+    ['TOTALI ARKËTIME','',d.ark_totale||0],
+    [''],
+    ['PAGESA','','Vlera'],
+    ['Paga (Lek)','',d.pag_paga||0],
+    ['Taxes & Utilities (Lek)','',d.pag_taxes||0],
+    ['Loan Euro (€)','',d.pag_loan_euro||0],
+    ['Loan Lek (Lek)','',d.pag_loan_lek||0],
+    ['House Use (Lek)','',d.pag_house_use||0],
+    ['Purchases Cash (Lek)','',d.pag_purch_cash||0],
+    ['Purchases Bank (Lek)','',d.pag_purch_bank||0],
+    ['Investments Lek (Lek)','',d.pag_inv_lek||0],
+    ['Investments Euro (€)','',d.pag_inv_euro||0],
+    ['Investments Cash (Lek)','',d.pag_inv_cash||0],
+    ['TOTALI PAGESA','',d.pag_totale||0],
+    [''],
+    ['Shënime:',d.notes||''],
+  ];
+  let csv='\uFEFF';
+  for(const row of rows) csv+=row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')+'\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='CashFlow_'+dateStr+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function td(){return new Date().toISOString().split('T')[0];}
