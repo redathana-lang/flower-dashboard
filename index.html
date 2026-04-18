@@ -378,9 +378,9 @@ const DEPTS={
         {id:'ard_totali',lb:'TOTALI Të Ardhura (Auto)',type:'number',readonly:true},
       ]},
       {title:'🏠 Zbritje',cols:2,fields:[
-        {id:'zb_vila1',lb:'Vila 1 (€)',type:'number',onchange:'calcXhina()'},
-        {id:'zb_vila2',lb:'Vila 2 (€)',type:'number',onchange:'calcXhina()'},
-        {id:'zb_313',lb:'313 (€)',type:'number',onchange:'calcXhina()'},
+        {id:'zb_vila1',lb:'Vila 1 (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'zb_vila2',lb:'Vila 2 (Lek)',type:'number',onchange:'calcXhina()'},
+        {id:'zb_313',lb:'313 (Lek)',type:'number',onchange:'calcXhina()'},
         {id:'zb_fatura_qerasje',lb:'Faturë Qërasje (Lek)',type:'number',onchange:'calcXhina()'},
         {id:'zb_totali',lb:'TOTALI Zbritje (Auto)',type:'number',readonly:true},
         {id:'notes',lb:'Shënime',type:'textarea'},
@@ -726,7 +726,7 @@ async function renderInpView(deptId,existingOverride,dateOverride){
   const cfg=DEPTS[deptId];const dateStr=dateOverride||td();
   let ex=existingOverride||{};
   if(!existingOverride){try{const r=await Store.get(`daily:${dateStr}:${deptId}`);if(r)ex=JSON.parse(r.value);}catch(e){}}
-  const exportBtn=deptId==='finance'?`<button type="button" class="export-btn" onclick="exportFinanceExcel('${dateStr}')">📊 Excel</button>`:'';
+  const exportBtn=(deptId==='finance'||deptId==='financefnb')?`<button type="button" class="export-btn" onclick="deptId==='finance'?exportFinanceExcel('${dateStr}'):exportXhinaExcel('${dateStr}')">📊 Excel</button>`:'';
   document.getElementById('mainArea').innerHTML=`
   <div class="inv">
     <div class="in-hdr">
@@ -956,6 +956,55 @@ async function updateNotifBtn(){
   } else {
     btn.classList.remove('on'); btn.title='Aktivizo njoftimet';
   }
+}
+
+async function exportXhinaExcel(dateStr){
+  const r=await Store.get('daily:'+dateStr+':financefnb');
+  if(!r){alert('Nuk ka të dhëna për këtë datë.');return;}
+  const d=JSON.parse(r.value);
+  const rows=[
+    ['FLOWER HOTELS & RESORTS — FINANCE (XHINA)'],
+    ['Data:',fmtD(dateStr)],[''],
+    ['SHPENZIME DITORE PËR MAGAZINË','','Vlera (Lek)'],
+    ['Shpenzime Hoteli','',d.shp_hoteli||0],
+    ['Hotel All Inclusive F&B','',d.shp_ai_fnb||0],
+    ['Flower Restoranti','',d.shp_flower||0],
+    ['Pool Bar','',d.shp_pool_bar||0],
+    ['Pool Bar Garden','',d.shp_pool_bar_garden||0],
+    ['Garden Brutal','',d.shp_garden_brutal||0],
+    ['Beach Bar','',d.shp_beach_bar||0],
+    ['Të Tjera','',d.shp_te_tjera||0],
+    ['TOTALI Shpenzime','',d.shp_totali||0],
+    [''],
+    ['TË ARDHURA DITORE PËR MAGAZINË','','Vlera (Lek)'],
+    ['Room Revenue','',d.ard_room_revenue||0],
+    ['Flower Restaurant','',d.ard_flower_rest||0],
+    ['Pool Bar','',d.ard_pool_bar||0],
+    ['Garden Brutal','',d.ard_garden_brutal||0],
+    ['Pool Bar Garden','',d.ard_pool_bar_garden||0],
+    ['Beach Bar','',d.ard_beach_bar||0],
+    ['Spa Flower','',d.ard_spa_flower||0],
+    ['Spa Garden','',d.ard_spa_garden||0],
+    ['Other Revenue','',d.ard_other||0],
+    ['TOTALI Të Ardhura','',d.ard_totali||0],
+    [''],
+    ['ZBRITJE','','Vlera (Lek)'],
+    ['Vila 1','',d.zb_vila1||0],
+    ['Vila 2','',d.zb_vila2||0],
+    ['313','',d.zb_313||0],
+    ['Faturë Qërasje','',d.zb_fatura_qerasje||0],
+    ['TOTALI Zbritje','',d.zb_totali||0],
+    [''],
+    ['Shënime:',d.notes||''],
+  ];
+  let csv='\uFEFF';
+  for(const row of rows) csv+=row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')+'\n';
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='Finance_'+dateStr+'.csv';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function td(){return new Date().toISOString().split('T')[0];}
