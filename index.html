@@ -6,8 +6,13 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#071026">
-<title>Flower Hotels</title>
+<meta name="theme-color" content="#0D1B3E">
+<title>FLOW</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<meta name="apple-mobile-web-app-title" content="FLOW">
+<meta name="application-name" content="FLOW">
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.svg">
 <meta name="apple-mobile-web-app-title" content="Flower Hotels">
@@ -959,5 +964,10 @@ function getDates(from,to){
 function fmtD(d){
   try{return new Date(d+'T00:00:00').toLocaleDateString('sq-AL',{day:'2-digit',month:'short',year:'numeric'});}
   catch(e){return d;}
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').then(r=>console.log('SW registered')).catch(e=>console.log('SW error',e));
+  });
 }
 </script></body></html>
