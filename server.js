@@ -7,9 +7,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data.json');
 
+// Serve static files from public/ or root
+const publicDir = fs.existsSync(path.join(__dirname, 'public'))
+  ? path.join(__dirname, 'public')
+  : __dirname;
+
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(publicDir));
 
 /* ── DATA STORE ── */
 function loadData() {
@@ -34,21 +39,16 @@ function saveData(data) {
 let DB = loadData();
 
 /* ── API: Save report ── */
-// POST /api/report
-// Body: { dept, date, ...fields }
 app.post('/api/report', (req, res) => {
   const { dept, date, ...fields } = req.body;
   if (!dept || !date) return res.status(400).json({ error: 'dept dhe date janë të detyrueshme' });
-
   if (!DB[date]) DB[date] = {};
   DB[date][dept] = { dept, date, ...fields, saved_at: new Date().toISOString() };
-
   const ok = saveData(DB);
   res.json({ success: ok, key: `${date}:${dept}` });
 });
 
 /* ── API: Get one date ── */
-// GET /api/reports?date=2026-04-17
 app.get('/api/reports', (req, res) => {
   const { date } = req.query;
   if (!date) return res.status(400).json({ error: 'date e nevojshme' });
@@ -56,11 +56,9 @@ app.get('/api/reports', (req, res) => {
 });
 
 /* ── API: Get date range ── */
-// GET /api/reports/range?from=2026-04-01&to=2026-04-17
 app.get('/api/reports/range', (req, res) => {
   const { from, to } = req.query;
   if (!from || !to) return res.status(400).json({ error: 'from dhe to të nevojshme' });
-
   const result = {};
   const cur = new Date(from);
   const end = new Date(to);
@@ -75,9 +73,14 @@ app.get('/api/reports/range', (req, res) => {
 /* ── API: Health check ── */
 app.get('/api/ping', (req, res) => res.json({ status: 'ok', records: Object.keys(DB).length }));
 
-/* ── Serve frontend ── */
+/* ── Serve frontend for all routes ── */
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const indexPath = path.join(publicDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('index.html not found. Kontrolloni strukturën e GitHub repo.');
+  }
 });
 
 app.listen(PORT, () => console.log(`Flower Dashboard running on port ${PORT}`));
