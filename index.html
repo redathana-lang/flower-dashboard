@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#071026">
 <title>Flower Hotels</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.svg">
+<meta name="apple-mobile-web-app-title" content="Flower Hotels">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
@@ -216,6 +219,7 @@ html,body{height:100%;background:var(--navy);color:var(--white);font-family:var(
     </div>
     <div class="tb-r">
       <span class="ub" id="topUser"></span>
+      <button class="notif-btn" id="notifBtn" onclick="toggleNotif()" title="Njoftimet">🔔</button>
       <button class="outbtn" onclick="doLogout()">Dil</button>
     </div>
   </div>
@@ -318,8 +322,8 @@ const DEPTS={
         {id:'ark_noncash_euro',lb:'Non Cash Euro — Bank + POS (€)',type:'number',onchange:'calcFinance()'},
         {id:'ark_cash_euro',lb:'Reception Cash Euro (€)',type:'number',onchange:'calcFinance()'},
         {id:'ark_cash_lek',lb:'Reception Cash Lek (Lek)',type:'number',onchange:'calcFinance()'},
-        {id:'ark_allotment',lb:'Allotment Contracts (Lek)',type:'number',onchange:'calcFinance()'},
-        {id:'ark_itaka',lb:'Itaka (Lek)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_allotment',lb:'Allotment Contracts (€)',type:'number',onchange:'calcFinance()'},
+        {id:'ark_itaka',lb:'Itaka (€)',type:'number',onchange:'calcFinance()'},
         {id:'ark_loan',lb:'Financial Disbursment — Loan (Lek)',type:'number',onchange:'calcFinance()'},
         {id:'ark_fnb_cash',lb:'F&B Cash Lek (Lek)',type:'number',onchange:'calcFinance()'},
         {id:'ark_mice_euro',lb:'MICE Bank Euro (€)',type:'number',onchange:'calcFinance()'},
@@ -394,12 +398,38 @@ const Store={
   async set(key,value){
     try{
       const b=JSON.parse(value);
+      if(CU) b.submittedBy=CU.uid;
       const r=await fetch(`${API_BASE}/api/report`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});
       const res=await r.json();
       return res.success;
     }catch(e){return false;}
   }
 };
+
+/* PWA & NOTIFICATIONS */
+async function registerSW(){
+  if(!('serviceWorker' in navigator)) return;
+  try{ await navigator.serviceWorker.register('/sw.js'); }catch(e){}
+}
+async function subscribePush(){
+  if(!('Notification' in window)||!('serviceWorker' in navigator)) return false;
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted') return false;
+    const reg=await navigator.serviceWorker.ready;
+    const keyRes=await fetch(`${API_BASE}/api/vapid-public-key`);
+    const {publicKey}=await keyRes.json();
+    const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(publicKey)});
+    await fetch(`${API_BASE}/api/subscribe`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub,userId:CU?.uid||'unknown'})});
+    return true;
+  }catch(e){ return false; }
+}
+function urlBase64ToUint8Array(b64){
+  const pad='='.repeat((4-b64.length%4)%4);
+  const raw=window.atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
+  return new Uint8Array([...raw].map(c=>c.charCodeAt(0)));
+}
+window.addEventListener('load',registerSW);
 
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
@@ -414,6 +444,7 @@ function doLogin(){
   document.getElementById('appShell').style.display='flex';
   document.getElementById('topUser').textContent=u.name;
   initApp();
+  setTimeout(updateNotifBtn, 2000);
 }
 function doLogout(){
   CU=null;CD='overview';
@@ -424,6 +455,8 @@ function doLogout(){
 }
 
 function initApp(){
+  // Subscribe to push notifications
+  setTimeout(()=>subscribePush(),1500);
   if(CU.role==='manager'){
     document.getElementById('mobileNav').style.display='flex';
     buildMgrSidebar();selMgrDept('overview');seedDemo();
@@ -738,8 +771,8 @@ function calcFOTotal(){
 function calcFinance(){
   const EUR=95;
   // ARKËTIME — Euro fields × 95, Lek fields direct
-  const arkEuroIds=['ark_noncash_euro','ark_cash_euro','ark_mice_euro'];
-  const arkLekIds=['ark_noncash_lek','ark_cash_lek','ark_allotment','ark_itaka','ark_loan','ark_fnb_cash','ark_mice_lek'];
+  const arkEuroIds=['ark_noncash_euro','ark_cash_euro','ark_mice_euro','ark_allotment','ark_itaka'];
+  const arkLekIds=['ark_noncash_lek','ark_cash_lek','ark_loan','ark_fnb_cash','ark_mice_lek'];
   const arkEuro=arkEuroIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
   const arkLek=arkLekIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
   const arkT=Math.round(arkLek+(arkEuro*EUR));
@@ -779,8 +812,8 @@ function recalcTotals(deptId,data){
   }
   if(deptId==='finance'){
     const EUR=95;
-    const arkEuroIds=['ark_noncash_euro','ark_cash_euro','ark_mice_euro'];
-    const arkLekIds=['ark_noncash_lek','ark_cash_lek','ark_allotment','ark_itaka','ark_loan','ark_fnb_cash','ark_mice_lek'];
+    const arkEuroIds=['ark_noncash_euro','ark_cash_euro','ark_mice_euro','ark_allotment','ark_itaka'];
+    const arkLekIds=['ark_noncash_lek','ark_cash_lek','ark_loan','ark_fnb_cash','ark_mice_lek'];
     const arkEuro=arkEuroIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
     const arkLek=arkLekIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
     data.ark_totale=Math.round(arkLek+(arkEuro*EUR));
@@ -853,8 +886,8 @@ async function exportFinanceExcel(dateStr){
     ['Non Cash Euro — Bank + POS (€)','',d.ark_noncash_euro||0],
     ['Reception Cash Euro (€)','',d.ark_cash_euro||0],
     ['Reception Cash Lek (Lek)','',d.ark_cash_lek||0],
-    ['Allotment Contracts (Lek)','',d.ark_allotment||0],
-    ['Itaka (Lek)','',d.ark_itaka||0],
+    ['Allotment Contracts (€)','',d.ark_allotment||0],
+    ['Itaka (€)','',d.ark_itaka||0],
     ['Financial Disbursment — Loan (Lek)','',d.ark_loan||0],
     ['F&B Cash Lek (Lek)','',d.ark_fnb_cash||0],
     ['MICE Bank Euro (€)','',d.ark_mice_euro||0],
@@ -884,6 +917,37 @@ async function exportFinanceExcel(dateStr){
   a.href=url;a.download='CashFlow_'+dateStr+'.csv';
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+async function toggleNotif(){
+  const btn=document.getElementById('notifBtn');
+  if(!btn) return;
+  if(Notification.permission==='granted'){
+    // Unsubscribe
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(sub) await sub.unsubscribe();
+    await fetch(`${API_BASE}/api/unsubscribe`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:CU?.uid})});
+    btn.classList.remove('on');
+    btn.title='Aktivizo njoftimet';
+  } else {
+    const ok=await subscribePush();
+    if(ok){ btn.classList.add('on'); btn.title='Çaktivizo njoftimet'; }
+  }
+}
+
+async function updateNotifBtn(){
+  const btn=document.getElementById('notifBtn');
+  if(!btn) return;
+  if(!('Notification' in window)){ btn.style.display='none'; return; }
+  if(Notification.permission==='granted'){
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(sub){ btn.classList.add('on'); btn.title='Njoftimet aktive — kliko për t\'i çaktivizuar'; }
+    else { btn.classList.remove('on'); btn.title='Aktivizo njoftimet'; }
+  } else {
+    btn.classList.remove('on'); btn.title='Aktivizo njoftimet';
+  }
 }
 
 function td(){return new Date().toISOString().split('T')[0];}
