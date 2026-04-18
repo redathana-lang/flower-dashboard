@@ -1,7 +1,7 @@
 {
   "name": "flower-dashboard",
   "version": "1.0.0",
-  "description": "Flower Hotels Daily Operations Dashboard",
+  "description": "FLOW — Flower Hotels Daily Operations",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
