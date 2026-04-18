@@ -63,6 +63,8 @@ html,body{height:100%;background:var(--navy);color:var(--white);font-family:var(
 .tb-r{display:flex;align-items:center;gap:8px}
 .ub{background:var(--lteal2);border:1px solid rgba(31,168,150,.25);border-radius:99px;padding:4px 10px;font-size:11px;color:var(--lteal);white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
 .outbtn{background:transparent;border:1px solid var(--border3);border-radius:6px;padding:6px 12px;color:var(--muted);font-size:12px;cursor:pointer;font-family:var(--f-sans)}
+.notif-btn{background:transparent;border:1px solid var(--border3);border-radius:6px;padding:6px 10px;font-size:16px;cursor:pointer;line-height:1}
+.notif-btn.on{border-color:var(--gold);background:var(--gold3)}
 /* BODY */
 .body{display:flex;flex:1;overflow:hidden}
 /* DESKTOP SIDEBAR */
@@ -457,6 +459,7 @@ function doLogout(){
   document.getElementById('appShell').style.display='none';
   document.getElementById('loginPass').value='';
   document.getElementById('loginUser').value='';
+  const nb=document.getElementById('notifBtn');if(nb)nb.style.display='none';
 }
 
 function initApp(){
@@ -965,6 +968,83 @@ function fmtD(d){
   try{return new Date(d+'T00:00:00').toLocaleDateString('sq-AL',{day:'2-digit',month:'short',year:'numeric'});}
   catch(e){return d;}
 }
+/* ════ PUSH NOTIFICATIONS (Manager only) ════ */
+const VAPID_PUB = 'BBhLXpHFoobumd5D0D2a-AsZVS30YoZggjPe2X65-_yVYTVGYWEQCbTT53iuag99iJCgqkCGhTW3EjLl5XISaas';
+
+async function toggleNotifications(){
+  const btn = document.getElementById('notifBtn');
+  if(Notification.permission === 'granted'){
+    // Already granted - check if subscribed
+    const sw = await navigator.serviceWorker.ready;
+    const existing = await sw.pushManager.getSubscription();
+    if(existing){
+      await existing.unsubscribe();
+      await fetch(API_BASE+'/api/unsubscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'MANAGER'})});
+      btn.textContent='🔔'; btn.classList.remove('on');
+      showToast('Njoftimet u çaktivizuan');
+    } else {
+      await subscribeManager();
+    }
+  } else if(Notification.permission === 'denied'){
+    showToast('Njoftimet janë bllokuar. Aktivizoji nga cilësimet e browserit.');
+  } else {
+    const perm = await Notification.requestPermission();
+    if(perm === 'granted') await subscribeManager();
+    else showToast('Lejoni njoftimet për të marrë sinjale.');
+  }
+}
+
+async function subscribeManager(){
+  try{
+    const sw = await navigator.serviceWorker.ready;
+    const sub = await sw.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUB)
+    });
+    await fetch(API_BASE+'/api/subscribe',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({subscription:sub.toJSON(), userId:'MANAGER'})
+    });
+    const btn = document.getElementById('notifBtn');
+    btn.textContent='🔔'; btn.classList.add('on');
+    showToast('✓ Njoftimet u aktivizuan! Do të njoftoheni kur një departament dorëzon raportin.');
+  } catch(e){
+    console.error('Subscribe error:',e);
+    showToast('Gabim gjatë aktivizimit të njoftimeve.');
+  }
+}
+
+function urlBase64ToUint8Array(b64){
+  const pad = '='.repeat((4-b64.length%4)%4);
+  const raw = atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+}
+
+async function checkNotifStatus(){
+  if(!CU||CU.uid!=='MANAGER') return;
+  const btn = document.getElementById('notifBtn');
+  btn.style.display='block';
+  if(Notification.permission==='granted' && 'serviceWorker' in navigator){
+    const sw = await navigator.serviceWorker.ready;
+    const sub = await sw.pushManager.getSubscription();
+    if(sub){ btn.textContent='🔔'; btn.classList.add('on'); }
+    else { btn.textContent='🔕'; btn.classList.remove('on'); }
+  } else {
+    btn.textContent='🔕'; btn.classList.remove('on');
+  }
+}
+
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){ t=document.createElement('div'); t.id='toast';
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#112250;border:1px solid rgba(31,168,150,.3);color:#EEE8DC;padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999;max-width:90vw;text-align:center';
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.style.opacity='0',4000);
+}
+
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>{
     navigator.serviceWorker.register('/sw.js').then(r=>console.log('SW registered')).catch(e=>console.log('SW error',e));
