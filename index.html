@@ -736,12 +736,21 @@ function calcFOTotal(){
   const t=document.querySelector('[name="dhoma_zena_total"]');if(t)t.value=f+g;
 }
 function calcFinance(){
-  const arkIds=['ark_noncash_lek','ark_noncash_euro','ark_cash_euro','ark_cash_lek','ark_allotment','ark_itaka','ark_loan','ark_fnb_cash','ark_mice_euro','ark_mice_lek'];
-  const arkT=arkIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
-  const at=document.querySelector('[name="ark_totale"]');if(at)at.value=Math.round(arkT);
-  const pagIds=['pag_paga','pag_taxes','pag_loan_euro','pag_loan_lek','pag_house_use','pag_purch_cash','pag_purch_bank','pag_inv_lek','pag_inv_euro','pag_inv_cash'];
-  const pagT=pagIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
-  const pt=document.querySelector('[name="pag_totale"]');if(pt)pt.value=Math.round(pagT);
+  const EUR=95;
+  // ARKËTIME — Euro fields × 95, Lek fields direct
+  const arkEuroIds=['ark_noncash_euro','ark_cash_euro','ark_mice_euro'];
+  const arkLekIds=['ark_noncash_lek','ark_cash_lek','ark_allotment','ark_itaka','ark_loan','ark_fnb_cash','ark_mice_lek'];
+  const arkEuro=arkEuroIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const arkLek=arkLekIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const arkT=Math.round(arkLek+(arkEuro*EUR));
+  const at=document.querySelector('[name="ark_totale"]');if(at)at.value=arkT;
+  // PAGESA — Euro fields × 95, Lek fields direct
+  const pagEuroIds=['pag_loan_euro','pag_inv_euro'];
+  const pagLekIds=['pag_paga','pag_taxes','pag_loan_lek','pag_house_use','pag_purch_cash','pag_purch_bank','pag_inv_lek','pag_inv_cash'];
+  const pagEuro=pagEuroIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const pagLek=pagLekIds.reduce((s,id)=>{const el=document.querySelector(`[name="${id}"]`);return s+(el?parseFloat(el.value)||0:0);},0);
+  const pagT=Math.round(pagLek+(pagEuro*EUR));
+  const pt=document.querySelector('[name="pag_totale"]');if(pt)pt.value=pagT;
 }
 function calcFnbTotal(){
   const ids=['xhiro_flower','xhiro_pool_bar','xhiro_brutal','xhiro_pool_bar_garden','xhiro_beach_bar','xhiro_familje'];
@@ -769,10 +778,17 @@ function recalcTotals(deptId,data){
     data.xhiro_totale=total;data.ardhura_neto=total-(parseFloat(data.xhiro_familje)||0);
   }
   if(deptId==='finance'){
-    const arkIds=['ark_noncash_lek','ark_noncash_euro','ark_cash_euro','ark_cash_lek','ark_allotment','ark_itaka','ark_loan','ark_fnb_cash','ark_mice_euro','ark_mice_lek'];
-    data.ark_totale=arkIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
-    const pagIds=['pag_paga','pag_taxes','pag_loan_euro','pag_loan_lek','pag_house_use','pag_purch_cash','pag_purch_bank','pag_inv_lek','pag_inv_euro','pag_inv_cash'];
-    data.pag_totale=pagIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    const EUR=95;
+    const arkEuroIds=['ark_noncash_euro','ark_cash_euro','ark_mice_euro'];
+    const arkLekIds=['ark_noncash_lek','ark_cash_lek','ark_allotment','ark_itaka','ark_loan','ark_fnb_cash','ark_mice_lek'];
+    const arkEuro=arkEuroIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    const arkLek=arkLekIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    data.ark_totale=Math.round(arkLek+(arkEuro*EUR));
+    const pagEuroIds=['pag_loan_euro','pag_inv_euro'];
+    const pagLekIds=['pag_paga','pag_taxes','pag_loan_lek','pag_house_use','pag_purch_cash','pag_purch_bank','pag_inv_lek','pag_inv_cash'];
+    const pagEuro=pagEuroIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    const pagLek=pagLekIds.reduce((s,id)=>s+(parseFloat(data[id])||0),0);
+    data.pag_totale=Math.round(pagLek+(pagEuro*EUR));
   }
   if(deptId==='financefnb'){
     const shpIds=['shp_hoteli','shp_ai_fnb','shp_flower','shp_pool_bar','shp_pool_bar_garden','shp_garden_brutal','shp_beach_bar','shp_te_tjera'];
