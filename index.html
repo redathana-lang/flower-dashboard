@@ -3,115 +3,131 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>FLOW</title>
+<title>FLOW — Flower Hotels</title>
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0a1628"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="FLOW"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a1628;color:#e8eaf6;min-height:100vh;padding-bottom:80px;}
+:root{--bg:#0a1628;--card:#0f2040;--border:#1a3358;--gold:#c9a84c;--gold2:#e8c96d;--text:#e8eaf6;--muted:#6b7fa3;--up:#22c55e;--down:#ef4444;--teal:#14b8a6;--blue:#3b82f6;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
 /* LOGIN */
-#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
-.login-box{background:#112240;border-radius:20px;padding:40px 30px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
-.login-logo{width:80px;height:80px;border-radius:16px;margin:0 auto 20px;background:#0a1628;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:radial-gradient(ellipse at 30% 20%,#112347,#0a1628 70%);}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:44px 36px;width:100%;max-width:360px;text-align:center;}
+.login-logo{width:76px;height:76px;border-radius:18px;margin:0 auto 18px;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .login-logo img{width:100%;height:100%;object-fit:contain;}
-.login-box h1{font-size:28px;font-weight:700;color:#c9a84c;margin-bottom:4px;}
-.login-box p{color:#8892b0;font-size:14px;margin-bottom:30px;}
-.login-box input{width:100%;padding:14px 16px;border-radius:10px;border:1.5px solid #1e3a5f;background:#0a1628;color:#e8eaf6;font-size:16px;margin-bottom:12px;outline:none;}
-.login-box input:focus{border-color:#c9a84c;}
-.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,#c9a84c,#e8c96d);border:none;border-radius:10px;color:#0a1628;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;}
-.login-error{color:#ff6b6b;font-size:13px;margin-top:8px;display:none;}
+.login-box h1{font-size:28px;font-weight:800;color:var(--gold);letter-spacing:-1px;}
+.login-box p{color:var(--muted);font-size:13px;margin-top:4px;margin-bottom:30px;}
+.login-box input{width:100%;padding:13px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;margin-bottom:10px;outline:none;}
+.login-box input:focus{border-color:var(--gold);}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:10px;color:#0a1628;font-size:15px;font-weight:700;cursor:pointer;}
+.login-error{color:var(--down);font-size:13px;margin-top:10px;display:none;}
 
-/* TOP BAR */
-#topbar{position:sticky;top:0;z-index:100;background:#112240;border-bottom:1px solid #1e3a5f;padding:12px 16px;display:flex;align-items:center;gap:10px;}
-.tb-logo{width:32px;height:32px;border-radius:8px;background:#0a1628;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+/* TOPBAR */
+#topbar{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;}
+.tb-logo{width:34px;height:34px;border-radius:8px;background:var(--bg);overflow:hidden;flex-shrink:0;}
 .tb-logo img{width:100%;height:100%;object-fit:contain;}
-.tb-title{font-size:18px;font-weight:700;color:#c9a84c;flex:1;}
-.tb-user{font-size:12px;color:#8892b0;flex:1;text-align:right;}
-.btn-bell{background:none;border:none;font-size:20px;cursor:pointer;padding:4px;}
-.btn-logout{background:#1e3a5f;border:none;color:#8892b0;font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;}
+.tb-info{flex:1;}
+.tb-info h1{font-size:14px;font-weight:700;color:var(--gold);}
+.tb-info p{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.btn-refresh{background:var(--border);border:none;color:var(--muted);font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.btn-refresh.spinning{color:var(--gold);}
+.btn-logout{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;}
 
-/* BOTTOM NAV */
-#bottomNav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#112240;border-top:1px solid #1e3a5f;display:flex;overflow-x:auto;padding:8px 4px;gap:2px;}
-#bottomNav::-webkit-scrollbar{display:none;}
-.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border:none;background:none;color:#8892b0;font-size:10px;cursor:pointer;border-radius:10px;white-space:nowrap;flex-shrink:0;min-width:60px;}
-.nav-btn.active{background:#1e3a5f;color:#c9a84c;}
-.nav-btn span:first-child{font-size:18px;}
+/* TABS */
+#navTabs{background:var(--card);border-bottom:1px solid var(--border);padding:0 16px;display:flex;overflow-x:auto;gap:0;}
+#navTabs::-webkit-scrollbar{display:none;}
+.nav-tab{padding:11px 16px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 
-/* CONTENT */
-#app{display:none;}
-.section{display:none;padding:16px;}
-.section.active{display:block;}
+/* MAIN */
+#mainContent{padding:16px;max-width:1400px;margin:0 auto;padding-bottom:20px;}
 
-/* DATE FILTER */
-.date-filter{background:#112240;border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.date-filter label{color:#8892b0;font-size:13px;}
-.date-filter input[type=date]{background:#0a1628;border:1.5px solid #1e3a5f;color:#e8eaf6;padding:8px 12px;border-radius:8px;font-size:14px;flex:1;min-width:140px;}
-.date-filter input[type=date]:focus{border-color:#c9a84c;outline:none;}
-.btn-filter{background:#c9a84c;color:#0a1628;border:none;padding:8px 16px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;}
-.btn-quick{background:#1e3a5f;color:#8892b0;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;}
-.btn-quick.active{background:#c9a84c;color:#0a1628;}
+/* DATE BAR */
+.date-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.date-bar label{color:var(--muted);font-size:13px;}
+.date-bar input[type=date]{background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:9px;font-size:14px;outline:none;}
+.date-bar input[type=date]:focus{border-color:var(--gold);}
+.btn-filtro{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a1628;border:none;padding:9px 22px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;}
+.btn-sot{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:9px;font-size:12px;cursor:pointer;}
 
-/* KPI CARDS */
-.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
-.kpi-card{background:#112240;border-radius:14px;padding:14px;border:1px solid #1e3a5f;}
-.kpi-card.full{grid-column:1/-1;}
-.kpi-label{font-size:11px;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
-.kpi-value{font-size:22px;font-weight:700;color:#e8eaf6;line-height:1.1;}
-.kpi-value.gold{color:#c9a84c;}
-.kpi-sub{font-size:11px;color:#8892b0;margin-top:4px;}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;margin-top:6px;}
-.badge.up{background:rgba(0,210,100,0.15);color:#00d264;}
-.badge.down{background:rgba(255,80,80,0.15);color:#ff5050;}
-.badge.neutral{background:rgba(200,200,200,0.1);color:#8892b0;}
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+@media(max-width:700px){.kpi-grid{grid-template-columns:1fr 1fr;}}
 
-/* CHART */
-.chart-card{background:#112240;border-radius:14px;padding:16px;margin-bottom:16px;border:1px solid #1e3a5f;}
-.chart-title{font-size:13px;color:#8892b0;margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
-.chart-wrap{position:relative;height:220px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.kpi.teal::before{background:linear-gradient(90deg,var(--teal),#2dd4bf);}
+.kpi.blue::before{background:linear-gradient(90deg,var(--blue),#60a5fa);}
+.kpi.red::before{background:linear-gradient(90deg,var(--down),#f87171);}
+.kpi.purple::before{background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.kpi-val{font-size:26px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-1px;}
+.kpi-val .u{font-size:14px;font-weight:600;color:var(--muted);margin-left:2px;}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px;}
+.kpi-bdg{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;margin-top:7px;}
+.kpi-bdg.up{background:rgba(34,197,94,.12);color:var(--up);}
+.kpi-bdg.down{background:rgba(239,68,68,.12);color:var(--down);}
+
+/* PANELS */
+.panels{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-bottom:16px;}
+@media(max-width:800px){.panels{grid-template-columns:1fr;}}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.panel-title{font-size:13px;font-weight:700;color:var(--text);}
+.panel-tag{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+
+/* DEPT BARS */
+.dept-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.dept-name{font-size:12px;color:var(--muted);width:120px;flex-shrink:0;text-align:right;}
+.dept-bar-wrap{flex:1;height:14px;background:#070f1e;border-radius:3px;overflow:hidden;}
+.dept-bar{height:100%;border-radius:3px;transition:width .6s ease;}
+.dept-val{font-size:12px;font-weight:700;color:var(--text);width:55px;text-align:right;flex-shrink:0;}
+.dept-row.tot .dept-name,.dept-row.tot .dept-val{color:var(--gold);font-weight:800;}
+.dept-row.tot .dept-val{font-size:13px;}
+
+/* YOY TABLE */
+.yoy-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+.yoy-row:last-child{border-bottom:none;}
+.yoy-lbl{font-size:13px;color:var(--muted);flex:1;}
+.yoy-curr{font-size:14px;font-weight:700;min-width:70px;text-align:right;}
+.yoy-prev{font-size:12px;color:var(--muted);min-width:55px;text-align:right;}
+.yoy-pct{min-width:50px;text-align:right;font-size:12px;font-weight:700;}
+.yoy-pct.up{color:var(--up);}
+.yoy-pct.down{color:var(--down);}
+.yoy-row.tot .yoy-lbl{color:var(--gold);font-weight:700;}
+.yoy-row.tot .yoy-curr{color:var(--gold);font-size:15px;font-weight:800;}
+
+/* DETAIL CARDS */
+.sec-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.sec-hdr2{padding:12px 18px;background:rgba(201,168,76,.04);border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--gold);}
+.dtable{width:100%;border-collapse:collapse;}
+.dtable th{text-align:left;padding:9px 16px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+.dtable td{padding:10px 16px;font-size:13px;border-bottom:1px solid rgba(26,51,88,.4);}
+.dtable tr:last-child td{border-bottom:none;}
+.dtable .v{text-align:right;font-weight:600;}
+.dtable .g{color:var(--gold);}
+.dtable .sh td{background:rgba(201,168,76,.05);color:var(--gold);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.dtable .tr td{font-weight:700;color:var(--gold);border-top:2px solid rgba(201,168,76,.25)!important;}
 
 /* LOADING */
-.loading{text-align:center;padding:40px;color:#8892b0;}
-.spinner{width:32px;height:32px;border:3px solid #1e3a5f;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
-@keyframes spin{to{transform:rotate(360deg);}}
+.loading{text-align:center;padding:60px 20px;color:var(--muted);}
+.spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 12px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:20px;text-align:center;color:var(--down);font-size:14px;}
+.no-data{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
 
-/* DEPT DETAIL TABLE */
-.detail-table{width:100%;border-collapse:collapse;font-size:13px;}
-.detail-table th{text-align:left;padding:8px 10px;color:#8892b0;font-weight:500;border-bottom:1px solid #1e3a5f;}
-.detail-table td{padding:10px;border-bottom:1px solid #1a2f4a;}
-.detail-table tr:last-child td{border-bottom:none;}
-.detail-table .val{text-align:right;font-weight:600;}
-.detail-table .val.gold{color:#c9a84c;}
-.detail-table .section-header{background:#0a1628;color:#c9a84c;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;}
+.btn-xl{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;}
 
-/* REFRESH BTN */
-.btn-refresh{background:#1e3a5f;border:none;color:#8892b0;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;}
-.btn-refresh:active{background:#c9a84c;color:#0a1628;}
-
-/* EXCEL BTN */
-.btn-excel{background:rgba(0,150,80,0.15);border:1px solid rgba(0,150,80,0.3);color:#00c864;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
-
-/* NO DATA */
-.no-data{text-align:center;padding:40px 20px;color:#8892b0;}
-.no-data .icon{font-size:40px;margin-bottom:12px;}
-
-/* SECTION HEADER */
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
-.sec-hdr h2{font-size:16px;font-weight:700;color:#e8eaf6;}
-
-/* OCC BAR */
-.occ-bar{height:8px;background:#1e3a5f;border-radius:4px;margin-top:8px;overflow:hidden;}
-.occ-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#c9a84c,#e8c96d);transition:width 0.5s ease;}
-.occ-fill.green{background:linear-gradient(90deg,#00c864,#00ff80);}
-.occ-fill.red{background:linear-gradient(90deg,#ff5050,#ff8080);}
-
-/* TOTAL ROW */
-.total-row td{font-weight:700;color:#c9a84c;border-top:2px solid #c9a84c !important;}
+/* TWO COL GRID */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -119,685 +135,474 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">
-      <img src="icon-192.png" alt="Flower"/>
-    </div>
+    <div class="login-logo"><img src="icon-192.png" alt="F"/></div>
     <h1>FLOW</h1>
-    <p>Flower Hotels · Daily Operations</p>
-    <input type="text" id="loginUser" placeholder="Përdoruesi" autocomplete="username"/>
-    <input type="password" id="loginPass" placeholder="Fjalëkalimi" autocomplete="current-password"/>
-    <button class="btn-login" onclick="doLogin()">Hyr</button>
-    <div class="login-error" id="loginErr">❌ Përdoruesi ose fjalëkalimi gabim</div>
+    <p>Flower Hotels · Managerial Dashboard</p>
+    <input type="text" id="lgU" placeholder="Username" autocomplete="username"/>
+    <input type="password" id="lgP" placeholder="Fjalëkalimi" autocomplete="current-password"/>
+    <button class="btn-login" onclick="doLogin()">Hyr →</button>
+    <div class="login-error" id="lgE">❌ Kredenciale gabim</div>
   </div>
 </div>
 
 <!-- APP -->
-<div id="app">
-  <!-- TOP BAR -->
+<div id="app" style="display:none">
   <div id="topbar">
-    <div class="tb-logo"><img src="icon-192.png" alt="F"/></div>
-    <div class="tb-title">FLOW</div>
-    <div class="tb-user" id="tbUser"></div>
-    <button class="btn-bell" id="bellBtn" onclick="toggleNotif()" style="display:none">🔕</button>
-    <button class="btn-logout" onclick="doLogout()">Dil</button>
+    <div class="tb-logo"><img src="icon-192.png" alt=""/></div>
+    <div class="tb-info">
+      <h1>Flower Hotels — FLOW</h1>
+      <p id="tbSub">MANAGERIAL DASHBOARD</p>
+    </div>
+    <div class="tb-right">
+      <button class="btn-refresh" id="btnRefresh" onclick="forceRefresh()">↻ Rifresko</button>
+      <button class="btn-logout" onclick="doLogout()">Dil</button>
+    </div>
   </div>
 
-  <!-- BOTTOM NAV -->
-  <div id="bottomNav"></div>
+  <div id="navTabs">
+    <button class="nav-tab active" id="tab_overview" onclick="showSec('overview')">📊 Overview</button>
+    <button class="nav-tab" id="tab_fo" onclick="showSec('fo')">🏨 Front Office</button>
+    <button class="nav-tab" id="tab_fnb" onclick="showSec('fnb')">🍽️ F&B</button>
+    <button class="nav-tab" id="tab_spa" onclick="showSec('spa')">💆 SPA</button>
+    <button class="nav-tab" id="tab_pax" onclick="showSec('pax')">👥 PAX</button>
+    <button class="nav-tab" id="tab_cashflow" onclick="showSec('cashflow')">💰 Cash Flow</button>
+    <button class="nav-tab" id="tab_finance" onclick="showSec('finance')">📋 Shpenzime</button>
+  </div>
 
-  <!-- SECTIONS -->
-  <div id="sections"></div>
+  <div id="mainContent">
+    <!-- DATE BAR (shared) -->
+    <div class="date-bar">
+      <label>📅 Data:</label>
+      <input type="date" id="globalDate" value=""/>
+      <button class="btn-sot" onclick="setSot()">Sot</button>
+      <button class="btn-filtro" onclick="applyDate()">Shfaq</button>
+    </div>
+
+    <div id="sec_overview" class="fsec">
+      <div id="c_overview"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_fo" class="fsec" style="display:none">
+      <div id="c_fo"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_fnb" class="fsec" style="display:none">
+      <div id="c_fnb"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_spa" class="fsec" style="display:none">
+      <div id="c_spa"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_pax" class="fsec" style="display:none">
+      <div id="c_pax"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_cashflow" class="fsec" style="display:none">
+      <div id="c_cashflow"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_finance" class="fsec" style="display:none">
+      <div id="c_finance"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+  </div>
 </div>
 
 <script>
-// ─── USERS ─────────────────────────────────────────────────────────────────
-const USERS = {
-  'MANAGER': { pass:'Ernest2026', role:'manager', label:'Manager (Ernest)' },
-  'FO':      { pass:'FO2026',      role:'fo',      label:'Front Office' },
-  'Edisona': { pass:'Edisona2026', role:'spa',     label:'SPA (Edisona)' },
-  'Klajdi':  { pass:'Klajdi2026',  role:'fnb',     label:'F&B (Klajdi)' },
-  'Erinda':  { pass:'Erinda2026',  role:'ai',      label:'Kënaqësia (Erinda)' },
-  'Bruna':   { pass:'Bruna2026',   role:'cashflow',label:'Cash Flow (Bruna)' },
-  'Xhina':   { pass:'Xhina2026',   role:'finance', label:'Finance (Xhina)' },
-};
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const MANAGER = { user:'MANAGER', pass:'Flow2026' };
+const TR = 110;        // total rooms
+const EH = 100;        // hotel EUR→LEK rate
+const EC = 95;         // cash flow EUR→LEK rate
 
-const TOTAL_ROOMS = 110;
-const EXCHANGE = 100; // 1€ = 100 Lek
+let selDate = dStr();
 
-let currentUser = null;
-let currentRole = null;
-let selectedDate = todayStr();
-let charts = {};
-let notifSub = null;
+function dStr(){ return new Date().toISOString().split('T')[0]; }
+function fK(v){ v=Number(v||0); return Math.abs(v)>=1000?(Math.round(v/1000))+'K':String(Math.round(v)); }
+function fL(v){ if(!v&&v!==0)return'—'; return Number(v).toLocaleString('sq-AL')+' Lek'; }
+function fE(v){ if(!v&&v!==0)return'—'; return'€'+Number(v).toLocaleString('sq-AL',{minimumFractionDigits:0}); }
+function n(v){ return Number(v||0); }
+function pct(a,b){ if(!b)return null; return((a-b)/b*100).toFixed(0); }
+function bdg(c,p){
+  const v=pct(c,p); if(v===null)return'';
+  const u=v>=0;
+  return`<span class="kpi-bdg ${u?'up':'down'}">${u?'↑':'↓'} ${Math.abs(v)}% vs ${new Date(selDate).getFullYear()-1}</span>`;
+}
+function yP(c,p){ const v=pct(c,p); if(v===null)return{cls:'',txt:'—'}; return{cls:v>=0?'up':'down',txt:(v>=0?'+':'')+v+'%'}; }
+function fDate(s){ if(!s)return''; return new Date(s+'T00:00:00').toLocaleDateString('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); }
+function pY(s){ return s?(parseInt(s.slice(0,4))-1)+s.slice(4):''; }
 
-// ─── HELPERS ────────────────────────────────────────────────────────────────
-function todayStr(){
-  return new Date().toISOString().split('T')[0];
-}
-function fmtLek(v){
-  if(!v && v!==0) return '—';
-  return Number(v).toLocaleString('sq-AL')+ ' Lek';
-}
-function fmtEur(v){
-  if(!v && v!==0) return '—';
-  return '€' + Number(v).toLocaleString('sq-AL');
-}
-function fmtNum(v){
-  if(!v && v!==0) return '—';
-  return Number(v).toLocaleString('sq-AL');
-}
-function yoyBadge(curr, prev){
-  if(!prev || prev===0) return '<span class="badge neutral">N/A</span>';
-  const pct = ((curr-prev)/prev*100).toFixed(1);
-  const cls = pct>=0?'up':'down';
-  const sym = pct>=0?'▲':'▼';
-  return `<span class="badge ${cls}">${sym} ${Math.abs(pct)}%</span>`;
-}
-
-// ─── LOGIN ──────────────────────────────────────────────────────────────────
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
 function doLogin(){
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value.trim();
-  const err = document.getElementById('loginErr');
-  const user = USERS[u];
-  if(!user || user.pass !== p){
-    err.style.display='block'; return;
-  }
-  currentUser = u;
-  currentRole = user.role;
-  err.style.display='none';
+  const u=document.getElementById('lgU').value.trim();
+  const p=document.getElementById('lgP').value.trim();
+  if(u!==MANAGER.user||p!==MANAGER.pass){ document.getElementById('lgE').style.display='block'; return; }
+  document.getElementById('lgE').style.display='none';
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
-  document.getElementById('tbUser').textContent = user.label;
-  if(currentRole==='manager') document.getElementById('bellBtn').style.display='inline';
-  buildNav();
-  buildSections();
+  document.getElementById('globalDate').value=selDate;
   loadData();
 }
-
 function doLogout(){
-  currentUser=null; currentRole=null;
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('app').style.display='none';
-  document.getElementById('loginUser').value='';
-  document.getElementById('loginPass').value='';
+  document.getElementById('lgU').value=''; document.getElementById('lgP').value='';
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin(); });
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function showSec(id){
+  document.querySelectorAll('.fsec').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec_'+id).style.display='block';
+  document.getElementById('tab_'+id).classList.add('active');
+  document.getElementById('tbSub').textContent = id.toUpperCase()+' · '+fDate(selDate)+' VS '+fDate(pY(selDate));
 }
 
-// ─── NAVIGATION ─────────────────────────────────────────────────────────────
-const NAV_MANAGER = [
-  {id:'overview',icon:'📊',label:'Overview'},
-  {id:'fo',icon:'🏨',label:'FO'},
-  {id:'fnb',icon:'🍽️',label:'F&B'},
-  {id:'spa',icon:'💆',label:'SPA'},
-  {id:'cashflow',icon:'💰',label:'Cash Flow'},
-  {id:'finance',icon:'📋',label:'Finance'},
-];
-const NAV_ROLE = {
-  'fo':       [{id:'fo',icon:'🏨',label:'Raporti'}],
-  'spa':      [{id:'spa',icon:'💆',label:'Raporti'}],
-  'fnb':      [{id:'fnb',icon:'🍽️',label:'Raporti'}],
-  'ai':       [{id:'ai',icon:'⭐',label:'Raporti'}],
-  'cashflow': [{id:'cashflow',icon:'💰',label:'Raporti'}],
-  'finance':  [{id:'finance',icon:'📋',label:'Raporti'}],
-};
+// ─── DATE ─────────────────────────────────────────────────────────────────────
+function setSot(){ selDate=dStr(); document.getElementById('globalDate').value=selDate; loadData(); }
+function applyDate(){ const v=document.getElementById('globalDate').value; if(v)selDate=v; loadData(); }
 
-function buildNav(){
-  const nav = document.getElementById('bottomNav');
-  const items = currentRole==='manager' ? NAV_MANAGER : (NAV_ROLE[currentRole]||[]);
-  nav.innerHTML = items.map((n,i)=>
-    `<button class="nav-btn${i===0?' active':''}" onclick="showSection('${n.id}')" id="nav_${n.id}">
-      <span>${n.icon}</span><span>${n.label}</span>
-    </button>`
-  ).join('');
-}
-
-function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  const s = document.getElementById('sec_'+id);
-  if(s) s.classList.add('active');
-  const b = document.getElementById('nav_'+id);
-  if(b) b.classList.add('active');
-}
-
-// ─── BUILD SECTIONS ──────────────────────────────────────────────────────────
-function buildSections(){
-  const wrap = document.getElementById('sections');
-  if(currentRole==='manager'){
-    wrap.innerHTML = `
-      ${secOverview()}
-      ${secFO()}
-      ${secFNB()}
-      ${secSPA()}
-      ${secCashFlow()}
-      ${secFinance()}
-    `;
-  } else {
-    const roleMap = {fo:secFO,spa:secSPA,fnb:secFNB,ai:secAI,cashflow:secCashFlow,finance:secFinance};
-    const fn = roleMap[currentRole];
-    wrap.innerHTML = fn ? fn() : '';
-  }
-  // activate first section
-  const first = wrap.querySelector('.section');
-  if(first) first.classList.add('active');
-}
-
-function dateFilterHTML(id){
-  return `<div class="date-filter">
-    <label>📅</label>
-    <input type="date" id="df_${id}" value="${selectedDate}"/>
-    <button class="btn-filter" onclick="applyFilter('${id}')">Shfaq</button>
-  </div>`;
-}
-
-function secOverview(){
-  return `<div class="section" id="sec_overview">
-    ${dateFilterHTML('overview')}
-    <div class="sec-hdr">
-      <h2>Overview Ditor</h2>
-      <button class="btn-refresh" onclick="loadData()">↻ Rifresko</button>
-    </div>
-    <div id="ov_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
-  </div>`;
-}
-function secFO(){
-  return `<div class="section" id="sec_fo">
-    ${dateFilterHTML('fo')}
-    <div class="sec-hdr"><h2>Front Office</h2></div>
-    <div id="fo_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
-  </div>`;
-}
-function secFNB(){
-  return `<div class="section" id="sec_fnb">
-    ${dateFilterHTML('fnb')}
-    <div class="sec-hdr"><h2>F&B Daily Report</h2></div>
-    <div id="fnb_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
-  </div>`;
-}
-function secSPA(){
-  return `<div class="section" id="sec_spa">
-    ${dateFilterHTML('spa')}
-    <div class="sec-hdr"><h2>SPA Revenues</h2></div>
-    <div id="spa_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
-  </div>`;
-}
-function secCashFlow(){
-  return `<div class="section" id="sec_cashflow">
-    ${dateFilterHTML('cashflow')}
-    <div class="sec-hdr">
-      <h2>Cash Flow (Bruna)</h2>
-      <button class="btn-excel" onclick="exportExcel('cashflow')">📊 Excel</button>
-    </div>
-    <div id="cf_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
-  </div>`;
-}
-function secFinance(){
-  return `<div class="section" id="sec_finance">
-    ${dateFilterHTML('finance')}
-    <div class="sec-hdr">
-      <h2>Finance (Xhina)</h2>
-      <button class="btn-excel" onclick="exportExcel('finance')">📊 Excel</button>
-    </div>
-    <div id="fin_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
-  </div>`;
-}
-function secAI(){
-  return `<div class="section" id="sec_ai">
-    ${dateFilterHTML('ai')}
-    <div class="sec-hdr"><h2>Kënaqësia e Mysafirëve</h2></div>
-    <div id="ai_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
-  </div>`;
-}
-
-function applyFilter(id){
-  const inp = document.getElementById('df_'+id);
-  if(inp) selectedDate = inp.value;
-  loadData();
-}
-
-// ─── LOAD DATA ───────────────────────────────────────────────────────────────
+// ─── DATA ─────────────────────────────────────────────────────────────────────
 async function loadData(){
+  setLoading();
   try{
-    const res = await fetch(`/api/overview?date=${selectedDate}`);
-    if(!res.ok) throw new Error('Server error');
-    const d = await res.json();
+    const r=await fetch(`/api/overview?date=${selDate}`);
+    if(!r.ok) throw new Error('Server '+r.status);
+    const d=await r.json();
     renderAll(d);
-  } catch(e){
-    showError(e.message);
-  }
+  }catch(e){ setErr(e.message); }
 }
 
-function showError(msg){
-  ['ov_content','fo_content','fnb_content','spa_content','cf_content','fin_content','ai_content'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.innerHTML=`<div class="no-data"><div class="icon">⚠️</div><p>${msg}</p></div>`;
+async function forceRefresh(){
+  const btn=document.getElementById('btnRefresh');
+  btn.classList.add('spinning'); btn.textContent='↻ Duke u rifreskuar...';
+  try{ await fetch('/api/refresh',{method:'POST'}); await loadData(); }
+  catch(e){ setErr(e.message); }
+  btn.classList.remove('spinning'); btn.textContent='↻ Rifresko';
+}
+
+function setLoading(){
+  ['overview','fo','fnb','spa','pax','cashflow','finance'].forEach(id=>{
+    const el=document.getElementById('c_'+id);
+    if(el) el.innerHTML='<div class="loading"><div class="spin"></div>Duke ngarkuar...</div>';
+  });
+}
+function setErr(m){
+  ['overview','fo','fnb','spa','pax','cashflow','finance'].forEach(id=>{
+    const el=document.getElementById('c_'+id);
+    if(el) el.innerHTML=`<div class="err">⚠️ ${m}</div>`;
   });
 }
 
-// ─── RENDER ALL ──────────────────────────────────────────────────────────────
+// ─── RENDER ALL ───────────────────────────────────────────────────────────────
 function renderAll(d){
-  const fo = d.fo||{};
-  const fnb = d.fnb||{};
-  const spa = d.spa||{};
-  const cf = d.cashflow||{};
-  const fin = d.finance||{};
-  const foY = d.fo_yoy||{};
-  const fnbY = d.fnb_yoy||{};
-  const spaY = d.spa_yoy||{};
-
-  renderOverview(fo,fnb,spa,cf,foY,fnbY,spaY);
-  renderFO(fo,foY);
-  renderFNB(fnb,fnbY);
-  renderSPA(spa,spaY);
-  renderCashFlow(cf);
-  renderFinance(fin);
+  const fo=d.fo||{}, fnb=d.fnb||{}, spa=d.spa||{}, cf=d.cashflow||{}, fin=d.finance||{}, boards=d.boards||{};
+  const foY=d.fo_yoy||{}, fnbY=d.fnb_yoy||{}, spaY=d.spa_yoy||{}, boardsY=d.boards_yoy||{};
+  rOV(fo,fnb,spa,cf,foY,fnbY,spaY);
+  rFO(fo,foY);
+  rFNB(fnb,fnbY);
+  rSPA(spa,spaY);
+  rPAX(boards,boardsY);
+  rCF(cf);
+  rFin(fin);
 }
 
-// ─── OVERVIEW ────────────────────────────────────────────────────────────────
-function renderOverview(fo,fnb,spa,cf,foY,fnbY,spaY){
-  const el = document.getElementById('ov_content');
-  if(!el) return;
+// ─── OVERVIEW ─────────────────────────────────────────────────────────────────
+function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
+  const el=document.getElementById('c_overview'); if(!el)return;
+  const rooms=n(fo.rooms_occupied), lira=TR-rooms, occ=TR?(rooms/TR*100).toFixed(1):0;
+  const revE=n(fo.revenue_eur), revL=revE*EH;
+  const fnbT=n(fnb.flower)+n(fnb.pool_bar)+n(fnb.brutal)+n(fnb.pool_garden)+n(fnb.beach_bar)+n(fnb.house_use);
+  const spaR=n(spa.revenues);
+  const ark=cf.arketimet||{};
+  const cfT=n(ark.non_cash_lek)+n(ark.reception_cash_lek)+n(ark.fnb_cash_lek)+n(ark.mice_lek)+
+    (n(ark.non_cash_euro)+n(ark.reception_cash_euro)+n(ark.allotment)+n(ark.itaka)+n(ark.mice_euro))*EC;
+  const roomsY=n(foY.rooms_occupied), occY=TR?(roomsY/TR*100).toFixed(1):0;
+  const revEY=n(foY.revenue_eur), revLY=revEY*EH;
+  const fnbTY=n(fnbY.flower)+n(fnbY.pool_bar)+n(fnbY.brutal)+n(fnbY.pool_garden)+n(fnbY.beach_bar)+n(fnbY.house_use);
+  const spaRY=n(spaY.revenues);
+  const tot=revL+fnbT+spaR, totY=revLY+fnbTY+spaRY;
 
-  const dhomaZena = fo.rooms_occupied||0;
-  const dhomaLira = TOTAL_ROOMS - dhomaZena;
-  const occ = TOTAL_ROOMS>0 ? (dhomaZena/TOTAL_ROOMS*100).toFixed(1) : 0;
-  const occCls = occ>=70?'green':occ>=50?'':'red';
-  const prevOcc = foY.rooms_occupied ? (foY.rooms_occupied/TOTAL_ROOMS*100).toFixed(1) : null;
+  const depts=[
+    {nm:'Hotel (€×100)',v:revL,c:'#c9a84c'},
+    {nm:'Brutal Garden',v:n(fnb.brutal),c:'#ef4444'},
+    {nm:'Flower Rest.',v:n(fnb.flower),c:'#eab308'},
+    {nm:'Beach Bar',v:n(fnb.beach_bar),c:'#22c55e'},
+    {nm:'Pool Bar',v:n(fnb.pool_bar),c:'#3b82f6'},
+    {nm:'Pool Bar Garden',v:n(fnb.pool_garden),c:'#8b5cf6'},
+    {nm:'House Use',v:n(fnb.house_use),c:'#6b7a8d'},
+    {nm:'SPA',v:spaR,c:'#a855f7'},
+  ];
+  const mx=Math.max(...depts.map(d=>Math.abs(d.v)),1);
 
-  // revenues in Lek
-  const hotelRevLek = (fo.revenue_eur||0) * EXCHANGE;
-  const fnbTotal = (fnb.flower||0)+(fnb.pool_bar||0)+(fnb.brutal||0)+(fnb.pool_garden||0)+(fnb.beach_bar||0)+(fnb.house_use||0);
-  const spaRev = spa.revenues||0;
-  const totalRev = hotelRevLek + fnbTotal + spaRev;
+  const yr=(l,c,p,fmt)=>{
+    const yp=yP(c,p);
+    return`<div class="yoy-row"><div class="yoy-lbl">${l}</div><div class="yoy-curr">${fmt(c)}</div><div class="yoy-prev">${p?fmt(p):'—'}</div><div class="yoy-pct ${yp.cls}">${yp.txt}</div></div>`;
+  };
 
-  const prevHotelLek = (foY.revenue_eur||0)*EXCHANGE;
-  const prevFnb = (fnbY.flower||0)+(fnbY.pool_bar||0)+(fnbY.brutal||0)+(fnbY.pool_garden||0)+(fnbY.beach_bar||0)+(fnbY.house_use||0);
-  const prevSpa = spaY.revenues||0;
-  const prevTotal = prevHotelLek+prevFnb+prevSpa;
-
-  el.innerHTML = `
+  el.innerHTML=`
     <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Dhoma të Zëna</div>
-        <div class="kpi-value">${dhomaZena}<span style="font-size:14px;color:#8892b0"> / ${TOTAL_ROOMS}</span></div>
-        <div class="occ-bar"><div class="occ-fill ${occCls}" style="width:${Math.min(occ,100)}%"></div></div>
+      <div class="kpi">
+        <div class="kpi-lbl">Dhoma të Zëna</div>
+        <div class="kpi-val">${rooms}<span class="u">/${TR}</span></div>
+        <div class="kpi-sub">${lira} të lira</div>
+        ${bdg(rooms,roomsY)}
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Dhoma të Lira</div>
-        <div class="kpi-value">${dhomaLira}</div>
-        <div class="kpi-sub">Okupanca: ${occ}% ${prevOcc?yoyBadge(occ,prevOcc):''}</div>
+      <div class="kpi teal">
+        <div class="kpi-lbl">Okupanca</div>
+        <div class="kpi-val">${occ}<span class="u">%</span></div>
+        <div class="kpi-sub">${rooms}/${TR} dhoma</div>
+        ${bdg(parseFloat(occ),parseFloat(occY))}
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Xhiro Hotel</div>
-        <div class="kpi-value gold">${fmtEur(fo.revenue_eur||0)}</div>
-        <div class="kpi-sub">${fmtLek(hotelRevLek)} ${yoyBadge(hotelRevLek,prevHotelLek)}</div>
+      <div class="kpi">
+        <div class="kpi-lbl">Revenue Hotel</div>
+        <div class="kpi-val"><span class="u" style="font-size:18px">€</span>${n(revE).toLocaleString()}</div>
+        <div class="kpi-sub">${fL(revL)} (×${EH})</div>
+        ${bdg(revE,revEY)}
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">SPA Revenue</div>
-        <div class="kpi-value gold">${fmtLek(spaRev)}</div>
-        <div class="kpi-sub">${yoyBadge(spaRev,prevSpa)}</div>
+      <div class="kpi blue">
+        <div class="kpi-lbl">F&B Total</div>
+        <div class="kpi-val">${fK(fnbT)}<span class="u">Lek</span></div>
+        <div class="kpi-sub">Të gjitha outlet</div>
+        ${bdg(fnbT,fnbTY)}
       </div>
-      <div class="kpi-card full">
-        <div class="kpi-label">Xhiro Totale Ditore</div>
-        <div class="kpi-value gold" style="font-size:28px">${fmtLek(totalRev)}</div>
-        <div class="kpi-sub">${yoyBadge(totalRev,prevTotal)} krahasuar me të njëjtën ditë ${new Date(selectedDate).getFullYear()-1}</div>
+      <div class="kpi">
+        <div class="kpi-lbl">Hyrje Cash Flow</div>
+        <div class="kpi-val">${fK(cfT)}<span class="u">Lek</span></div>
+        <div class="kpi-sub">Kurs ${EC} Lek/€</div>
+      </div>
+      <div class="kpi ${lira<=10?'red':''}">
+        <div class="kpi-lbl">Dhoma të Lira</div>
+        <div class="kpi-val">${lira}</div>
+        <div class="kpi-sub">Disponibël</div>
       </div>
     </div>
 
-    <div class="chart-card">
-      <div class="chart-title">Të Ardhura sipas Departamentit (Lek) — YoY</div>
-      <div class="chart-wrap"><canvas id="deptChart"></canvas></div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-title">Krahasimi YoY — Xhiro Totale</div>
-      <div class="chart-wrap"><canvas id="yoyChart"></canvas></div>
-    </div>
-  `;
-
-  // Dept chart
-  setTimeout(()=>{
-    destroyChart('deptChart');
-    const depts = ['Flower Rest.','Pool Bar','Brutal','Pool Garden','Beach Bar','House Use','Hotel','SPA','TOTAL'];
-    const curr = [
-      fnb.flower||0, fnb.pool_bar||0, fnb.brutal||0, fnb.pool_garden||0, fnb.beach_bar||0, fnb.house_use||0,
-      hotelRevLek, spaRev, totalRev
-    ];
-    const prev = [
-      fnbY.flower||0, fnbY.pool_bar||0, fnbY.brutal||0, fnbY.pool_garden||0, fnbY.beach_bar||0, fnbY.house_use||0,
-      prevHotelLek, prevSpa, prevTotal
-    ];
-    const ctx = document.getElementById('deptChart');
-    if(!ctx) return;
-    charts['deptChart'] = new Chart(ctx,{
-      type:'bar',
-      data:{
-        labels:depts,
-        datasets:[
-          {label:'2026',data:curr,backgroundColor:'rgba(201,168,76,0.8)',borderRadius:4},
-          {label:'2025',data:prev,backgroundColor:'rgba(30,58,95,0.8)',borderRadius:4}
-        ]
-      },
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{labels:{color:'#8892b0',font:{size:11}}}},
-        scales:{
-          x:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'#1e3a5f'}},
-          y:{ticks:{color:'#8892b0',font:{size:10},callback:v=>Math.round(v/1000)+'k'},grid:{color:'#1e3a5f'}}
-        }
-      }
-    });
-
-    // YoY chart
-    destroyChart('yoyChart');
-    const ctx2 = document.getElementById('yoyChart');
-    if(!ctx2) return;
-    charts['yoyChart'] = new Chart(ctx2,{
-      type:'bar',
-      data:{
-        labels:['Hotel','F&B','SPA','Total'],
-        datasets:[
-          {label:new Date(selectedDate).getFullYear(),data:[hotelRevLek,fnbTotal,spaRev,totalRev],backgroundColor:'rgba(201,168,76,0.8)',borderRadius:6},
-          {label:new Date(selectedDate).getFullYear()-1,data:[prevHotelLek,prevFnb,prevSpa,prevTotal],backgroundColor:'rgba(30,58,95,0.8)',borderRadius:6}
-        ]
-      },
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{labels:{color:'#8892b0'}}},
-        scales:{
-          x:{ticks:{color:'#8892b0'},grid:{color:'#1e3a5f'}},
-          y:{ticks:{color:'#8892b0',callback:v=>Math.round(v/1000)+'k Lek'},grid:{color:'#1e3a5f'}}
-        }
-      }
-    });
-  },50);
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-hdr">
+          <span class="panel-title">Të Ardhurat sipas Departamentit</span>
+          <span class="panel-tag">${fDate(selDate)}</span>
+        </div>
+        ${depts.map(d=>{
+          const w=Math.max(0,Math.abs(d.v)/mx*100); const neg=d.v<0;
+          return`<div class="dept-row"><div class="dept-name">${d.nm}</div>
+            <div class="dept-bar-wrap"><div class="dept-bar" style="width:${w}%;background:${neg?'#ef4444':d.c};opacity:${neg?.5:1}"></div></div>
+            <div class="dept-val" style="${neg?'color:var(--down)':''}">${neg?'-':''}${fK(Math.abs(d.v))}K</div></div>`;
+        }).join('')}
+        <div class="dept-row tot">
+          <div class="dept-name">TOTAL</div>
+          <div class="dept-bar-wrap"><div class="dept-bar" style="width:100%;background:var(--gold)"></div></div>
+          <div class="dept-val">${fK(tot)}K</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <span class="panel-title">Krahasimi YoY</span>
+          <span class="panel-tag">vs ${fDate(pY(selDate))}</span>
+        </div>
+        ${yr('Dhoma të Zëna',rooms,roomsY,v=>v)}
+        ${yr('Ocupanca',parseFloat(occ),parseFloat(occY),v=>v+'%')}
+        ${yr('Revenue (€)',revE,revEY,fE)}
+        ${yr('F&B Total',fnbT,fnbTY,v=>fK(v)+'K')}
+        ${yr('SPA',spaR,spaRY,v=>fK(v)+'K')}
+        <div class="yoy-row tot" style="border-top:2px solid rgba(201,168,76,.3);margin-top:4px;">
+          <div class="yoy-lbl">Total Ardhura</div>
+          <div class="yoy-curr" style="color:var(--gold);font-size:15px">${fK(tot)}K</div>
+          <div class="yoy-prev">${totY?fK(totY)+'K':'—'}</div>
+          <div class="yoy-pct ${yP(tot,totY).cls}">${yP(tot,totY).txt}</div>
+        </div>
+      </div>
+    </div>`;
 }
 
-function destroyChart(id){
-  if(charts[id]){charts[id].destroy();delete charts[id];}
+// ─── FRONT OFFICE ─────────────────────────────────────────────────────────────
+function rFO(fo,foY){
+  const el=document.getElementById('c_fo'); if(!el)return;
+  const rooms=n(fo.rooms_occupied), occ=TR?(rooms/TR*100).toFixed(1):0;
+  el.innerHTML=`<div class="sec-card">
+    <div class="sec-hdr2">🏨 Hotel Daily Performance — ${fDate(selDate)}</div>
+    <table class="dtable">
+      <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY ${new Date(selDate).getFullYear()-1}</th></tr>
+      <tr class="sh"><td colspan="3">Dhoma</td></tr>
+      <tr><td>Dhoma të Zëna</td><td class="v">${rooms}</td><td class="v">${n(foY.rooms_occupied)||'—'}</td></tr>
+      <tr><td>Dhoma të Lira</td><td class="v">${TR-rooms}</td><td class="v">${foY.rooms_occupied?TR-n(foY.rooms_occupied):'—'}</td></tr>
+      <tr><td>Ocupanca</td><td class="v g">${occ}%</td><td class="v">${foY.rooms_occupied?(n(foY.rooms_occupied)/TR*100).toFixed(1)+'%':'—'}</td></tr>
+      <tr class="sh"><td colspan="3">Të Ardhura</td></tr>
+      <tr class="tr"><td>Revenue Ditore</td><td class="v g">${fE(fo.revenue_eur||0)}</td><td class="v">${fE(foY.revenue_eur||0)}</td></tr>
+      <tr><td>Ekuivalent Lek (×${EH})</td><td class="v">${fL(n(fo.revenue_eur)*EH)}</td><td class="v">${fL(n(foY.revenue_eur)*EH)}</td></tr>
+    </table>
+  </div>`;
 }
 
-// ─── FRONT OFFICE ────────────────────────────────────────────────────────────
-function renderFO(fo,foY){
-  const el = document.getElementById('fo_content');
-  if(!el) return;
-  const totalZena = (fo.rooms_flower||0)+(fo.rooms_garden||0);
-  const occ = TOTAL_ROOMS>0?(totalZena/TOTAL_ROOMS*100).toFixed(1):0;
-  el.innerHTML = `
-    <div class="chart-card">
-      <table class="detail-table">
-        <tr><th>Tregues</th><th class="val">Sot</th><th class="val">Dje (YoY)</th></tr>
-        <tr><td colspan="3" class="section-header">🏨 Dhoma sipas Godinës</td></tr>
-        <tr><td>Dhoma të Zëna — Flower</td><td class="val">${fo.rooms_flower||'—'}</td><td class="val">—</td></tr>
-        <tr><td>Dhoma të Zëna — Garden</td><td class="val">${fo.rooms_garden||'—'}</td><td class="val">—</td></tr>
-        <tr><td><strong>Total Dhoma të Zëna</strong></td><td class="val gold"><strong>${totalZena}</strong></td><td class="val">${foY.rooms_occupied||'—'}</td></tr>
-        <tr><td colspan="3" class="section-header">📊 Statusi i Dhomave</td></tr>
-        <tr><td>Dhoma të Lira</td><td class="val">${TOTAL_ROOMS-totalZena}</td><td class="val">—</td></tr>
-        <tr><td>Mbivendosje</td><td class="val">${fo.overbooking||0}</td><td class="val">—</td></tr>
-        <tr><td>Dhoma Jashtë Pune (OOO)</td><td class="val">${fo.ooo||0}</td><td class="val">—</td></tr>
-        <tr><td>Okupanca</td><td class="val gold">${occ}%</td><td class="val">${foY.rooms_occupied?(foY.rooms_occupied/TOTAL_ROOMS*100).toFixed(1)+'%':'—'}</td></tr>
-        <tr><td colspan="3" class="section-header">💶 Të Ardhura</td></tr>
-        <tr class="total-row"><td>Të Ardhura Totale Ditore</td><td class="val gold">${fmtEur(fo.revenue_eur||0)}</td><td class="val">${fmtEur(foY.revenue_eur||0)}</td></tr>
+// ─── F&B ──────────────────────────────────────────────────────────────────────
+function rFNB(fnb,fnbY){
+  const el=document.getElementById('c_fnb'); if(!el)return;
+  const tot=n(fnb.flower)+n(fnb.pool_bar)+n(fnb.brutal)+n(fnb.pool_garden)+n(fnb.beach_bar)+n(fnb.house_use);
+  const neto=tot-n(fnb.house_use);
+  const totY=n(fnbY.flower)+n(fnbY.pool_bar)+n(fnbY.brutal)+n(fnbY.pool_garden)+n(fnbY.beach_bar)+n(fnbY.house_use);
+  const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v">${fL(v)}</td><td class="v">${vy!==undefined?fL(vy):'—'}</td></tr>`;
+  el.innerHTML=`<div class="sec-card">
+    <div class="sec-hdr2">🍽️ F&B Daily Revenues — ${fDate(selDate)}</div>
+    <table class="dtable">
+      <tr><th>Outlet</th><th class="v">Sot (Lek)</th><th class="v">YoY</th></tr>
+      ${row('🌸 Flower Restaurant',n(fnb.flower),n(fnbY.flower))}
+      ${row('🍹 Pool Bar',n(fnb.pool_bar),n(fnbY.pool_bar))}
+      ${row('🍖 Brutal Garden',n(fnb.brutal),n(fnbY.brutal))}
+      ${row('🏊 Pool Bar Garden',n(fnb.pool_garden),n(fnbY.pool_garden))}
+      ${row('🏖️ Beach Bar',n(fnb.beach_bar),n(fnbY.beach_bar))}
+      ${row('🏠 House Use',n(fnb.house_use),undefined)}
+      <tr class="tr"><td>TOTAL Xhiro</td><td class="v g">${fL(tot)}</td><td class="v">${fL(totY)}</td></tr>
+      <tr><td>Të Ardhura Neto</td><td class="v g">${fL(neto)}</td><td class="v">—</td></tr>
+    </table>
+  </div>`;
+}
+
+// ─── SPA ──────────────────────────────────────────────────────────────────────
+function rSPA(spa,spaY){
+  const el=document.getElementById('c_spa'); if(!el)return;
+  el.innerHTML=`<div class="sec-card">
+    <div class="sec-hdr2">💆 SPA Daily Revenues — ${fDate(selDate)}</div>
+    <table class="dtable">
+      <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY</th></tr>
+      <tr><td>💰 Të Ardhura Ditore</td><td class="v g">${fL(n(spa.revenues))}</td><td class="v">${fL(n(spaY.revenues))}</td></tr>
+      <tr class="tr"><td>🧖 Total Shërbime</td><td class="v g">${spa.total_services||0}</td><td class="v">${spaY.total_services||0}</td></tr>
+    </table>
+  </div>`;
+}
+
+// ─── PAX (Daily Boards) ───────────────────────────────────────────────────────
+function rPAX(boards,boardsY){
+  const el=document.getElementById('c_pax'); if(!el)return;
+  const tot=n(boards.total_pax)||n(boards.pax_bb)+n(boards.pax_hb)+n(boards.pax_ai)+n(boards.pax_romantic);
+  const totY=n(boardsY.pax_bb)+n(boardsY.pax_hb)+n(boardsY.pax_ai)+n(boardsY.pax_romantic);
+  const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v g">${v||0}</td><td class="v">${vy!==undefined?vy:'—'}</td></tr>`;
+  el.innerHTML=`<div class="sec-card">
+    <div class="sec-hdr2">👥 PAX / Daily Boards — ${fDate(selDate)}</div>
+    <table class="dtable">
+      <tr><th>Pako</th><th class="v">Sot</th><th class="v">YoY ${new Date(selDate).getFullYear()-1}</th></tr>
+      ${row('🛏️ BB PAX',n(boards.pax_bb),n(boardsY.pax_bb))}
+      ${row('🍽️ HB PAX',n(boards.pax_hb),n(boardsY.pax_hb))}
+      ${row('⭐ AI PAX',n(boards.pax_ai),n(boardsY.pax_ai))}
+      ${row('💑 Romantic PAX',n(boards.pax_romantic),n(boardsY.pax_romantic))}
+      <tr class="tr"><td>TOTAL PAX</td><td class="v g">${tot}</td><td class="v">${totY||'—'}</td></tr>
+    </table>
+  </div>`;
+}
+
+// ─── CASH FLOW ────────────────────────────────────────────────────────────────
+function rCF(cf){
+  const el=document.getElementById('c_cashflow'); if(!el)return;
+  const ark=cf.arketimet||{}, pag=cf.pagesat||{};
+  const tArk=n(ark.non_cash_lek)+n(ark.reception_cash_lek)+n(ark.fnb_cash_lek)+n(ark.mice_lek)+
+    (n(ark.non_cash_euro)+n(ark.reception_cash_euro)+n(ark.allotment)+n(ark.itaka)+n(ark.mice_euro))*EC;
+  const tPag=n(pag.paga)+n(pag.taxes)+n(pag.loan_lek)+n(pag.house_use)+n(pag.furnitore_cash)+n(pag.furnitore_bank)+n(pag.investime_lek)+
+    (n(pag.loan_euro)+n(pag.investime_euro))*EC;
+  const row=(l,v,e=false)=>`<tr><td>${l}${e?' <span style="color:var(--muted);font-size:11px">(€)</span>':''}</td><td class="v">${e?fE(v):fL(v)}</td></tr>`;
+  el.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn-xl" onclick="exportCF()">📊 Shkarko Excel</button>
+    </div>
+    <div class="two-col">
+      <div class="sec-card">
+        <div class="sec-hdr2">✅ HYRJE — Kurs ${EC} Lek/€</div>
+        <table class="dtable">
+          <tr><th>Zëri</th><th class="v">Vlera</th></tr>
+          ${row('Non Cash Lek',n(ark.non_cash_lek))}
+          ${row('Non Cash Bank Euro',n(ark.non_cash_euro),true)}
+          ${row('Reception Cash Euro',n(ark.reception_cash_euro),true)}
+          ${row('Reception Cash Lek',n(ark.reception_cash_lek))}
+          ${row('Allotments Euro',n(ark.allotment),true)}
+          ${row('Itaka',n(ark.itaka))}
+          ${row('F&B Cash Lek',n(ark.fnb_cash_lek))}
+          ${row('MICE Euro',n(ark.mice_euro),true)}
+          ${row('MICE Lek',n(ark.mice_lek))}
+          <tr class="tr"><td>TOTAL HYRJE (Lek)</td><td class="v g">${fL(tArk)}</td></tr>
+        </table>
+      </div>
+      <div class="sec-card">
+        <div class="sec-hdr2">❌ DALJE</div>
+        <table class="dtable">
+          <tr><th>Zëri</th><th class="v">Vlera</th></tr>
+          ${row('Paga',n(pag.paga))}
+          ${row('Taksa dhe Utilitete',n(pag.taxes))}
+          ${row('Kredi Euro',n(pag.loan_euro),true)}
+          ${row('Kredi Lek',n(pag.loan_lek))}
+          ${row('House Use',n(pag.house_use))}
+          ${row('Furnitore Cash',n(pag.furnitore_cash))}
+          ${row('Furnitore BAnke',n(pag.furnitore_bank))}
+          ${row('Investime Euro',n(pag.investime_euro),true)}
+          ${row('Investime Lek',n(pag.investime_lek))}
+          <tr class="tr"><td>TOTAL DALJE (Lek)</td><td class="v g">${fL(tPag)}</td></tr>
+        </table>
+        <div style="padding:14px 16px;background:rgba(201,168,76,.06);border-top:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-weight:700;color:var(--gold)">BALANCA NETO</span>
+            <span style="font-size:18px;font-weight:800;color:var(--gold)">${fL(tArk-tPag)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─── FINANCE / SHPENZIME ──────────────────────────────────────────────────────
+function rFin(fin){
+  const el=document.getElementById('c_finance'); if(!el)return;
+  const tot=n(fin.total)||[fin.hoteli,fin.ai_fnb,fin.flower,fin.pool_bar,fin.brutal,fin.pool_garden,fin.beach_bar,fin.tjera].reduce((a,v)=>a+n(v),0);
+  const row=(l,v)=>`<tr><td>${l}</td><td class="v">${fL(n(v))}</td></tr>`;
+  el.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn-xl" onclick="exportFin()">📊 Shkarko Excel</button>
+    </div>
+    <div class="sec-card">
+      <div class="sec-hdr2">📦 Shpenzime Ditore sipas Departamentit — ${fDate(selDate)}</div>
+      <table class="dtable">
+        <tr><th>Departamenti</th><th class="v">Lek</th></tr>
+        ${row('🏨 Shpenzime Hoteli',fin.hoteli)}
+        ${row('⭐ All Inclusive F&B',fin.ai_fnb)}
+        ${row('🌸 Flower Restorant',fin.flower)}
+        ${row('🍹 Pool Bar',fin.pool_bar)}
+        ${row('🍖 Brutal',fin.brutal)}
+        ${row('🏊 Pool Bar Garden',fin.pool_garden)}
+        ${row('🏖️ Beach Bar',fin.beach_bar)}
+        ${row('📦 Të Tjera',fin.tjera)}
+        <tr class="tr"><td>TOTAL SHPENZIME</td><td class="v g">${fL(tot)}</td></tr>
       </table>
-    </div>
-    ${yoyBadge(fo.revenue_eur||0, foY.revenue_eur||0)}
-  `;
+    </div>`;
 }
 
-// ─── F&B ─────────────────────────────────────────────────────────────────────
-function renderFNB(fnb,fnbY){
-  const el = document.getElementById('fnb_content');
-  if(!el) return;
-  const total = (fnb.flower||0)+(fnb.pool_bar||0)+(fnb.brutal||0)+(fnb.pool_garden||0)+(fnb.beach_bar||0)+(fnb.house_use||0);
-  const neto = total - (fnb.house_use||0);
-  const prevTotal = (fnbY.flower||0)+(fnbY.pool_bar||0)+(fnbY.brutal||0)+(fnbY.pool_garden||0)+(fnbY.beach_bar||0)+(fnbY.house_use||0);
-  el.innerHTML = `
-    <div class="chart-card">
-      <table class="detail-table">
-        <tr><th>Outlet</th><th class="val">Sot (Lek)</th><th class="val">YoY</th></tr>
-        <tr><td>🌸 Flower Restaurant</td><td class="val">${fmtLek(fnb.flower||0)}</td><td class="val">${yoyBadge(fnb.flower||0,fnbY.flower||0)}</td></tr>
-        <tr><td>🍹 Pool Bar</td><td class="val">${fmtLek(fnb.pool_bar||0)}</td><td class="val">${yoyBadge(fnb.pool_bar||0,fnbY.pool_bar||0)}</td></tr>
-        <tr><td>🍖 Brutal Garden</td><td class="val">${fmtLek(fnb.brutal||0)}</td><td class="val">${yoyBadge(fnb.brutal||0,fnbY.brutal||0)}</td></tr>
-        <tr><td>🏊 Pool Bar Garden</td><td class="val">${fmtLek(fnb.pool_garden||0)}</td><td class="val">${yoyBadge(fnb.pool_garden||0,fnbY.pool_garden||0)}</td></tr>
-        <tr><td>🏖️ Beach Bar</td><td class="val">${fmtLek(fnb.beach_bar||0)}</td><td class="val">${yoyBadge(fnb.beach_bar||0,fnbY.beach_bar||0)}</td></tr>
-        <tr><td>🏠 House Use</td><td class="val">${fmtLek(fnb.house_use||0)}</td><td class="val">—</td></tr>
-        <tr class="total-row"><td>TOTAL Xhiro</td><td class="val gold">${fmtLek(total)}</td><td class="val">${yoyBadge(total,prevTotal)}</td></tr>
-        <tr><td>Të Ardhura Neto</td><td class="val gold">${fmtLek(neto)}</td><td class="val">—</td></tr>
-        <tr><td colspan="3" class="section-header">PAX / Vaktet</td></tr>
-        <tr><td>Mysafirë All Inclusive</td><td class="val">${fnb.pax_ai||0}</td><td class="val">—</td></tr>
-        <tr><td>Mysafirë BB</td><td class="val">${fnb.pax_bb||0}</td><td class="val">—</td></tr>
-        <tr><td>Mysafirë HB</td><td class="val">${fnb.pax_hb||0}</td><td class="val">—</td></tr>
-        <tr><td>PAX / Mëngjes Flower</td><td class="val">${fnb.breakfast_flower||0}</td><td class="val">—</td></tr>
-        <tr><td>PAX / Mëngjes Garden</td><td class="val">${fnb.breakfast_garden||0}</td><td class="val">—</td></tr>
-        <tr><td>PAX / Drekë</td><td class="val">${fnb.pax_lunch||0}</td><td class="val">—</td></tr>
-        <tr><td>PAX / Darkë</td><td class="val">${fnb.pax_dinner||0}</td><td class="val">—</td></tr>
-      </table>
-    </div>
-  `;
+// ─── EXCEL EXPORT ─────────────────────────────────────────────────────────────
+function dlCSV(rows, fname){
+  const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:fname});
+  a.click(); URL.revokeObjectURL(a.href);
+}
+async function exportCF(){
+  const r=await fetch(`/api/overview?date=${selDate}`);
+  const d=await r.json(); const cf=d.cashflow||{};
+  const ark=cf.arketimet||{}, pag=cf.pagesat||{};
+  const rows=[['CASH FLOW',selDate],[''],['HYRJE',''],
+    ...Object.entries({
+      'Non Cash Lek':n(ark.non_cash_lek),'Non Cash Bank Euro':n(ark.non_cash_euro),
+      'Reception Cash Euro':n(ark.reception_cash_euro),'Reception Cash Lek':n(ark.reception_cash_lek),
+      'Allotments Euro':n(ark.allotment),'Itaka':n(ark.itaka),'F&B Cash Lek':n(ark.fnb_cash_lek),
+      'MICE Euro':n(ark.mice_euro),'MICE Lek':n(ark.mice_lek)}).map(([k,v])=>[k,v]),
+    [''],['DALJE',''],
+    ...Object.entries({
+      'Paga':n(pag.paga),'Taksa dhe Utilitete':n(pag.taxes),'Kredi Euro':n(pag.loan_euro),
+      'Kredi Lek':n(pag.loan_lek),'House Use':n(pag.house_use),'Furnitore Cash':n(pag.furnitore_cash),
+      'Furnitore BAnke':n(pag.furnitore_bank),'Investime Euro':n(pag.investime_euro),'Investime Lek':n(pag.investime_lek)
+    }).map(([k,v])=>[k,v])];
+  dlCSV(rows,`cashflow_${selDate}.csv`);
+}
+async function exportFin(){
+  const r=await fetch(`/api/overview?date=${selDate}`);
+  const d=await r.json(); const fin=d.finance||{};
+  const rows=[['SHPENZIME DITORE',selDate],[''],
+    ['Shpenzime Hoteli',n(fin.hoteli)],['All Inclusive F&B',n(fin.ai_fnb)],
+    ['Flower Restorant',n(fin.flower)],['Pool Bar',n(fin.pool_bar)],
+    ['Brutal',n(fin.brutal)],['Pool Bar Garden',n(fin.pool_garden)],
+    ['Beach Bar',n(fin.beach_bar)],['Te Tjera',n(fin.tjera)],['TOTAL',n(fin.total)]];
+  dlCSV(rows,`shpenzime_${selDate}.csv`);
 }
 
-// ─── SPA ─────────────────────────────────────────────────────────────────────
-function renderSPA(spa,spaY){
-  const el = document.getElementById('spa_content');
-  if(!el) return;
-  el.innerHTML = `
-    <div class="chart-card">
-      <table class="detail-table">
-        <tr><th>Tregues</th><th class="val">Sot (Lek)</th><th class="val">YoY</th></tr>
-        <tr><td>💆 Të Ardhura Ditore</td><td class="val gold">${fmtLek(spa.revenues||0)}</td><td class="val">${yoyBadge(spa.revenues||0,spaY.revenues||0)}</td></tr>
-        <tr><td>🧖 Total Shërbime</td><td class="val">${spa.total_services||0}</td><td class="val">${yoyBadge(spa.total_services||0,spaY.total_services||0)}</td></tr>
-      </table>
-    </div>
-  `;
-}
-
-// ─── CASH FLOW (BRUNA) ───────────────────────────────────────────────────────
-function renderCashFlow(cf){
-  const el = document.getElementById('cf_content');
-  if(!el) return;
-
-  const ark = cf.arketimet||{};
-  const pag = cf.pagesat||{};
-
-  // Totali Arkëtimeve (Lek) — Euro × 100
-  const totalArk =
-    (ark.non_cash_lek||0) +
-    (ark.reception_cash_lek||0) +
-    (ark.fnb_cash_lek||0) +
-    (ark.financial_loan||0) +
-    (ark.mice_lek||0) +
-    ((ark.non_cash_euro||0) + (ark.reception_cash_euro||0) + (ark.allotment||0) + (ark.itaka||0) + (ark.mice_euro||0)) * EXCHANGE;
-
-  const totalPag =
-    (pag.paga||0) +
-    (pag.taxes||0) +
-    (pag.loan_lek||0) +
-    (pag.house_use||0) +
-    (pag.purchases_cash||0) +
-    (pag.purchases_bank||0) +
-    (pag.investments_lek||0) +
-    (pag.investments_cash||0) +
-    ((pag.loan_euro||0) + (pag.investments_euro||0)) * EXCHANGE;
-
-  const row = (label,val,isEuro=false)=>`<tr><td>${label}${isEuro?' (€)':''}</td><td class="val">${isEuro?fmtEur(val):fmtLek(val)}</td></tr>`;
-
-  el.innerHTML = `
-    <div class="chart-card">
-      <table class="detail-table">
-        <tr><th colspan="2" class="section-header">✅ 1. ARKËTIME</th></tr>
-        ${row('Non Cash Lek',ark.non_cash_lek||0)}
-        ${row('Non Cash Euro',ark.non_cash_euro||0,true)}
-        ${row('Reception Cash Euro',ark.reception_cash_euro||0,true)}
-        ${row('Reception Cash Lek',ark.reception_cash_lek||0)}
-        ${row('Allotment Contracts',ark.allotment||0,true)}
-        ${row('Itaka',ark.itaka||0,true)}
-        ${row('Financial Disbursment (Loan)',ark.financial_loan||0)}
-        ${row('F&B Cash Lek',ark.fnb_cash_lek||0)}
-        ${row('MICE Bank Euro',ark.mice_euro||0,true)}
-        ${row('MICE Bank Lek',ark.mice_lek||0)}
-        <tr class="total-row"><td>TOTAL ARKËTIME (Lek)</td><td class="val gold">${fmtLek(totalArk)}</td></tr>
-        <tr><th colspan="2" class="section-header">❌ 2. PAGESA</th></tr>
-        ${row('Paga',pag.paga||0)}
-        ${row('Taxes & Utilities',pag.taxes||0)}
-        ${row('Loan Euro',pag.loan_euro||0,true)}
-        ${row('Loan Lek',pag.loan_lek||0)}
-        ${row('House Use',pag.house_use||0)}
-        ${row('Purchases Cash',pag.purchases_cash||0)}
-        ${row('Purchases Bank',pag.purchases_bank||0)}
-        ${row('Investments Lek',pag.investments_lek||0)}
-        ${row('Investments Euro',pag.investments_euro||0,true)}
-        ${row('Investments Cash',pag.investments_cash||0)}
-        <tr class="total-row"><td>TOTAL PAGESA (Lek)</td><td class="val gold">${fmtLek(totalPag)}</td></tr>
-        <tr class="total-row"><td>BALANCA NETO</td><td class="val gold">${fmtLek(totalArk-totalPag)}</td></tr>
-      </table>
-    </div>
-  `;
-}
-
-// ─── FINANCE (XHINA) ─────────────────────────────────────────────────────────
-function renderFinance(fin){
-  const el = document.getElementById('fin_content');
-  if(!el) return;
-
-  const sh = fin.shpenzime||{};
-  const ar = fin.ardhura||{};
-  const zb = fin.zbritje||{};
-
-  const totalSh = Object.values(sh).reduce((a,v)=>a+(v||0),0);
-  const totalAr = Object.values(ar).reduce((a,v)=>a+(v||0),0);
-  const totalZb = Object.values(zb).reduce((a,v)=>a+(v||0),0);
-
-  const row = (label,val)=>`<tr><td>${label}</td><td class="val">${fmtLek(val||0)}</td></tr>`;
-
-  el.innerHTML = `
-    <div class="chart-card">
-      <table class="detail-table">
-        <tr><th colspan="2" class="section-header">📦 Shpenzime Ditore Magazinë</th></tr>
-        ${row('Blerje Ushqim',sh.ushqim)}
-        ${row('Blerje Pije',sh.pije)}
-        ${row('Blerje Kimikate',sh.kimikate)}
-        ${row('Blerje Materiale Pastrimi',sh.pastrimi)}
-        ${row('Blerje Inventar',sh.inventar)}
-        ${row('Blerje Lëndë Djegëse',sh.djegese)}
-        ${row('Blerje Elektrike',sh.elektrike)}
-        ${row('Blerje Të Tjera',sh.tjera)}
-        <tr class="total-row"><td>TOTAL SHPENZIME</td><td class="val gold">${fmtLek(totalSh)}</td></tr>
-        <tr><th colspan="2" class="section-header">💵 Të Ardhura Ditore Magazinë</th></tr>
-        ${row('Flower Restaurant',ar.flower)}
-        ${row('Pool Bar',ar.pool_bar)}
-        ${row('Brutal Garden',ar.brutal)}
-        ${row('Pool Bar Garden',ar.pool_garden)}
-        ${row('Beach Bar',ar.beach_bar)}
-        ${row('Room Service',ar.room_service)}
-        ${row('Mini Bar',ar.mini_bar)}
-        ${row('SPA',ar.spa)}
-        ${row('Të Tjera',ar.tjera)}
-        <tr class="total-row"><td>TOTAL TË ARDHURA</td><td class="val gold">${fmtLek(totalAr)}</td></tr>
-        <tr><th colspan="2" class="section-header">➖ Zbritje</th></tr>
-        ${row('Vila 1',zb.vila1)}
-        ${row('Vila 2',zb.vila2)}
-        ${row('313',zb.v313)}
-        ${row('Faturë Qërasje',zb.qeraje)}
-        <tr class="total-row"><td>TOTAL ZBRITJE</td><td class="val gold">${fmtLek(totalZb)}</td></tr>
-        <tr class="total-row" style="background:#0a1628"><td>NETO (Ardhura - Shpenzime - Zbritje)</td><td class="val gold">${fmtLek(totalAr-totalSh-totalZb)}</td></tr>
-      </table>
-    </div>
-  `;
-}
-
-// ─── EXCEL EXPORT ────────────────────────────────────────────────────────────
-async function exportExcel(type){
-  try{
-    const res = await fetch(`/api/overview?date=${selectedDate}`);
-    const d = await res.json();
-    let rows = [['Data',selectedDate]];
-    if(type==='cashflow'){
-      const cf = d.cashflow||{};
-      rows.push(['','']);
-      rows.push(['ARKËTIME','']);
-      const ark = cf.arketimet||{};
-      Object.entries({
-        'Non Cash Lek':ark.non_cash_lek||0,'Non Cash Euro':ark.non_cash_euro||0,
-        'Reception Cash Euro':ark.reception_cash_euro||0,'Reception Cash Lek':ark.reception_cash_lek||0,
-        'Allotment Contracts (€)':ark.allotment||0,'Itaka (€)':ark.itaka||0,
-        'Financial Disbursment Loan':ark.financial_loan||0,'F&B Cash Lek':ark.fnb_cash_lek||0,
-        'MICE Bank Euro':ark.mice_euro||0,'MICE Bank Lek':ark.mice_lek||0
-      }).forEach(([k,v])=>rows.push([k,v]));
-      rows.push(['','']);
-      rows.push(['PAGESA','']);
-      const pag = cf.pagesat||{};
-      Object.entries({
-        'Paga':pag.paga||0,'Taxes & Utilities':pag.taxes||0,'Loan Euro':pag.loan_euro||0,
-        'Loan Lek':pag.loan_lek||0,'House Use':pag.house_use||0,
-        'Purchases Cash':pag.purchases_cash||0,'Purchases Bank':pag.purchases_bank||0,
-        'Investments Lek':pag.investments_lek||0,'Investments Euro':pag.investments_euro||0,
-        'Investments Cash':pag.investments_cash||0
-      }).forEach(([k,v])=>rows.push([k,v]));
-    } else if(type==='finance'){
-      const fin = d.finance||{};
-      rows.push(['SHPENZIME MAGAZINË','']);
-      Object.entries(fin.shpenzime||{}).forEach(([k,v])=>rows.push([k,v||0]));
-      rows.push(['TË ARDHURA MAGAZINË','']);
-      Object.entries(fin.ardhura||{}).forEach(([k,v])=>rows.push([k,v||0]));
-      rows.push(['ZBRITJE','']);
-      Object.entries(fin.zbritje||{}).forEach(([k,v])=>rows.push([k,v||0]));
-    }
-    const csv = rows.map(r=>r.join(',')).join('\n');
-    const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href=url; a.download=`${type}_${selectedDate}.csv`; a.click();
-    URL.revokeObjectURL(url);
-  } catch(e){ alert('Gabim gjatë eksportimit: '+e.message); }
-}
-
-// ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
-async function toggleNotif(){
-  const btn = document.getElementById('bellBtn');
-  if(notifSub){
-    notifSub=null; btn.textContent='🔕'; return;
-  }
-  try{
-    if(!('serviceWorker' in navigator)||!('PushManager' in window)){
-      alert('Njoftimet nuk suportohen në këtë browser.'); return;
-    }
-    const perm = await Notification.requestPermission();
-    if(perm!=='granted'){ alert('Lejoni njoftimet!'); return; }
-    const reg = await navigator.serviceWorker.ready;
-    const keyRes = await fetch('/api/push/key');
-    const {publicKey} = await keyRes.json();
-    if(!publicKey||publicKey==='') { alert('Push notifications not configured on server.'); return; }
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly:true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey)
-    });
-    await fetch('/api/push/subscribe',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({subscription:sub,user:'MANAGER'})
-    });
-    notifSub=sub; btn.textContent='🔔';
-    btn.style.color='#c9a84c';
-  } catch(e){ console.error(e); }
-}
-
-function urlBase64ToUint8Array(base64String){
-  const padding='='.repeat((4-base64String.length%4)%4);
-  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
-  const raw=window.atob(base64);
-  const arr=new Uint8Array(raw.length);
-  for(let i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i);
-  return arr;
-}
-
-// ─── INIT ────────────────────────────────────────────────────────────────────
-document.addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none') doLogin();
-});
-
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').catch(()=>{});
-}
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 </script>
 </body>
 </html>
