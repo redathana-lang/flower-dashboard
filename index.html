@@ -172,8 +172,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="mainContent">
     <!-- DATE BAR (shared) -->
     <div class="date-bar">
-      <label>📅 Data:</label>
-      <input type="date" id="globalDate" value=""/>
+      <label>Nga</label>
+      <input type="date" id="dateFrom" value=""/>
+      <label>deri</label>
+      <input type="date" id="dateTo" value=""/>
       <button class="btn-sot" onclick="setSot()">Sot</button>
       <button class="btn-filtro" onclick="applyDate()">Shfaq</button>
     </div>
@@ -209,7 +211,7 @@ const TR = 110;        // total rooms
 const EH = 100;        // hotel EUR→LEK rate
 const EC = 95;         // cash flow EUR→LEK rate
 
-let selDate = dStr();
+let fromDate = dStr(), toDate = dStr();
 
 function dStr(){ return new Date().toISOString().split('T')[0]; }
 function fK(v){ v=Number(v||0); return Math.abs(v)>=1000?(Math.round(v/1000))+'K':String(Math.round(v)); }
@@ -220,11 +222,13 @@ function pct(a,b){ if(!b)return null; return((a-b)/b*100).toFixed(0); }
 function bdg(c,p){
   const v=pct(c,p); if(v===null)return'';
   const u=v>=0;
-  return`<span class="kpi-bdg ${u?'up':'down'}">${u?'↑':'↓'} ${Math.abs(v)}% vs ${new Date(selDate).getFullYear()-1}</span>`;
+  return`<span class="kpi-bdg ${u?'up':'down'}">${u?'↑':'↓'} ${Math.abs(v)}% vs ${new Date(fromDate).getFullYear()-1}</span>`;
 }
 function yP(c,p){ const v=pct(c,p); if(v===null)return{cls:'',txt:'—'}; return{cls:v>=0?'up':'down',txt:(v>=0?'+':'')+v+'%'}; }
 function fDate(s){ if(!s)return''; return new Date(s+'T00:00:00').toLocaleDateString('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); }
+function fRange(){ return fromDate===toDate?fRange():fRange()+' — '+fDate(toDate); }
 function pY(s){ return s?(parseInt(s.slice(0,4))-1)+s.slice(4):''; }
+function pYRange(){ return fromDate===toDate?pYRange():pYRange()+' — '+fDate(pY(toDate)); }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
 function doLogin(){
@@ -234,7 +238,7 @@ function doLogin(){
   document.getElementById('lgE').style.display='none';
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
-  document.getElementById('globalDate').value=selDate;
+  document.getElementById('dateFrom').value=fromDate; document.getElementById('dateTo').value=toDate;
   loadData();
 }
 function doLogout(){
@@ -250,18 +254,19 @@ function showSec(id){
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec_'+id).style.display='block';
   document.getElementById('tab_'+id).classList.add('active');
-  document.getElementById('tbSub').textContent = id.toUpperCase()+' · '+fDate(selDate)+' VS '+fDate(pY(selDate));
+  document.getElementById('tbSub').textContent = id.toUpperCase()+' · '+fRange()+' VS '+pYRange();
 }
 
 // ─── DATE ─────────────────────────────────────────────────────────────────────
-function setSot(){ selDate=dStr(); document.getElementById('globalDate').value=selDate; loadData(); }
-function applyDate(){ const v=document.getElementById('globalDate').value; if(v)selDate=v; loadData(); }
+function setSot(){ fromDate=dStr(); toDate=dStr(); document.getElementById('dateFrom').value=fromDate; document.getElementById('dateTo').value=toDate; loadData(); }
+function applyDate(){ const f=document.getElementById('dateFrom').value; const t=document.getElementById('dateTo').value; if(f)fromDate=f; if(t)toDate=t||f; loadData(); }
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 async function loadData(){
   setLoading();
   try{
-    const r=await fetch(`/api/overview?date=${selDate}`);
+    const url=fromDate===toDate?`/api/overview?date=${fromDate}`:`/api/overview?from=${fromDate}&to=${toDate}`;
+    const r=await fetch(url);
     if(!r.ok) throw new Error('Server '+r.status);
     const d=await r.json();
     renderAll(d);
@@ -340,25 +345,25 @@ function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
       <div class="kpi">
         <div class="kpi-lbl">Dhoma të Zëna</div>
         <div class="kpi-val">${rooms}<span class="u">/${TR}</span></div>
-        <div class="kpi-sub">${lira} të lira</div>
+        <div class="kpi-sub">${lira} të lira · ${new Date(fromDate).getFullYear()-1}: <strong>${roomsY||'—'}</strong></div>
         ${bdg(rooms,roomsY)}
       </div>
       <div class="kpi teal">
         <div class="kpi-lbl">Okupanca</div>
         <div class="kpi-val">${occ}<span class="u">%</span></div>
-        <div class="kpi-sub">${rooms}/${TR} dhoma</div>
+        <div class="kpi-sub">${rooms}/${TR} dhoma · ${new Date(fromDate).getFullYear()-1}: <strong>${occY?occY+'%':'—'}</strong></div>
         ${bdg(parseFloat(occ),parseFloat(occY))}
       </div>
       <div class="kpi">
         <div class="kpi-lbl">Revenue Hotel</div>
         <div class="kpi-val"><span class="u" style="font-size:18px">€</span>${n(revE).toLocaleString()}</div>
-        <div class="kpi-sub">${fL(revL)} (×${EH})</div>
+        <div class="kpi-sub">${fL(revL)} · ${new Date(fromDate).getFullYear()-1}: <strong>${fE(revEY)}</strong></div>
         ${bdg(revE,revEY)}
       </div>
       <div class="kpi blue">
         <div class="kpi-lbl">F&B Total</div>
         <div class="kpi-val">${fK(fnbT)}<span class="u">Lek</span></div>
-        <div class="kpi-sub">Të gjitha outlet</div>
+        <div class="kpi-sub">${new Date(fromDate).getFullYear()-1}: <strong>${fK(fnbTY)}K Lek</strong></div>
         ${bdg(fnbT,fnbTY)}
       </div>
       <div class="kpi">
@@ -369,7 +374,7 @@ function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
       <div class="kpi ${lira<=10?'red':''}">
         <div class="kpi-lbl">Dhoma të Lira</div>
         <div class="kpi-val">${lira}</div>
-        <div class="kpi-sub">Disponibël</div>
+        <div class="kpi-sub">Disponibël · ${new Date(fromDate).getFullYear()-1}: <strong>${roomsY?TR-roomsY:'—'}</strong></div>
       </div>
     </div>
 
@@ -377,7 +382,7 @@ function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
       <div class="panel">
         <div class="panel-hdr">
           <span class="panel-title">Të Ardhurat sipas Departamentit</span>
-          <span class="panel-tag">${fDate(selDate)}</span>
+          <span class="panel-tag">${fRange()}</span>
         </div>
         ${depts.map(d=>{
           const w=Math.max(0,Math.abs(d.v)/mx*100); const neg=d.v<0;
@@ -394,7 +399,7 @@ function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
       <div class="panel">
         <div class="panel-hdr">
           <span class="panel-title">Krahasimi YoY</span>
-          <span class="panel-tag">vs ${fDate(pY(selDate))}</span>
+          <span class="panel-tag">vs ${pYRange()}</span>
         </div>
         ${yr('Dhoma të Zëna',rooms,roomsY,v=>v)}
         ${yr('Ocupanca',parseFloat(occ),parseFloat(occY),v=>v+'%')}
@@ -416,9 +421,9 @@ function rFO(fo,foY){
   const el=document.getElementById('c_fo'); if(!el)return;
   const rooms=n(fo.rooms_occupied), occ=TR?(rooms/TR*100).toFixed(1):0;
   el.innerHTML=`<div class="sec-card">
-    <div class="sec-hdr2">🏨 Hotel Daily Performance — ${fDate(selDate)}</div>
+    <div class="sec-hdr2">🏨 Hotel Daily Performance — ${fRange()}</div>
     <table class="dtable">
-      <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY ${new Date(selDate).getFullYear()-1}</th></tr>
+      <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
       <tr class="sh"><td colspan="3">Dhoma</td></tr>
       <tr><td>Dhoma të Zëna</td><td class="v">${rooms}</td><td class="v">${n(foY.rooms_occupied)||'—'}</td></tr>
       <tr><td>Dhoma të Lira</td><td class="v">${TR-rooms}</td><td class="v">${foY.rooms_occupied?TR-n(foY.rooms_occupied):'—'}</td></tr>
@@ -438,7 +443,7 @@ function rFNB(fnb,fnbY){
   const totY=n(fnbY.flower)+n(fnbY.pool_bar)+n(fnbY.brutal)+n(fnbY.pool_garden)+n(fnbY.beach_bar)+n(fnbY.house_use);
   const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v">${fL(v)}</td><td class="v">${vy!==undefined?fL(vy):'—'}</td></tr>`;
   el.innerHTML=`<div class="sec-card">
-    <div class="sec-hdr2">🍽️ F&B Daily Revenues — ${fDate(selDate)}</div>
+    <div class="sec-hdr2">🍽️ F&B Daily Revenues — ${fRange()}</div>
     <table class="dtable">
       <tr><th>Outlet</th><th class="v">Sot (Lek)</th><th class="v">YoY</th></tr>
       ${row('🌸 Flower Restaurant',n(fnb.flower),n(fnbY.flower))}
@@ -447,8 +452,8 @@ function rFNB(fnb,fnbY){
       ${row('🏊 Pool Bar Garden',n(fnb.pool_garden),n(fnbY.pool_garden))}
       ${row('🏖️ Beach Bar',n(fnb.beach_bar),n(fnbY.beach_bar))}
       ${row('🏠 House Use',n(fnb.house_use),undefined)}
-      <tr class="tr"><td>TOTAL Xhiro</td><td class="v g">${fL(tot)}</td><td class="v">${fL(totY)}</td></tr>
-      <tr><td>Të Ardhura Neto</td><td class="v g">${fL(neto)}</td><td class="v">—</td></tr>
+      <tr><td>Xhiro Neto</td><td class="v g">${fL(neto)}</td><td class="v">—</td></tr>
+      <tr class="tr"><td>Total Xhiro</td><td class="v g">${fL(tot)}</td><td class="v">${fL(totY)}</td></tr>
     </table>
   </div>`;
 }
@@ -457,7 +462,7 @@ function rFNB(fnb,fnbY){
 function rSPA(spa,spaY){
   const el=document.getElementById('c_spa'); if(!el)return;
   el.innerHTML=`<div class="sec-card">
-    <div class="sec-hdr2">💆 SPA Daily Revenues — ${fDate(selDate)}</div>
+    <div class="sec-hdr2">💆 SPA Daily Revenues — ${fRange()}</div>
     <table class="dtable">
       <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY</th></tr>
       <tr><td>💰 Të Ardhura Ditore</td><td class="v g">${fL(n(spa.revenues))}</td><td class="v">${fL(n(spaY.revenues))}</td></tr>
@@ -473,9 +478,9 @@ function rPAX(boards,boardsY){
   const totY=n(boardsY.pax_bb)+n(boardsY.pax_hb)+n(boardsY.pax_ai)+n(boardsY.pax_romantic);
   const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v g">${v||0}</td><td class="v">${vy!==undefined?vy:'—'}</td></tr>`;
   el.innerHTML=`<div class="sec-card">
-    <div class="sec-hdr2">👥 PAX / Daily Boards — ${fDate(selDate)}</div>
+    <div class="sec-hdr2">👥 PAX / Daily Boards — ${fRange()}</div>
     <table class="dtable">
-      <tr><th>Pako</th><th class="v">Sot</th><th class="v">YoY ${new Date(selDate).getFullYear()-1}</th></tr>
+      <tr><th>Pako</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
       ${row('🛏️ BB PAX',n(boards.pax_bb),n(boardsY.pax_bb))}
       ${row('🍽️ HB PAX',n(boards.pax_hb),n(boardsY.pax_hb))}
       ${row('⭐ AI PAX',n(boards.pax_ai),n(boardsY.pax_ai))}
@@ -550,7 +555,7 @@ function rFin(fin){
       <button class="btn-xl" onclick="exportFin()">📊 Shkarko Excel</button>
     </div>
     <div class="sec-card">
-      <div class="sec-hdr2">📦 Shpenzime Ditore sipas Departamentit — ${fDate(selDate)}</div>
+      <div class="sec-hdr2">📦 Shpenzime Ditore sipas Departamentit — ${fRange()}</div>
       <table class="dtable">
         <tr><th>Departamenti</th><th class="v">Lek</th></tr>
         ${row('🏨 Shpenzime Hoteli',fin.hoteli)}
@@ -573,10 +578,11 @@ function dlCSV(rows, fname){
   a.click(); URL.revokeObjectURL(a.href);
 }
 async function exportCF(){
-  const r=await fetch(`/api/overview?date=${selDate}`);
+  const url=fromDate===toDate?`/api/overview?date=${fromDate}`:`/api/overview?from=${fromDate}&to=${toDate}`;
+    const r=await fetch(url);
   const d=await r.json(); const cf=d.cashflow||{};
   const ark=cf.arketimet||{}, pag=cf.pagesat||{};
-  const rows=[['CASH FLOW',selDate],[''],['HYRJE',''],
+  const rows=[['CASH FLOW',fromDate],[''],['HYRJE',''],
     ...Object.entries({
       'Non Cash Lek':n(ark.non_cash_lek),'Non Cash Bank Euro':n(ark.non_cash_euro),
       'Reception Cash Euro':n(ark.reception_cash_euro),'Reception Cash Lek':n(ark.reception_cash_lek),
@@ -588,17 +594,18 @@ async function exportCF(){
       'Kredi Lek':n(pag.loan_lek),'House Use':n(pag.house_use),'Furnitore Cash':n(pag.furnitore_cash),
       'Furnitore BAnke':n(pag.furnitore_bank),'Investime Euro':n(pag.investime_euro),'Investime Lek':n(pag.investime_lek)
     }).map(([k,v])=>[k,v])];
-  dlCSV(rows,`cashflow_${selDate}.csv`);
+  dlCSV(rows,`cashflow_${fromDate}.csv`);
 }
 async function exportFin(){
-  const r=await fetch(`/api/overview?date=${selDate}`);
+  const url=fromDate===toDate?`/api/overview?date=${fromDate}`:`/api/overview?from=${fromDate}&to=${toDate}`;
+    const r=await fetch(url);
   const d=await r.json(); const fin=d.finance||{};
-  const rows=[['SHPENZIME DITORE',selDate],[''],
+  const rows=[['SHPENZIME DITORE',fromDate],[''],
     ['Shpenzime Hoteli',n(fin.hoteli)],['All Inclusive F&B',n(fin.ai_fnb)],
     ['Flower Restorant',n(fin.flower)],['Pool Bar',n(fin.pool_bar)],
     ['Brutal',n(fin.brutal)],['Pool Bar Garden',n(fin.pool_garden)],
     ['Beach Bar',n(fin.beach_bar)],['Te Tjera',n(fin.tjera)],['TOTAL',n(fin.total)]];
-  dlCSV(rows,`shpenzime_${selDate}.csv`);
+  dlCSV(rows,`shpenzime_${fromDate}.csv`);
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
