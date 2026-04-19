@@ -1,694 +1,802 @@
 <!DOCTYPE html>
 <html lang="sq">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0D1B3E">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>FLOW</title>
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-<meta name="apple-mobile-web-app-title" content="FLOW">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0a1628"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FLOW"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --navy:#071026;--navy2:#0D1B3E;--card:#112250;--card2:#0a1830;--card3:#0e1d3a;
-  --gold:#C49A2C;--gold2:#E8B84B;--gold3:rgba(200,154,44,0.12);
-  --teal:#176B63;--lteal:#1FA896;--lteal2:rgba(31,168,150,0.12);
-  --green:#2DB87A;--green2:rgba(45,184,122,0.12);
-  --red:#E05050;--red2:rgba(224,80,80,0.12);
-  --amber:#F0A030;--amber2:rgba(240,160,48,0.12);
-  --purple:#9B7CE8;
-  --white:#EEE8DC;--off:#C8D0DC;
-  --muted:#8DA3BD;--muted2:#5A6E88;
-  --border:rgba(31,168,150,0.15);--border3:rgba(255,255,255,0.06);--border2:rgba(200,154,44,0.2);
-  --f-serif:'Cormorant Garamond',Georgia,serif;
-  --f-sans:'DM Sans',-apple-system,sans-serif;
-  --f-mono:'DM Mono',monospace;
-  --r:10px;--nav-h:64px;--top-h:52px;
-}
-html,body{height:100%;background:var(--navy);color:var(--white);font-family:var(--f-sans);font-size:14px;overflow:hidden}
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--card2);border-radius:99px}
-.app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a1628;color:#e8eaf6;min-height:100vh;padding-bottom:80px;}
 
 /* LOGIN */
-#loginScreen{position:fixed;inset:0;background:var(--navy);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px}
-.lw{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:28px 24px;width:100%;max-width:400px}
-.ll{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-.li{width:40px;height:40px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.li svg{width:18px;height:18px;stroke:#071026;stroke-width:2;fill:none;stroke-linecap:round}
-.lt{font-family:var(--f-serif);font-size:19px;font-weight:600}
-.ls{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:2px}
-.llbl{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted2);display:block;margin-bottom:7px;margin-top:16px}
-.lsel,.linp{width:100%;background:var(--card);border:1px solid var(--border3);border-radius:8px;padding:13px 14px;color:var(--white);font-family:var(--f-sans);font-size:15px;outline:none;-webkit-appearance:none}
-.lsel:focus,.linp:focus{border-color:var(--lteal)}
-.lsel option{background:var(--card2)}
-.lbtn{margin-top:20px;width:100%;background:linear-gradient(135deg,var(--teal),var(--lteal));border:none;border-radius:10px;padding:14px;color:var(--white);font-size:15px;font-weight:500;cursor:pointer;font-family:var(--f-sans)}
-.lerr{font-size:12px;color:var(--red);margin-top:8px;display:none;text-align:center}
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.login-box{background:#112240;border-radius:20px;padding:40px 30px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.login-logo{width:80px;height:80px;border-radius:16px;margin:0 auto 20px;background:#0a1628;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.login-logo img{width:100%;height:100%;object-fit:contain;}
+.login-box h1{font-size:28px;font-weight:700;color:#c9a84c;margin-bottom:4px;}
+.login-box p{color:#8892b0;font-size:14px;margin-bottom:30px;}
+.login-box input{width:100%;padding:14px 16px;border-radius:10px;border:1.5px solid #1e3a5f;background:#0a1628;color:#e8eaf6;font-size:16px;margin-bottom:12px;outline:none;}
+.login-box input:focus{border-color:#c9a84c;}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,#c9a84c,#e8c96d);border:none;border-radius:10px;color:#0a1628;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;}
+.login-error{color:#ff6b6b;font-size:13px;margin-top:8px;display:none;}
 
-/* TOPBAR */
-.topbar{background:var(--navy2);border-bottom:1px solid var(--border);padding:0 16px;height:var(--top-h);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:100}
-.tb-brand{display:flex;align-items:center;gap:10px}
-.tb-ico{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.tb-ico svg{width:15px;height:15px;stroke:#071026;stroke-width:2;fill:none;stroke-linecap:round}
-.tb-nm{font-family:var(--f-serif);font-size:15px;font-weight:600;line-height:1.1}
-.tb-sb{font-size:9px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase}
-.tb-r{display:flex;align-items:center;gap:8px}
-.ub{background:var(--lteal2);border:1px solid rgba(31,168,150,.25);border-radius:99px;padding:4px 10px;font-size:11px;color:var(--lteal);white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis}
-.notif-btn{background:transparent;border:1px solid var(--border3);border-radius:6px;padding:6px 10px;font-size:16px;cursor:pointer;line-height:1;display:none}
-.notif-btn.on{border-color:var(--gold);background:var(--gold3)}
-.outbtn{background:transparent;border:1px solid var(--border3);border-radius:6px;padding:5px 10px;color:var(--muted);font-size:11px;cursor:pointer;font-family:var(--f-sans)}
-.refresh-btn{background:transparent;border:1px solid var(--border3);border-radius:6px;padding:5px 10px;color:var(--lteal);font-size:11px;cursor:pointer;font-family:var(--f-sans)}
+/* TOP BAR */
+#topbar{position:sticky;top:0;z-index:100;background:#112240;border-bottom:1px solid #1e3a5f;padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.tb-logo{width:32px;height:32px;border-radius:8px;background:#0a1628;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.tb-logo img{width:100%;height:100%;object-fit:contain;}
+.tb-title{font-size:18px;font-weight:700;color:#c9a84c;flex:1;}
+.tb-user{font-size:12px;color:#8892b0;flex:1;text-align:right;}
+.btn-bell{background:none;border:none;font-size:20px;cursor:pointer;padding:4px;}
+.btn-logout{background:#1e3a5f;border:none;color:#8892b0;font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;}
 
-/* LAYOUT */
-.body{display:flex;flex:1;overflow:hidden}
-.sidebar{width:210px;background:var(--navy2);border-right:1px solid var(--border);display:none;flex-direction:column;overflow-y:auto;flex-shrink:0}
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-
-/* MOBILE BOTTOM NAV */
-#mobileNav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--navy2);border-top:1px solid var(--border);z-index:200;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;align-items:stretch;padding-bottom:env(safe-area-inset-bottom,0px);display:none}
-#mobileNav::-webkit-scrollbar{display:none}
-.mn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 12px;cursor:pointer;border-top:2px solid transparent;flex-shrink:0;min-width:70px}
-.mn-item.active{border-top-color:var(--gold2);background:rgba(200,154,44,.07)}
-.mn-item .mn-icon{font-size:22px;line-height:1}
-.mn-item .mn-lbl{font-size:9px;color:var(--muted);white-space:nowrap}
-.mn-item.active .mn-lbl{color:var(--gold2)}
-
-/* SIDEBAR ITEMS */
-.sb-s{padding:12px 12px 4px;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted2)}
-.dbt{display:flex;align-items:center;gap:9px;padding:10px 12px;cursor:pointer;border-left:2px solid transparent}
-.dbt:hover{background:rgba(255,255,255,.03)}
-.dbt.active{background:var(--lteal2);border-left-color:var(--lteal)}
-.dico{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.dnm{font-size:11px;color:var(--muted)}
-.dbt.active .dnm{color:var(--white);font-weight:500}
-.dsb{font-size:9px;color:var(--muted2);margin-top:1px}
-
-/* DATE BAR */
-.datebar{background:var(--card2);border-bottom:1px solid var(--border3);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap}
-.date-input{background:var(--card);border:1px solid var(--border3);border-radius:8px;padding:9px 12px;color:var(--white);font-family:var(--f-mono);font-size:14px;outline:none;flex:1;min-width:140px}
-.date-input:focus{border-color:var(--lteal)}
-.tab-btn{padding:8px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border3);background:transparent;color:var(--muted);font-family:var(--f-sans)}
-.tab-btn.active{background:var(--lteal2);color:var(--lteal);border-color:rgba(31,168,150,.3)}
-.refresh-mini{background:linear-gradient(135deg,var(--teal),var(--lteal));border:none;border-radius:7px;padding:9px 16px;color:var(--white);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap}
+/* BOTTOM NAV */
+#bottomNav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#112240;border-top:1px solid #1e3a5f;display:flex;overflow-x:auto;padding:8px 4px;gap:2px;}
+#bottomNav::-webkit-scrollbar{display:none;}
+.nav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border:none;background:none;color:#8892b0;font-size:10px;cursor:pointer;border-radius:10px;white-space:nowrap;flex-shrink:0;min-width:60px;}
+.nav-btn.active{background:#1e3a5f;color:#c9a84c;}
+.nav-btn span:first-child{font-size:18px;}
 
 /* CONTENT */
-.cnt{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
-.sh{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted2)}
+#app{display:none;}
+.section{display:none;padding:16px;}
+.section.active{display:block;}
 
-/* KPI */
-.kgrid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.kpi{background:var(--card);border:1px solid var(--border3);border-radius:var(--r);padding:14px;position:relative;overflow:hidden}
-.kpi:before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.kpi.cg:before{background:linear-gradient(90deg,var(--gold),var(--gold2))}
-.kpi.ct:before{background:linear-gradient(90deg,var(--teal),var(--lteal))}
-.kpi.cgr:before{background:var(--green)}
-.kpi.ca:before{background:var(--amber)}
-.kpi.cr:before{background:var(--red)}
-.kpi.cp:before{background:var(--purple)}
-.kl{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:5px}
-.kv{font-family:var(--f-serif);font-size:22px;font-weight:600;color:var(--white);line-height:1}
-.ks{font-size:10px;color:var(--muted2);margin-top:4px}
-/* YoY badge */
-.yoy{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:3px;margin-top:5px;font-weight:500}
-.yoy.up{background:var(--green2);color:var(--green)}
-.yoy.dn{background:var(--red2);color:var(--red)}
-.yoy.neu{background:var(--amber2);color:var(--amber)}
+/* DATE FILTER */
+.date-filter{background:#112240;border-radius:12px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.date-filter label{color:#8892b0;font-size:13px;}
+.date-filter input[type=date]{background:#0a1628;border:1.5px solid #1e3a5f;color:#e8eaf6;padding:8px 12px;border-radius:8px;font-size:14px;flex:1;min-width:140px;}
+.date-filter input[type=date]:focus{border-color:#c9a84c;outline:none;}
+.btn-filter{background:#c9a84c;color:#0a1628;border:none;padding:8px 16px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;}
+.btn-quick{background:#1e3a5f;color:#8892b0;border:none;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer;}
+.btn-quick.active{background:#c9a84c;color:#0a1628;}
 
-/* PANELS */
-.panel{background:var(--card);border:1px solid var(--border3);border-radius:var(--r);padding:14px}
-.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap}
-.pt{font-size:12px;font-weight:500;color:var(--white)}
-.pp{font-size:10px;padding:3px 9px;border-radius:99px;background:var(--lteal2);color:var(--lteal);border:1px solid rgba(31,168,150,.2);white-space:nowrap}
-.pp.gold{background:var(--gold3);color:var(--gold2);border-color:rgba(200,154,44,.25)}
+/* KPI CARDS */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.kpi-card{background:#112240;border-radius:14px;padding:14px;border:1px solid #1e3a5f;}
+.kpi-card.full{grid-column:1/-1;}
+.kpi-label{font-size:11px;color:#8892b0;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.kpi-value{font-size:22px;font-weight:700;color:#e8eaf6;line-height:1.1;}
+.kpi-value.gold{color:#c9a84c;}
+.kpi-sub{font-size:11px;color:#8892b0;margin-top:4px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;margin-top:6px;}
+.badge.up{background:rgba(0,210,100,0.15);color:#00d264;}
+.badge.down{background:rgba(255,80,80,0.15);color:#ff5050;}
+.badge.neutral{background:rgba(200,200,200,0.1);color:#8892b0;}
 
-/* TABLE */
-.tscroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.dt{width:100%;border-collapse:collapse;min-width:320px}
-.dt th{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted2);padding:6px 10px;border-bottom:1px solid var(--border3);text-align:left;font-weight:400;white-space:nowrap}
-.dt td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.035);font-size:12px;vertical-align:middle}
-.dt tr:last-child td{border-bottom:none}
-.dt tr:hover td{background:rgba(255,255,255,.02)}
-.dm{color:var(--muted)}
-.dn{font-family:var(--f-mono);font-size:11px;color:var(--off)}
-.mcol{display:flex;flex-direction:column;gap:12px}
+/* CHART */
+.chart-card{background:#112240;border-radius:14px;padding:16px;margin-bottom:16px;border:1px solid #1e3a5f;}
+.chart-title{font-size:13px;color:#8892b0;margin-bottom:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.chart-wrap{position:relative;height:220px;}
+
+/* LOADING */
+.loading{text-align:center;padding:40px;color:#8892b0;}
+.spinner{width:32px;height:32px;border:3px solid #1e3a5f;border-top-color:#c9a84c;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* DEPT DETAIL TABLE */
+.detail-table{width:100%;border-collapse:collapse;font-size:13px;}
+.detail-table th{text-align:left;padding:8px 10px;color:#8892b0;font-weight:500;border-bottom:1px solid #1e3a5f;}
+.detail-table td{padding:10px;border-bottom:1px solid #1a2f4a;}
+.detail-table tr:last-child td{border-bottom:none;}
+.detail-table .val{text-align:right;font-weight:600;}
+.detail-table .val.gold{color:#c9a84c;}
+.detail-table .section-header{background:#0a1628;color:#c9a84c;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;}
+
+/* REFRESH BTN */
+.btn-refresh{background:#1e3a5f;border:none;color:#8892b0;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;}
+.btn-refresh:active{background:#c9a84c;color:#0a1628;}
+
+/* EXCEL BTN */
+.btn-excel{background:rgba(0,150,80,0.15);border:1px solid rgba(0,150,80,0.3);color:#00c864;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
 
 /* NO DATA */
-.nodata{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;color:var(--muted2);gap:8px;text-align:center}
-.nodata-icon{font-size:32px;opacity:.4}
-.loading{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted)}
+.no-data{text-align:center;padding:40px 20px;color:#8892b0;}
+.no-data .icon{font-size:40px;margin-bottom:12px;}
 
-/* TOAST */
-#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#112250;border:1px solid rgba(31,168,150,.3);color:var(--white);padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999;max-width:90vw;text-align:center;opacity:0;transition:opacity .3s;pointer-events:none}
+/* SECTION HEADER */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sec-hdr h2{font-size:16px;font-weight:700;color:#e8eaf6;}
 
-/* RESPONSIVE */
-@media (max-width:767px){
-  .sidebar{display:none !important}
-  #mobileNav{display:flex}
-  .cnt{padding-bottom:80px}
-}
-@media (min-width:768px){
-  .sidebar{display:flex !important}
-  #mobileNav{display:none !important}
-  .kgrid2{grid-template-columns:repeat(4,1fr)}
-  .mcol{flex-direction:row}
-  .mcol>*{flex:1}
-  .mcol>*:first-child{flex:1.4}
-}
+/* OCC BAR */
+.occ-bar{height:8px;background:#1e3a5f;border-radius:4px;margin-top:8px;overflow:hidden;}
+.occ-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#c9a84c,#e8c96d);transition:width 0.5s ease;}
+.occ-fill.green{background:linear-gradient(90deg,#00c864,#00ff80);}
+.occ-fill.red{background:linear-gradient(90deg,#ff5050,#ff8080);}
+
+/* TOTAL ROW */
+.total-row td{font-weight:700;color:#c9a84c;border-top:2px solid #c9a84c !important;}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="loginScreen">
-  <div class="lw">
-    <div class="ll">
-      <div class="li" style="background:none;padding:0;overflow:hidden"><img src="/icon-192.png" style="width:40px;height:40px;border-radius:10px;display:block"></div>
-      <div><div class="lt">Flower Hotels & Resorts</div><div class="ls">Raporti Ditor Operacional</div></div>
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="icon-192.png" alt="Flower"/>
     </div>
-    <label class="llbl">Zgjidh Përdoruesin</label>
-    <select class="lsel" id="loginUser">
-      <option value="">— Zgjidh —</option>
-      <option value="MANAGER">MANAGER — Ernest Caci</option>
-      <option value="FO">FO — Franka / Sara / Xhiku</option>
-      <option value="Edisona">Edisona — SPA</option>
-      <option value="Klajdi">Klajdi — F&B</option>
-      <option value="Erinda">Erinda</option>
-      <option value="Bruna">Bruna — Cash Flow</option>
-      <option value="Xhina">Xhina — Finance</option>
-    </select>
-    <label class="llbl">Fjalëkalimi</label>
-    <input class="linp" type="password" id="loginPass" placeholder="••••••">
-    <div class="lerr" id="loginErr">⚠ Fjalëkalim i gabuar.</div>
-    <button class="lbtn" onclick="doLogin()">Hyr në Dashboard</button>
+    <h1>FLOW</h1>
+    <p>Flower Hotels · Daily Operations</p>
+    <input type="text" id="loginUser" placeholder="Përdoruesi" autocomplete="username"/>
+    <input type="password" id="loginPass" placeholder="Fjalëkalimi" autocomplete="current-password"/>
+    <button class="btn-login" onclick="doLogin()">Hyr</button>
+    <div class="login-error" id="loginErr">❌ Përdoruesi ose fjalëkalimi gabim</div>
   </div>
 </div>
 
-<div class="app" id="appShell" style="display:none">
-  <div class="topbar">
-    <div class="tb-brand">
-      <div class="tb-ico" style="background:none;padding:0;overflow:hidden"><img src="/icon-192.png" style="width:32px;height:32px;border-radius:7px;display:block"></div>
-      <div><div class="tb-nm">Flower Hotels</div><div class="tb-sb">Raporti Ditor</div></div>
-    </div>
-    <div class="tb-r">
-      <span class="ub" id="topUser"></span>
-      <button class="notif-btn" id="notifBtn" onclick="toggleNotifications()">🔕</button>
-      <button class="outbtn" onclick="doLogout()">Dil</button>
-    </div>
+<!-- APP -->
+<div id="app">
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="tb-logo"><img src="icon-192.png" alt="F"/></div>
+    <div class="tb-title">FLOW</div>
+    <div class="tb-user" id="tbUser"></div>
+    <button class="btn-bell" id="bellBtn" onclick="toggleNotif()" style="display:none">🔕</button>
+    <button class="btn-logout" onclick="doLogout()">Dil</button>
   </div>
-  <div class="body">
-    <div class="sidebar" id="sidebar">
-      <div class="sb-s">Pamja</div>
-      <div class="dbt active" onclick="setView('overview')"><div class="dico" style="background:rgba(200,154,44,.15)">📊</div><div><div class="dnm">Overview</div><div class="dsb">KPI Ditore</div></div></div>
-      <div class="dbt" onclick="setView('fo')"><div class="dico" style="background:rgba(31,168,150,.15)">🗝️</div><div><div class="dnm">Front Office</div><div class="dsb">Dhoma & Revenue</div></div></div>
-      <div class="dbt" onclick="setView('fnb')"><div class="dico" style="background:rgba(240,160,48,.15)">🍽️</div><div><div class="dnm">F&B</div><div class="dsb">Xhiro Ditore</div></div></div>
-      <div class="dbt" onclick="setView('cashflow')"><div class="dico" style="background:rgba(200,154,44,.15)">💰</div><div><div class="dnm">Cash Flow</div><div class="dsb">Hyrje & Dalje</div></div></div>
-      <div class="dbt" onclick="setView('expenses')"><div class="dico" style="background:rgba(224,80,80,.15)">📦</div><div><div class="dnm">Shpenzime</div><div class="dsb">Magazina</div></div></div>
-    </div>
-    <div class="main" id="mainArea">
-      <div class="datebar">
-        <input type="date" class="date-input" id="datePicker" onchange="loadData()">
-        <button class="tab-btn active" id="btnToday" onclick="setToday()">Sot</button>
-        <button class="tab-btn" id="btnYesterday" onclick="setYesterday()">Dje</button>
-        <button class="refresh-mini" onclick="forceRefresh()">↻ Rifresko</button>
-      </div>
-      <div class="cnt" id="mainContent"><div class="loading">Duke ngarkuar të dhënat...</div></div>
-    </div>
-  </div>
-  <div id="mobileNav"></div>
+
+  <!-- BOTTOM NAV -->
+  <div id="bottomNav"></div>
+
+  <!-- SECTIONS -->
+  <div id="sections"></div>
 </div>
-<div id="toast"></div>
 
 <script>
-const API = window.location.origin;
-const VAPID_PUB = 'BBhLXpHFoobumd5D0D2a-AsZVS30YoZggjPe2X65-_yVYTVGYWEQCbTT53iuag99iJCgqkCGhTW3EjLl5XISaas';
+// ─── USERS ─────────────────────────────────────────────────────────────────
 const USERS = {
-  MANAGER:{pass:'Ernest2026',name:'Ernest Caci — GM',role:'manager'},
-  FO:{pass:'FO2026',name:'Franka / Sara / Xhiku',role:'user'},
-  Edisona:{pass:'Edisona2026',name:'Edisona — SPA',role:'user'},
-  Klajdi:{pass:'Klajdi2026',name:'Klajdi — F&B',role:'user'},
-  Erinda:{pass:'Erinda2026',name:'Erinda',role:'user'},
-  Bruna:{pass:'Bruna2026',name:'Bruna — Cash Flow',role:'user'},
-  Xhina:{pass:'Xhina2026',name:'Xhina — Finance',role:'user'},
+  'MANAGER': { pass:'Ernest2026', role:'manager', label:'Manager (Ernest)' },
+  'FO':      { pass:'FO2026',      role:'fo',      label:'Front Office' },
+  'Edisona': { pass:'Edisona2026', role:'spa',     label:'SPA (Edisona)' },
+  'Klajdi':  { pass:'Klajdi2026',  role:'fnb',     label:'F&B (Klajdi)' },
+  'Erinda':  { pass:'Erinda2026',  role:'ai',      label:'Kënaqësia (Erinda)' },
+  'Bruna':   { pass:'Bruna2026',   role:'cashflow',label:'Cash Flow (Bruna)' },
+  'Xhina':   { pass:'Xhina2026',   role:'finance', label:'Finance (Xhina)' },
 };
 
-let CU=null, VIEW='overview', DATA=null;
-let barChart=null, trendChart=null;
+const TOTAL_ROOMS = 110;
+const EXCHANGE = 100; // 1€ = 100 Lek
 
-document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+let currentUser = null;
+let currentRole = null;
+let selectedDate = todayStr();
+let charts = {};
+let notifSub = null;
 
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function todayStr(){
+  return new Date().toISOString().split('T')[0];
+}
+function fmtLek(v){
+  if(!v && v!==0) return '—';
+  return Number(v).toLocaleString('sq-AL')+ ' Lek';
+}
+function fmtEur(v){
+  if(!v && v!==0) return '—';
+  return '€' + Number(v).toLocaleString('sq-AL');
+}
+function fmtNum(v){
+  if(!v && v!==0) return '—';
+  return Number(v).toLocaleString('sq-AL');
+}
+function yoyBadge(curr, prev){
+  if(!prev || prev===0) return '<span class="badge neutral">N/A</span>';
+  const pct = ((curr-prev)/prev*100).toFixed(1);
+  const cls = pct>=0?'up':'down';
+  const sym = pct>=0?'▲':'▼';
+  return `<span class="badge ${cls}">${sym} ${Math.abs(pct)}%</span>`;
+}
+
+// ─── LOGIN ──────────────────────────────────────────────────────────────────
 function doLogin(){
-  const uid=document.getElementById('loginUser').value;
-  const pw=document.getElementById('loginPass').value;
-  const u=USERS[uid];
-  if(!u||pw!==u.pass){document.getElementById('loginErr').style.display='block';return;}
-  document.getElementById('loginErr').style.display='none';
-  CU={...u,uid};
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('appShell').style.display='flex';
-  document.getElementById('topUser').textContent=u.name;
-  buildNav();
-  document.getElementById('datePicker').value=td();
-  loadData();
-  if(CU.uid==='MANAGER'){
-    document.getElementById('notifBtn').style.display='block';
-    setTimeout(checkNotifStatus,500);
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  const err = document.getElementById('loginErr');
+  const user = USERS[u];
+  if(!user || user.pass !== p){
+    err.style.display='block'; return;
   }
+  currentUser = u;
+  currentRole = user.role;
+  err.style.display='none';
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('tbUser').textContent = user.label;
+  if(currentRole==='manager') document.getElementById('bellBtn').style.display='inline';
+  buildNav();
+  buildSections();
+  loadData();
 }
 
 function doLogout(){
-  CU=null;
+  currentUser=null; currentRole=null;
   document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('appShell').style.display='none';
-  document.getElementById('loginPass').value='';
+  document.getElementById('app').style.display='none';
   document.getElementById('loginUser').value='';
-  document.getElementById('notifBtn').style.display='none';
+  document.getElementById('loginPass').value='';
 }
 
+// ─── NAVIGATION ─────────────────────────────────────────────────────────────
+const NAV_MANAGER = [
+  {id:'overview',icon:'📊',label:'Overview'},
+  {id:'fo',icon:'🏨',label:'FO'},
+  {id:'fnb',icon:'🍽️',label:'F&B'},
+  {id:'spa',icon:'💆',label:'SPA'},
+  {id:'cashflow',icon:'💰',label:'Cash Flow'},
+  {id:'finance',icon:'📋',label:'Finance'},
+];
+const NAV_ROLE = {
+  'fo':       [{id:'fo',icon:'🏨',label:'Raporti'}],
+  'spa':      [{id:'spa',icon:'💆',label:'Raporti'}],
+  'fnb':      [{id:'fnb',icon:'🍽️',label:'Raporti'}],
+  'ai':       [{id:'ai',icon:'⭐',label:'Raporti'}],
+  'cashflow': [{id:'cashflow',icon:'💰',label:'Raporti'}],
+  'finance':  [{id:'finance',icon:'📋',label:'Raporti'}],
+};
+
 function buildNav(){
-  const views=[
-    {id:'overview',icon:'📊',lbl:'Overview'},
-    {id:'fo',icon:'🗝️',lbl:'Front Off.'},
-    {id:'fnb',icon:'🍽️',lbl:'F&B'},
-    {id:'cashflow',icon:'💰',lbl:'Cash Flow'},
-    {id:'expenses',icon:'📦',lbl:'Shpenzime'},
-  ];
-  document.getElementById('mobileNav').innerHTML=views.map(v=>
-    `<div class="mn-item${v.id===VIEW?' active':''}" id="mn-${v.id}" onclick="setView('${v.id}')">
-      <span class="mn-icon">${v.icon}</span><span class="mn-lbl">${v.lbl}</span></div>`
+  const nav = document.getElementById('bottomNav');
+  const items = currentRole==='manager' ? NAV_MANAGER : (NAV_ROLE[currentRole]||[]);
+  nav.innerHTML = items.map((n,i)=>
+    `<button class="nav-btn${i===0?' active':''}" onclick="showSection('${n.id}')" id="nav_${n.id}">
+      <span>${n.icon}</span><span>${n.label}</span>
+    </button>`
   ).join('');
 }
 
-function setView(v){
-  VIEW=v;
-  document.querySelectorAll('.dbt').forEach((b,i)=>b.classList.toggle('active',['overview','fo','fnb','cashflow','expenses'][i]===v));
-  document.querySelectorAll('.mn-item').forEach(b=>b.classList.remove('active'));
-  const mn=document.getElementById('mn-'+v);if(mn)mn.classList.add('active');
-  if(DATA) renderView();
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const s = document.getElementById('sec_'+id);
+  if(s) s.classList.add('active');
+  const b = document.getElementById('nav_'+id);
+  if(b) b.classList.add('active');
 }
 
-function setToday(){
-  document.getElementById('datePicker').value=td();
-  document.getElementById('btnToday').classList.add('active');
-  document.getElementById('btnYesterday').classList.remove('active');
-  loadData();
-}
-function setYesterday(){
-  const y=new Date();y.setDate(y.getDate()-1);
-  document.getElementById('datePicker').value=y.toISOString().split('T')[0];
-  document.getElementById('btnYesterday').classList.add('active');
-  document.getElementById('btnToday').classList.remove('active');
-  loadData();
-}
-
-async function loadData(){
-  const date=document.getElementById('datePicker').value||td();
-  document.getElementById('mainContent').innerHTML='<div class="loading">Duke ngarkuar...</div>';
-  try{
-    const r=await fetch(`${API}/api/overview?date=${date}`);
-    DATA=await r.json();
-    renderView();
-  }catch(e){
-    document.getElementById('mainContent').innerHTML='<div class="nodata"><div class="nodata-icon">⚠️</div><p>Gabim gjatë ngarkimit të të dhënave.</p></div>';
-  }
-}
-
-async function forceRefresh(){
-  showToast('Duke rifreskuar të dhënat nga Google Sheets...');
-  await fetch(`${API}/api/refresh`,{method:'POST'});
-  await loadData();
-  showToast('✓ Të dhënat u përditësuan!');
-}
-
-function renderView(){
-  if(!DATA) return;
-  const d=DATA;
-  switch(VIEW){
-    case 'overview': renderOverview(d); break;
-    case 'fo': renderFO(d); break;
-    case 'fnb': renderFNB(d); break;
-    case 'cashflow': renderCF(d); break;
-    case 'expenses': renderExp(d); break;
-  }
-}
-
-/* ── YoY Badge ── */
-function yoyBadge(current, ly, unit='', invert=false){
-  if(!ly||ly===0) return '';
-  const diff=current-ly;
-  const pct=Math.round(diff/Math.abs(ly)*100);
-  const isUp=invert?diff<0:diff>0;
-  const cls=diff===0?'neu':isUp?'up':'dn';
-  const arrow=diff===0?'→':isUp?'↑':'↓';
-  return `<div class="yoy ${cls}">${arrow} ${Math.abs(pct)}% vs ${fmtD(DATA.lyDate).slice(0,6)}</div>`;
-}
-
-function fmt(n,decimals=0){
-  if(!n&&n!==0) return '—';
-  return Number(n).toLocaleString('sq-AL',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
-}
-function fmtD(d){ try{return new Date(d+'T00:00:00').toLocaleDateString('sq-AL',{day:'2-digit',month:'short',year:'numeric'});}catch(e){return d;} }
-function td(){ return new Date().toISOString().split('T')[0]; }
-
-/* ── OVERVIEW ── */
-function renderOverview(d){
-  const fo=d.fo||{}, fnb=d.fnb||{}, cf=d.cf||{}, exp=d.exp||{};
-  const foLY=d.foLY||{}, fnbLY=d.fnbLY||{};
-  const occ=fo.nights_avail?Math.round((fo.nights_occ||0)/fo.nights_avail*100):0;
-  const occLY=foLY.nights_avail?Math.round((foLY.nights_occ||0)/foLY.nights_avail*100):0;
-  const occColor=occ>=70?'cgr':occ>=50?'ca':'cr';
-  const fnbTotal=fnb.total||0;
-  const fnbTotalLY=fnbLY.total||0;
-  const hotelLek = (fo.revenue_euro||0)*100;
-  const spa = d.spa||{};
-  const spaLY = d.spaLY||{};
-  const spaLek = spa.revenues||0;
-  const houseLek = fnb.house_use||0;
-  const fnbItems = [fnb.flower_rest||0,fnb.pool_bar||0,fnb.brutal_garden||0,fnb.pool_bar_garden||0,fnb.beach_bar||0];
-  const totalLek = fnbItems.reduce((a,b)=>a+b,0) + houseLek + hotelLek + spaLek;
-  const totalLekLY = [(foLY?.revenue_euro||0)*100,(fnbLY?.flower_rest||0),(fnbLY?.pool_bar||0),(fnbLY?.brutal_garden||0),(fnbLY?.pool_bar_garden||0),(fnbLY?.beach_bar||0),(fnbLY?.house_use||0),(spaLY?.revenues||0)].reduce((a,b)=>a+b,0);
-  const barData=[
-    {l:'Hotel (€×100)',v:hotelLek,c:'#F0A030'},
-    {l:'Flower Rest.',v:fnb.flower_rest||0,c:'#C49A2C'},
-    {l:'Brutal Garden',v:fnb.brutal_garden||0,c:'#E05050'},
-    {l:'Pool Bar',v:fnb.pool_bar||0,c:'#1FA896'},
-    {l:'PBar Garden',v:fnb.pool_bar_garden||0,c:'#176B63'},
-    {l:'Beach Bar',v:fnb.beach_bar||0,c:'#2DB87A'},
-    {l:'SPA',v:spaLek,c:'#9B7CE8'},
-    {l:'House Use',v:houseLek,c:'#8DA3BD'},
-    {l:'TOTAL',v:totalLek,c:'rgba(200,154,44,.8)'},
-  ];
-  const el=document.getElementById('mainContent');
-  el.innerHTML=`
-  <div class="sh">Raporti — ${fmtD(d.date)} · vs ${fmtD(d.lyDate)}</div>
-  <div class="kgrid2">
-    <div class="kpi cg">
-      <div class="kl">Dhoma të Zëna</div>
-      <div class="kv">${fmt(fo.nights_occ)}<span style="font-size:13px;color:var(--muted)"> /${fo.nights_avail||110}</span></div>
-      <div class="ks">Flower Hotel & SPA</div>
-      ${yoyBadge(fo.nights_occ||0,foLY.nights_occ||0)}
-    </div>
-    <div class="kpi ct">
-      <div class="kl">Dhoma të Lira</div>
-      <div class="kv">${fmt((fo.nights_avail||110)-(fo.nights_occ||0))}</div>
-      <div class="ks">Disponibël</div>
-    </div>
-    <div class="kpi ${occColor}">
-      <div class="kl">Okupanca</div>
-      <div class="kv">${occ}%</div>
-      <div class="ks">${fmt(fo.nights_occ)}/${fo.nights_avail||110}</div>
-      ${yoyBadge(occ,occLY)}
-    </div>
-    <div class="kpi ca">
-      <div class="kl">Revenue Hotel</div>
-      <div class="kv">€${fmt(fo.revenue_euro)}</div>
-      <div class="ks">${fmt(Math.round((fo.revenue_euro||0)*100))} Lek (×100)</div>
-      ${yoyBadge(fo.revenue_euro||0,foLY.revenue_euro||0)}
-    </div>
-    <div class="kpi ct">
-      <div class="kl">F&B Total (Lek)</div>
-      <div class="kv">${fmt(Math.round(fnbTotal/1000))}K</div>
-      <div class="ks">Të gjitha outlet-et</div>
-      ${yoyBadge(fnbTotal,fnbTotalLY)}
-    </div>
-    <div class="kpi cg">
-      <div class="kl">Hyrje Cash Flow</div>
-      <div class="kv">${cf&&cf.total_hyrje_lek?fmt(Math.round(cf.total_hyrje_lek/1000))+'K':'—'}</div>
-      <div class="ks">Lek (me kurs 95)</div>
-    </div>
-    <div class="kpi cp">
-      <div class="kl">SPA Revenue</div>
-      <div class="kv">${spaLek?fmt(spaLek):'—'}</div>
-      <div class="ks">${spa.total_services?spa.total_services+' shërbime':'Lek'}</div>
-      ${yoyBadge(spaLek,spaLY.revenues||0)}
-    </div>
-    <div class="kpi cg">
-      <div class="kl">Total Ardhura</div>
-      <div class="kv">${fmt(Math.round(totalLek/1000))}K</div>
-      <div class="ks">Lek · të gjitha dept.</div>
-      ${yoyBadge(totalLek,totalLekLY)}
-    </div>
-  </div>
-  <div class="mcol">
-    <div class="panel">
-      <div class="ph"><span class="pt">Të Ardhurat sipas Departamentit</span><span class="pp gold">${fmtD(d.date)}</span></div>
-      <div style="position:relative;height:180px"><canvas id="barC" role="img" aria-label="Bar chart">Chart</canvas></div>
-    </div>
-    <div class="panel">
-      <div class="ph"><span class="pt">Krahasimi YoY — Dhoma</span><span class="pp">${fmtD(d.lyDate)}</span></div>
-      <div style="position:relative;height:180px"><canvas id="yoyC" role="img" aria-label="YoY chart">Chart</canvas></div>
-    </div>
-  </div>
-  ${fo.notes?`<div class="panel"><div class="ph"><span class="pt">📝 Shënime FO</span></div><p style="font-size:12px;color:var(--muted)">${fo.notes}</p></div>`:''}
-  `;
-  setTimeout(()=>{
-    // Bar chart
-    const bc=document.getElementById('barC');
-    if(bc){
-      if(barChart)barChart.destroy();
-      barChart=new Chart(bc,{type:'bar',data:{
-        labels:barData.map(x=>x.l),
-        datasets:[{data:barData.map(x=>x.v),backgroundColor:barData.map(x=>x.c),borderRadius:4,borderSkipped:false}]
-      },options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmt(Math.round(c.raw))} Lek`}}},
-        scales:{x:{ticks:{color:'#8DA3BD',font:{size:9}},grid:{color:'rgba(255,255,255,.03)'}},
-                y:{ticks:{color:'#8DA3BD',font:{size:9},callback:v=>v>=1000?Math.round(v/1000)+'K':v},grid:{color:'rgba(255,255,255,.05)'}}}
-      }});
-    }
-    // YoY comparison chart
-    const yc=document.getElementById('yoyC');
-    if(yc){
-      if(trendChart)trendChart.destroy();
-      trendChart=new Chart(yc,{type:'bar',data:{
-        labels:['Dhoma Zëna','Occ %','Revenue (€)','F&B (kLek)','SPA (kLek)'],
-        datasets:[
-          {label:d.date.slice(0,4),data:[fo.nights_occ||0,occ,(fo.revenue_euro||0),Math.round(fnbTotal/1000),Math.round(spaLek/1000)],backgroundColor:'rgba(200,154,44,.75)',borderRadius:3},
-          {label:d.lyDate?d.lyDate.slice(0,4):'PY',data:[foLY?.nights_occ||0,occLY,(foLY?.revenue_euro||0),Math.round(fnbTotalLY/1000),Math.round((spaLY?.revenues||0)/1000)],backgroundColor:'rgba(31,168,150,.45)',borderRadius:3},
-        ]
-      },options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:true,labels:{color:'#8DA3BD',font:{size:10},boxWidth:10}}},
-        scales:{x:{ticks:{color:'#8DA3BD',font:{size:9}},grid:{color:'rgba(255,255,255,.03)'}},
-                y:{ticks:{color:'#8DA3BD',font:{size:9}},grid:{color:'rgba(255,255,255,.05)'}}}
-      }});
-    }
-  },80);
-}
-
-/* ── FRONT OFFICE ── */
-function renderFO(d){
-  const fo=d.fo,foLY=d.foLY;
-  if(!fo){return noData();}
-  const occ=fo.nights_avail?Math.round(fo.nights_occ/fo.nights_avail*100):0;
-  const occLY=foLY?.nights_avail?Math.round((foLY.nights_occ||0)/foLY.nights_avail*100):0;
-  document.getElementById('mainContent').innerHTML=`
-  <div class="sh">Front Office — ${fmtD(d.date)}</div>
-  <div class="kgrid2">
-    <div class="kpi cg"><div class="kl">Dhoma të Zëna</div><div class="kv">${fo.nights_occ}</div>${yoyBadge(fo.nights_occ,foLY?.nights_occ)}</div>
-    <div class="kpi ct"><div class="kl">Dhoma të Lira</div><div class="kv">${(fo.nights_avail||110)-fo.nights_occ}</div></div>
-    <div class="kpi ${occ>=70?'cgr':occ>=50?'ca':'cr'}"><div class="kl">Okupanca</div><div class="kv">${occ}%</div>${yoyBadge(occ,occLY)}</div>
-    <div class="kpi ca"><div class="kl">Revenue</div><div class="kv">€${fmt(fo.revenue_euro)}</div>${yoyBadge(fo.revenue_euro,foLY?.revenue_euro)}</div>
-  </div>
-  <div class="panel">
-    <div class="ph"><span class="pt">Detajet · ${fmtD(d.date)} vs ${fmtD(d.lyDate)}</span></div>
-    <div class="tscroll"><table class="dt">
-      <thead><tr><th>Metrika</th><th>${d.date.slice(0,4)}</th><th>${d.lyDate.slice(0,4)}</th><th>Ndryshim</th></tr></thead>
-      <tbody>
-        ${[
-          ['Dhoma Zëna',fo.nights_occ,foLY?.nights_occ,''],
-          ['Dhoma Lira',(fo.nights_avail||110)-fo.nights_occ,(foLY?.nights_avail||110)-(foLY?.nights_occ||0),''],
-          ['Dhoma Disponibël',fo.nights_avail||110,foLY?.nights_avail||110,''],
-          ['Ocupanca %',occ+'%',occLY+'%',''],
-          ['Revenue (€)','€'+fmt(fo.revenue_euro),'€'+fmt(foLY?.revenue_euro),''],
-        ].map(([l,v,ly])=>{
-          const cur=parseFloat(String(v).replace(/[^0-9.\-]/g,''))||0;
-          const lyN=parseFloat(String(ly).replace(/[^0-9.\-]/g,''))||0;
-          const diff=cur-lyN;
-          const pct=lyN?Math.round(diff/Math.abs(lyN)*100):0;
-          const col=diff>0?'var(--green)':diff<0?'var(--red)':'var(--muted)';
-          return `<tr><td class="dm">${l}</td><td class="dn">${v||'—'}</td><td class="dn" style="color:var(--muted)">${ly||'—'}</td><td class="dn" style="color:${col}">${diff!==0?(diff>0?'+':'')+pct+'%':'—'}</td></tr>`;
-        }).join('')}
-      </tbody>
-    </table></div>
-  </div>
-  ${fo.notes?`<div class="panel"><div class="ph"><span class="pt">📝 Shënime</span></div><p style="font-size:13px;color:var(--off)">${fo.notes}</p></div>`:''}`;
-}
-
-/* ── F&B ── */
-function renderFNB(d){
-  const fnb=d.fnb,fnbLY=d.fnbLY;
-  if(!fnb){return noData();}
-  const items=[
-    {l:'Flower Restaurant',v:fnb.flower_rest,ly:fnbLY?.flower_rest},
-    {l:'Pool Bar',v:fnb.pool_bar,ly:fnbLY?.pool_bar},
-    {l:'Brutal Garden',v:fnb.brutal_garden,ly:fnbLY?.brutal_garden},
-    {l:'Pool Bar Garden',v:fnb.pool_bar_garden,ly:fnbLY?.pool_bar_garden},
-    {l:'Beach Bar',v:fnb.beach_bar,ly:fnbLY?.beach_bar},
-    {l:'House Use',v:fnb.house_use,ly:fnbLY?.house_use},
-  ];
-  document.getElementById('mainContent').innerHTML=`
-  <div class="sh">F&B — ${fmtD(d.date)}</div>
-  <div class="kgrid2">
-    <div class="kpi cg"><div class="kl">Total F&B</div><div class="kv">${fmt(Math.round(fnb.total/1000))}K</div><div class="ks">Lek</div>${yoyBadge(fnb.total,fnbLY?.total)}</div>
-    <div class="kpi ct"><div class="kl">Flower Rest.</div><div class="kv">${fmt(Math.round(fnb.flower_rest/1000))}K</div><div class="ks">Lek</div></div>
-    <div class="kpi ca"><div class="kl">Brutal Garden</div><div class="kv">${fmt(Math.round(fnb.brutal_garden/1000))}K</div><div class="ks">Lek</div></div>
-    <div class="kpi cgr"><div class="kl">Pool Bar</div><div class="kv">${fmt(Math.round(fnb.pool_bar/1000))}K</div><div class="ks">Lek</div></div>
-  </div>
-  <div class="panel">
-    <div class="ph"><span class="pt">Detajet · vs ${fmtD(d.lyDate)}</span></div>
-    <div class="tscroll"><table class="dt">
-      <thead><tr><th>Outlet</th><th>${d.date.slice(0,4)} (Lek)</th><th>${d.lyDate.slice(0,4)} (Lek)</th><th>±%</th></tr></thead>
-      <tbody>
-        ${items.map(({l,v,ly})=>{
-          const diff=(v||0)-(ly||0);
-          const pct=ly?Math.round(diff/Math.abs(ly)*100):0;
-          const col=diff>0?'var(--green)':diff<0?'var(--red)':'var(--muted)';
-          return `<tr><td class="dm">${l}</td><td class="dn">${fmt(v)}</td><td class="dn" style="color:var(--muted)">${fmt(ly)}</td><td class="dn" style="color:${col}">${diff!==0?(diff>0?'+':'')+pct+'%':'—'}</td></tr>`;
-        }).join('')}
-        <tr style="border-top:1px solid var(--border2)"><td style="font-weight:500">TOTAL</td><td class="dn" style="color:var(--gold2)">${fmt(fnb.total)}</td><td class="dn" style="color:var(--muted)">${fmt(fnbLY?.total)}</td><td class="dn" style="color:${(fnb.total||0)>(fnbLY?.total||0)?'var(--green)':'var(--red)'}">
-          ${fnbLY?.total?((fnb.total||0)>(fnbLY.total)?'+':'')+Math.round(((fnb.total||0)-(fnbLY.total))/Math.abs(fnbLY.total)*100)+'%':'—'}
-        </td></tr>
-      </tbody>
-    </table></div>
-  </div>`;
-}
-
-/* ── CASH FLOW ── */
-function renderCF(d){
-  const cf=d.cf;
-  if(!cf){return noData();}
-  const hyrje=[
-    {l:'Non Cash Lek',v:cf.noncash_lek,u:'Lek'},
-    {l:'Non Cash Bank Euro',v:cf.noncash_euro,u:'€'},
-    {l:'Reception Cash Euro',v:cf.recep_cash_euro,u:'€'},
-    {l:'Reception Cash Lek',v:cf.recep_cash_lek,u:'Lek'},
-    {l:'Allotments Euro',v:cf.allotments_euro,u:'€'},
-    {l:'Itaka',v:cf.itaka,u:'€'},
-    {l:'F&B Cash Lek',v:cf.fnb_lek,u:'Lek'},
-    {l:'MICE Euro',v:cf.mice_euro,u:'€'},
-    {l:'MICE Lek',v:cf.mice_lek,u:'Lek'},
-  ];
-  const dalje=[
-    {l:'Paga',v:cf.paga,u:'Lek'},
-    {l:'Taxes & Utilities',v:cf.taksa_util,u:'Lek'},
-    {l:'Loan Euro',v:cf.kredi_euro,u:'€'},
-    {l:'Loan Lek',v:cf.kredi_lek,u:'Lek'},
-    {l:'House Use',v:cf.house_use,u:'Lek'},
-    {l:'Purchases Cash',v:cf.furnitore_cash,u:'Lek'},
-    {l:'Purchases Bank',v:cf.furnitore_banke,u:'€'},
-    {l:'Investments Euro',v:cf.invest_euro,u:'€'},
-    {l:'Investments Lek',v:cf.invest_lek,u:'Lek'},
-  ];
-  document.getElementById('mainContent').innerHTML=`
-  <div class="sh">Cash Flow — ${fmtD(d.date)}</div>
-  <div class="kgrid2">
-    <div class="kpi cg"><div class="kl">Totali Hyrje</div><div class="kv">${fmt(Math.round((cf.total_hyrje_lek||0)/1000))}K</div><div class="ks">Lek (me kurs 95)</div></div>
-    <div class="kpi cr"><div class="kl">Totali Dalje</div><div class="kv">${fmt(Math.round((cf.total_dalje_lek||0)/1000))}K</div><div class="ks">Lek (me kurs 95)</div></div>
-  </div>
-  <div class="mcol">
-    <div class="panel">
-      <div class="ph"><span class="pt">📥 Hyrje (Arkëtime)</span><span class="pp gold">${fmt(Math.round((cf.total_hyrje_lek||0)/1000))}K Lek</span></div>
-      <div class="tscroll"><table class="dt">
-        <thead><tr><th>Zëri</th><th>Vlera</th></tr></thead>
-        <tbody>${hyrje.filter(x=>x.v).map(x=>`<tr><td class="dm">${x.l}</td><td class="dn">${x.u==='€'?'€':''} ${fmt(x.v)} ${x.u==='Lek'?'Lek':''}</td></tr>`).join('')}</tbody>
-      </table></div>
-    </div>
-    <div class="panel">
-      <div class="ph"><span class="pt">📤 Dalje (Pagesa)</span><span class="pp" style="background:var(--red2);color:var(--red);border-color:var(--red2)">${fmt(Math.round((cf.total_dalje_lek||0)/1000))}K Lek</span></div>
-      <div class="tscroll"><table class="dt">
-        <thead><tr><th>Zëri</th><th>Vlera</th></tr></thead>
-        <tbody>${dalje.filter(x=>x.v).map(x=>`<tr><td class="dm">${x.l}</td><td class="dn">${x.u==='€'?'€':''} ${fmt(x.v)} ${x.u==='Lek'?'Lek':''}</td></tr>`).join('')}</tbody>
-      </table></div>
-    </div>
-  </div>`;
-}
-
-/* ── EXPENSES ── */
-function renderExp(d){
-  const exp=d.exp;
-  if(!exp){return noData();}
-  const items=[
-    {l:'Shpenzime Hoteli',v:exp.shp_hoteli},
-    {l:'Hotel All Inclusive F&B',v:exp.ai_fnb},
-    {l:'Flower Restorant',v:exp.flower_rest},
-    {l:'Pool Bar',v:exp.pool_bar},
-    {l:'Brutal',v:exp.brutal},
-    {l:'Pool Bar Garden',v:exp.pool_bar_garden},
-    {l:'Beach Bar',v:exp.beach_bar},
-    {l:'Të Tjera',v:exp.te_tjera},
-  ];
-  document.getElementById('mainContent').innerHTML=`
-  <div class="sh">Shpenzime Magazinë — ${fmtD(d.date)}</div>
-  <div class="kgrid2">
-    <div class="kpi cr"><div class="kl">Totali Shpenzime</div><div class="kv">${fmt(Math.round((exp.total||0)/1000))}K</div><div class="ks">Lek</div></div>
-    <div class="kpi ca"><div class="kl">Shpenzime Hoteli</div><div class="kv">${fmt(Math.round((exp.shp_hoteli||0)/1000))}K</div><div class="ks">Lek</div></div>
-  </div>
-  <div class="panel">
-    <div class="ph"><span class="pt">Shpenzime sipas Departamentit</span></div>
-    <div class="tscroll"><table class="dt">
-      <thead><tr><th>Departamenti</th><th>Vlera (Lek)</th><th>%</th></tr></thead>
-      <tbody>${items.filter(x=>x.v).map(x=>{
-        const pct=exp.total?Math.round(x.v/exp.total*100):0;
-        return `<tr><td class="dm">${x.l}</td><td class="dn">${fmt(x.v)}</td><td><div style="display:flex;align-items:center;gap:6px"><div style="width:${pct}px;max-width:80px;height:4px;background:var(--amber);border-radius:99px"></div><span class="dn">${pct}%</span></div></td></tr>`;
-      }).join('')}
-      <tr style="border-top:1px solid var(--border2)"><td style="font-weight:500">TOTAL</td><td class="dn" style="color:var(--gold2)">${fmt(exp.total)}</td><td class="dn">100%</td></tr>
-      </tbody>
-    </table></div>
-  </div>`;
-}
-
-function noData(){
-  document.getElementById('mainContent').innerHTML=`<div class="nodata"><div class="nodata-icon">📋</div><p>Nuk ka të dhëna për ${fmtD(document.getElementById('datePicker').value)}.</p><p style="font-size:11px;margin-top:4px">Sheeti mund të mos jetë plotësuar për këtë datë.</p></div>`;
-}
-
-/* ── NOTIFICATIONS ── */
-async function toggleNotifications(){
-  const btn=document.getElementById('notifBtn');
-  if(Notification.permission==='granted'){
-    const sw=await navigator.serviceWorker.ready;
-    const sub=await sw.pushManager.getSubscription();
-    if(sub){ await sub.unsubscribe(); await fetch(`${API}/api/unsubscribe`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:'MANAGER'})}); btn.textContent='🔕';btn.classList.remove('on');showToast('Njoftimet u çaktivizuan'); }
-    else { await subscribeManager(); }
-  } else if(Notification.permission==='denied'){
-    showToast('Lejoni njoftimet nga cilësimet e browserit.');
+// ─── BUILD SECTIONS ──────────────────────────────────────────────────────────
+function buildSections(){
+  const wrap = document.getElementById('sections');
+  if(currentRole==='manager'){
+    wrap.innerHTML = `
+      ${secOverview()}
+      ${secFO()}
+      ${secFNB()}
+      ${secSPA()}
+      ${secCashFlow()}
+      ${secFinance()}
+    `;
   } else {
-    const p=await Notification.requestPermission();
-    if(p==='granted') await subscribeManager();
+    const roleMap = {fo:secFO,spa:secSPA,fnb:secFNB,ai:secAI,cashflow:secCashFlow,finance:secFinance};
+    const fn = roleMap[currentRole];
+    wrap.innerHTML = fn ? fn() : '';
   }
+  // activate first section
+  const first = wrap.querySelector('.section');
+  if(first) first.classList.add('active');
 }
-async function subscribeManager(){
-  try{
-    const sw=await navigator.serviceWorker.ready;
-    const sub=await sw.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlB64(VAPID_PUB)});
-    await fetch(`${API}/api/subscribe`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription:sub.toJSON(),userId:'MANAGER'})});
-    document.getElementById('notifBtn').textContent='🔔';document.getElementById('notifBtn').classList.add('on');
-    showToast('✓ Njoftimet u aktivizuan!');
-  }catch(e){ showToast('Gabim: '+e.message); }
-}
-async function checkNotifStatus(){
-  if(!navigator.serviceWorker) return;
-  const btn=document.getElementById('notifBtn');
-  if(Notification.permission==='granted'){
-    const sw=await navigator.serviceWorker.ready;
-    const sub=await sw.pushManager.getSubscription();
-    btn.textContent=sub?'🔔':'🔕';btn.classList.toggle('on',!!sub);
-  }
-}
-function urlB64(b64){const p='='.repeat((4-b64.length%4)%4);const r=atob((b64+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...r].map(c=>c.charCodeAt(0)));}
 
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.style.opacity='1';
-  clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity='0',4000);
+function dateFilterHTML(id){
+  return `<div class="date-filter">
+    <label>📅</label>
+    <input type="date" id="df_${id}" value="${selectedDate}"/>
+    <button class="btn-filter" onclick="applyFilter('${id}')">Shfaq</button>
+  </div>`;
 }
+
+function secOverview(){
+  return `<div class="section" id="sec_overview">
+    ${dateFilterHTML('overview')}
+    <div class="sec-hdr">
+      <h2>Overview Ditor</h2>
+      <button class="btn-refresh" onclick="loadData()">↻ Rifresko</button>
+    </div>
+    <div id="ov_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
+  </div>`;
+}
+function secFO(){
+  return `<div class="section" id="sec_fo">
+    ${dateFilterHTML('fo')}
+    <div class="sec-hdr"><h2>Front Office</h2></div>
+    <div id="fo_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
+  </div>`;
+}
+function secFNB(){
+  return `<div class="section" id="sec_fnb">
+    ${dateFilterHTML('fnb')}
+    <div class="sec-hdr"><h2>F&B Daily Report</h2></div>
+    <div id="fnb_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
+  </div>`;
+}
+function secSPA(){
+  return `<div class="section" id="sec_spa">
+    ${dateFilterHTML('spa')}
+    <div class="sec-hdr"><h2>SPA Revenues</h2></div>
+    <div id="spa_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
+  </div>`;
+}
+function secCashFlow(){
+  return `<div class="section" id="sec_cashflow">
+    ${dateFilterHTML('cashflow')}
+    <div class="sec-hdr">
+      <h2>Cash Flow (Bruna)</h2>
+      <button class="btn-excel" onclick="exportExcel('cashflow')">📊 Excel</button>
+    </div>
+    <div id="cf_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
+  </div>`;
+}
+function secFinance(){
+  return `<div class="section" id="sec_finance">
+    ${dateFilterHTML('finance')}
+    <div class="sec-hdr">
+      <h2>Finance (Xhina)</h2>
+      <button class="btn-excel" onclick="exportExcel('finance')">📊 Excel</button>
+    </div>
+    <div id="fin_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
+  </div>`;
+}
+function secAI(){
+  return `<div class="section" id="sec_ai">
+    ${dateFilterHTML('ai')}
+    <div class="sec-hdr"><h2>Kënaqësia e Mysafirëve</h2></div>
+    <div id="ai_content"><div class="loading"><div class="spinner"></div>Duke ngarkuar...</div></div>
+  </div>`;
+}
+
+function applyFilter(id){
+  const inp = document.getElementById('df_'+id);
+  if(inp) selectedDate = inp.value;
+  loadData();
+}
+
+// ─── LOAD DATA ───────────────────────────────────────────────────────────────
+async function loadData(){
+  try{
+    const res = await fetch(`/api/overview?date=${selectedDate}`);
+    if(!res.ok) throw new Error('Server error');
+    const d = await res.json();
+    renderAll(d);
+  } catch(e){
+    showError(e.message);
+  }
+}
+
+function showError(msg){
+  ['ov_content','fo_content','fnb_content','spa_content','cf_content','fin_content','ai_content'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.innerHTML=`<div class="no-data"><div class="icon">⚠️</div><p>${msg}</p></div>`;
+  });
+}
+
+// ─── RENDER ALL ──────────────────────────────────────────────────────────────
+function renderAll(d){
+  const fo = d.fo||{};
+  const fnb = d.fnb||{};
+  const spa = d.spa||{};
+  const cf = d.cashflow||{};
+  const fin = d.finance||{};
+  const foY = d.fo_yoy||{};
+  const fnbY = d.fnb_yoy||{};
+  const spaY = d.spa_yoy||{};
+
+  renderOverview(fo,fnb,spa,cf,foY,fnbY,spaY);
+  renderFO(fo,foY);
+  renderFNB(fnb,fnbY);
+  renderSPA(spa,spaY);
+  renderCashFlow(cf);
+  renderFinance(fin);
+}
+
+// ─── OVERVIEW ────────────────────────────────────────────────────────────────
+function renderOverview(fo,fnb,spa,cf,foY,fnbY,spaY){
+  const el = document.getElementById('ov_content');
+  if(!el) return;
+
+  const dhomaZena = fo.rooms_occupied||0;
+  const dhomaLira = TOTAL_ROOMS - dhomaZena;
+  const occ = TOTAL_ROOMS>0 ? (dhomaZena/TOTAL_ROOMS*100).toFixed(1) : 0;
+  const occCls = occ>=70?'green':occ>=50?'':'red';
+  const prevOcc = foY.rooms_occupied ? (foY.rooms_occupied/TOTAL_ROOMS*100).toFixed(1) : null;
+
+  // revenues in Lek
+  const hotelRevLek = (fo.revenue_eur||0) * EXCHANGE;
+  const fnbTotal = (fnb.flower||0)+(fnb.pool_bar||0)+(fnb.brutal||0)+(fnb.pool_garden||0)+(fnb.beach_bar||0)+(fnb.house_use||0);
+  const spaRev = spa.revenues||0;
+  const totalRev = hotelRevLek + fnbTotal + spaRev;
+
+  const prevHotelLek = (foY.revenue_eur||0)*EXCHANGE;
+  const prevFnb = (fnbY.flower||0)+(fnbY.pool_bar||0)+(fnbY.brutal||0)+(fnbY.pool_garden||0)+(fnbY.beach_bar||0)+(fnbY.house_use||0);
+  const prevSpa = spaY.revenues||0;
+  const prevTotal = prevHotelLek+prevFnb+prevSpa;
+
+  el.innerHTML = `
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Dhoma të Zëna</div>
+        <div class="kpi-value">${dhomaZena}<span style="font-size:14px;color:#8892b0"> / ${TOTAL_ROOMS}</span></div>
+        <div class="occ-bar"><div class="occ-fill ${occCls}" style="width:${Math.min(occ,100)}%"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Dhoma të Lira</div>
+        <div class="kpi-value">${dhomaLira}</div>
+        <div class="kpi-sub">Okupanca: ${occ}% ${prevOcc?yoyBadge(occ,prevOcc):''}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Xhiro Hotel</div>
+        <div class="kpi-value gold">${fmtEur(fo.revenue_eur||0)}</div>
+        <div class="kpi-sub">${fmtLek(hotelRevLek)} ${yoyBadge(hotelRevLek,prevHotelLek)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">SPA Revenue</div>
+        <div class="kpi-value gold">${fmtLek(spaRev)}</div>
+        <div class="kpi-sub">${yoyBadge(spaRev,prevSpa)}</div>
+      </div>
+      <div class="kpi-card full">
+        <div class="kpi-label">Xhiro Totale Ditore</div>
+        <div class="kpi-value gold" style="font-size:28px">${fmtLek(totalRev)}</div>
+        <div class="kpi-sub">${yoyBadge(totalRev,prevTotal)} krahasuar me të njëjtën ditë ${new Date(selectedDate).getFullYear()-1}</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Të Ardhura sipas Departamentit (Lek) — YoY</div>
+      <div class="chart-wrap"><canvas id="deptChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Krahasimi YoY — Xhiro Totale</div>
+      <div class="chart-wrap"><canvas id="yoyChart"></canvas></div>
+    </div>
+  `;
+
+  // Dept chart
+  setTimeout(()=>{
+    destroyChart('deptChart');
+    const depts = ['Flower Rest.','Pool Bar','Brutal','Pool Garden','Beach Bar','House Use','Hotel','SPA','TOTAL'];
+    const curr = [
+      fnb.flower||0, fnb.pool_bar||0, fnb.brutal||0, fnb.pool_garden||0, fnb.beach_bar||0, fnb.house_use||0,
+      hotelRevLek, spaRev, totalRev
+    ];
+    const prev = [
+      fnbY.flower||0, fnbY.pool_bar||0, fnbY.brutal||0, fnbY.pool_garden||0, fnbY.beach_bar||0, fnbY.house_use||0,
+      prevHotelLek, prevSpa, prevTotal
+    ];
+    const ctx = document.getElementById('deptChart');
+    if(!ctx) return;
+    charts['deptChart'] = new Chart(ctx,{
+      type:'bar',
+      data:{
+        labels:depts,
+        datasets:[
+          {label:'2026',data:curr,backgroundColor:'rgba(201,168,76,0.8)',borderRadius:4},
+          {label:'2025',data:prev,backgroundColor:'rgba(30,58,95,0.8)',borderRadius:4}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#8892b0',font:{size:11}}}},
+        scales:{
+          x:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'#1e3a5f'}},
+          y:{ticks:{color:'#8892b0',font:{size:10},callback:v=>Math.round(v/1000)+'k'},grid:{color:'#1e3a5f'}}
+        }
+      }
+    });
+
+    // YoY chart
+    destroyChart('yoyChart');
+    const ctx2 = document.getElementById('yoyChart');
+    if(!ctx2) return;
+    charts['yoyChart'] = new Chart(ctx2,{
+      type:'bar',
+      data:{
+        labels:['Hotel','F&B','SPA','Total'],
+        datasets:[
+          {label:new Date(selectedDate).getFullYear(),data:[hotelRevLek,fnbTotal,spaRev,totalRev],backgroundColor:'rgba(201,168,76,0.8)',borderRadius:6},
+          {label:new Date(selectedDate).getFullYear()-1,data:[prevHotelLek,prevFnb,prevSpa,prevTotal],backgroundColor:'rgba(30,58,95,0.8)',borderRadius:6}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:'#8892b0'}}},
+        scales:{
+          x:{ticks:{color:'#8892b0'},grid:{color:'#1e3a5f'}},
+          y:{ticks:{color:'#8892b0',callback:v=>Math.round(v/1000)+'k Lek'},grid:{color:'#1e3a5f'}}
+        }
+      }
+    });
+  },50);
+}
+
+function destroyChart(id){
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+}
+
+// ─── FRONT OFFICE ────────────────────────────────────────────────────────────
+function renderFO(fo,foY){
+  const el = document.getElementById('fo_content');
+  if(!el) return;
+  const totalZena = (fo.rooms_flower||0)+(fo.rooms_garden||0);
+  const occ = TOTAL_ROOMS>0?(totalZena/TOTAL_ROOMS*100).toFixed(1):0;
+  el.innerHTML = `
+    <div class="chart-card">
+      <table class="detail-table">
+        <tr><th>Tregues</th><th class="val">Sot</th><th class="val">Dje (YoY)</th></tr>
+        <tr><td colspan="3" class="section-header">🏨 Dhoma sipas Godinës</td></tr>
+        <tr><td>Dhoma të Zëna — Flower</td><td class="val">${fo.rooms_flower||'—'}</td><td class="val">—</td></tr>
+        <tr><td>Dhoma të Zëna — Garden</td><td class="val">${fo.rooms_garden||'—'}</td><td class="val">—</td></tr>
+        <tr><td><strong>Total Dhoma të Zëna</strong></td><td class="val gold"><strong>${totalZena}</strong></td><td class="val">${foY.rooms_occupied||'—'}</td></tr>
+        <tr><td colspan="3" class="section-header">📊 Statusi i Dhomave</td></tr>
+        <tr><td>Dhoma të Lira</td><td class="val">${TOTAL_ROOMS-totalZena}</td><td class="val">—</td></tr>
+        <tr><td>Mbivendosje</td><td class="val">${fo.overbooking||0}</td><td class="val">—</td></tr>
+        <tr><td>Dhoma Jashtë Pune (OOO)</td><td class="val">${fo.ooo||0}</td><td class="val">—</td></tr>
+        <tr><td>Okupanca</td><td class="val gold">${occ}%</td><td class="val">${foY.rooms_occupied?(foY.rooms_occupied/TOTAL_ROOMS*100).toFixed(1)+'%':'—'}</td></tr>
+        <tr><td colspan="3" class="section-header">💶 Të Ardhura</td></tr>
+        <tr class="total-row"><td>Të Ardhura Totale Ditore</td><td class="val gold">${fmtEur(fo.revenue_eur||0)}</td><td class="val">${fmtEur(foY.revenue_eur||0)}</td></tr>
+      </table>
+    </div>
+    ${yoyBadge(fo.revenue_eur||0, foY.revenue_eur||0)}
+  `;
+}
+
+// ─── F&B ─────────────────────────────────────────────────────────────────────
+function renderFNB(fnb,fnbY){
+  const el = document.getElementById('fnb_content');
+  if(!el) return;
+  const total = (fnb.flower||0)+(fnb.pool_bar||0)+(fnb.brutal||0)+(fnb.pool_garden||0)+(fnb.beach_bar||0)+(fnb.house_use||0);
+  const neto = total - (fnb.house_use||0);
+  const prevTotal = (fnbY.flower||0)+(fnbY.pool_bar||0)+(fnbY.brutal||0)+(fnbY.pool_garden||0)+(fnbY.beach_bar||0)+(fnbY.house_use||0);
+  el.innerHTML = `
+    <div class="chart-card">
+      <table class="detail-table">
+        <tr><th>Outlet</th><th class="val">Sot (Lek)</th><th class="val">YoY</th></tr>
+        <tr><td>🌸 Flower Restaurant</td><td class="val">${fmtLek(fnb.flower||0)}</td><td class="val">${yoyBadge(fnb.flower||0,fnbY.flower||0)}</td></tr>
+        <tr><td>🍹 Pool Bar</td><td class="val">${fmtLek(fnb.pool_bar||0)}</td><td class="val">${yoyBadge(fnb.pool_bar||0,fnbY.pool_bar||0)}</td></tr>
+        <tr><td>🍖 Brutal Garden</td><td class="val">${fmtLek(fnb.brutal||0)}</td><td class="val">${yoyBadge(fnb.brutal||0,fnbY.brutal||0)}</td></tr>
+        <tr><td>🏊 Pool Bar Garden</td><td class="val">${fmtLek(fnb.pool_garden||0)}</td><td class="val">${yoyBadge(fnb.pool_garden||0,fnbY.pool_garden||0)}</td></tr>
+        <tr><td>🏖️ Beach Bar</td><td class="val">${fmtLek(fnb.beach_bar||0)}</td><td class="val">${yoyBadge(fnb.beach_bar||0,fnbY.beach_bar||0)}</td></tr>
+        <tr><td>🏠 House Use</td><td class="val">${fmtLek(fnb.house_use||0)}</td><td class="val">—</td></tr>
+        <tr class="total-row"><td>TOTAL Xhiro</td><td class="val gold">${fmtLek(total)}</td><td class="val">${yoyBadge(total,prevTotal)}</td></tr>
+        <tr><td>Të Ardhura Neto</td><td class="val gold">${fmtLek(neto)}</td><td class="val">—</td></tr>
+        <tr><td colspan="3" class="section-header">PAX / Vaktet</td></tr>
+        <tr><td>Mysafirë All Inclusive</td><td class="val">${fnb.pax_ai||0}</td><td class="val">—</td></tr>
+        <tr><td>Mysafirë BB</td><td class="val">${fnb.pax_bb||0}</td><td class="val">—</td></tr>
+        <tr><td>Mysafirë HB</td><td class="val">${fnb.pax_hb||0}</td><td class="val">—</td></tr>
+        <tr><td>PAX / Mëngjes Flower</td><td class="val">${fnb.breakfast_flower||0}</td><td class="val">—</td></tr>
+        <tr><td>PAX / Mëngjes Garden</td><td class="val">${fnb.breakfast_garden||0}</td><td class="val">—</td></tr>
+        <tr><td>PAX / Drekë</td><td class="val">${fnb.pax_lunch||0}</td><td class="val">—</td></tr>
+        <tr><td>PAX / Darkë</td><td class="val">${fnb.pax_dinner||0}</td><td class="val">—</td></tr>
+      </table>
+    </div>
+  `;
+}
+
+// ─── SPA ─────────────────────────────────────────────────────────────────────
+function renderSPA(spa,spaY){
+  const el = document.getElementById('spa_content');
+  if(!el) return;
+  el.innerHTML = `
+    <div class="chart-card">
+      <table class="detail-table">
+        <tr><th>Tregues</th><th class="val">Sot (Lek)</th><th class="val">YoY</th></tr>
+        <tr><td>💆 Të Ardhura Ditore</td><td class="val gold">${fmtLek(spa.revenues||0)}</td><td class="val">${yoyBadge(spa.revenues||0,spaY.revenues||0)}</td></tr>
+        <tr><td>🧖 Total Shërbime</td><td class="val">${spa.total_services||0}</td><td class="val">${yoyBadge(spa.total_services||0,spaY.total_services||0)}</td></tr>
+      </table>
+    </div>
+  `;
+}
+
+// ─── CASH FLOW (BRUNA) ───────────────────────────────────────────────────────
+function renderCashFlow(cf){
+  const el = document.getElementById('cf_content');
+  if(!el) return;
+
+  const ark = cf.arketimet||{};
+  const pag = cf.pagesat||{};
+
+  // Totali Arkëtimeve (Lek) — Euro × 100
+  const totalArk =
+    (ark.non_cash_lek||0) +
+    (ark.reception_cash_lek||0) +
+    (ark.fnb_cash_lek||0) +
+    (ark.financial_loan||0) +
+    (ark.mice_lek||0) +
+    ((ark.non_cash_euro||0) + (ark.reception_cash_euro||0) + (ark.allotment||0) + (ark.itaka||0) + (ark.mice_euro||0)) * EXCHANGE;
+
+  const totalPag =
+    (pag.paga||0) +
+    (pag.taxes||0) +
+    (pag.loan_lek||0) +
+    (pag.house_use||0) +
+    (pag.purchases_cash||0) +
+    (pag.purchases_bank||0) +
+    (pag.investments_lek||0) +
+    (pag.investments_cash||0) +
+    ((pag.loan_euro||0) + (pag.investments_euro||0)) * EXCHANGE;
+
+  const row = (label,val,isEuro=false)=>`<tr><td>${label}${isEuro?' (€)':''}</td><td class="val">${isEuro?fmtEur(val):fmtLek(val)}</td></tr>`;
+
+  el.innerHTML = `
+    <div class="chart-card">
+      <table class="detail-table">
+        <tr><th colspan="2" class="section-header">✅ 1. ARKËTIME</th></tr>
+        ${row('Non Cash Lek',ark.non_cash_lek||0)}
+        ${row('Non Cash Euro',ark.non_cash_euro||0,true)}
+        ${row('Reception Cash Euro',ark.reception_cash_euro||0,true)}
+        ${row('Reception Cash Lek',ark.reception_cash_lek||0)}
+        ${row('Allotment Contracts',ark.allotment||0,true)}
+        ${row('Itaka',ark.itaka||0,true)}
+        ${row('Financial Disbursment (Loan)',ark.financial_loan||0)}
+        ${row('F&B Cash Lek',ark.fnb_cash_lek||0)}
+        ${row('MICE Bank Euro',ark.mice_euro||0,true)}
+        ${row('MICE Bank Lek',ark.mice_lek||0)}
+        <tr class="total-row"><td>TOTAL ARKËTIME (Lek)</td><td class="val gold">${fmtLek(totalArk)}</td></tr>
+        <tr><th colspan="2" class="section-header">❌ 2. PAGESA</th></tr>
+        ${row('Paga',pag.paga||0)}
+        ${row('Taxes & Utilities',pag.taxes||0)}
+        ${row('Loan Euro',pag.loan_euro||0,true)}
+        ${row('Loan Lek',pag.loan_lek||0)}
+        ${row('House Use',pag.house_use||0)}
+        ${row('Purchases Cash',pag.purchases_cash||0)}
+        ${row('Purchases Bank',pag.purchases_bank||0)}
+        ${row('Investments Lek',pag.investments_lek||0)}
+        ${row('Investments Euro',pag.investments_euro||0,true)}
+        ${row('Investments Cash',pag.investments_cash||0)}
+        <tr class="total-row"><td>TOTAL PAGESA (Lek)</td><td class="val gold">${fmtLek(totalPag)}</td></tr>
+        <tr class="total-row"><td>BALANCA NETO</td><td class="val gold">${fmtLek(totalArk-totalPag)}</td></tr>
+      </table>
+    </div>
+  `;
+}
+
+// ─── FINANCE (XHINA) ─────────────────────────────────────────────────────────
+function renderFinance(fin){
+  const el = document.getElementById('fin_content');
+  if(!el) return;
+
+  const sh = fin.shpenzime||{};
+  const ar = fin.ardhura||{};
+  const zb = fin.zbritje||{};
+
+  const totalSh = Object.values(sh).reduce((a,v)=>a+(v||0),0);
+  const totalAr = Object.values(ar).reduce((a,v)=>a+(v||0),0);
+  const totalZb = Object.values(zb).reduce((a,v)=>a+(v||0),0);
+
+  const row = (label,val)=>`<tr><td>${label}</td><td class="val">${fmtLek(val||0)}</td></tr>`;
+
+  el.innerHTML = `
+    <div class="chart-card">
+      <table class="detail-table">
+        <tr><th colspan="2" class="section-header">📦 Shpenzime Ditore Magazinë</th></tr>
+        ${row('Blerje Ushqim',sh.ushqim)}
+        ${row('Blerje Pije',sh.pije)}
+        ${row('Blerje Kimikate',sh.kimikate)}
+        ${row('Blerje Materiale Pastrimi',sh.pastrimi)}
+        ${row('Blerje Inventar',sh.inventar)}
+        ${row('Blerje Lëndë Djegëse',sh.djegese)}
+        ${row('Blerje Elektrike',sh.elektrike)}
+        ${row('Blerje Të Tjera',sh.tjera)}
+        <tr class="total-row"><td>TOTAL SHPENZIME</td><td class="val gold">${fmtLek(totalSh)}</td></tr>
+        <tr><th colspan="2" class="section-header">💵 Të Ardhura Ditore Magazinë</th></tr>
+        ${row('Flower Restaurant',ar.flower)}
+        ${row('Pool Bar',ar.pool_bar)}
+        ${row('Brutal Garden',ar.brutal)}
+        ${row('Pool Bar Garden',ar.pool_garden)}
+        ${row('Beach Bar',ar.beach_bar)}
+        ${row('Room Service',ar.room_service)}
+        ${row('Mini Bar',ar.mini_bar)}
+        ${row('SPA',ar.spa)}
+        ${row('Të Tjera',ar.tjera)}
+        <tr class="total-row"><td>TOTAL TË ARDHURA</td><td class="val gold">${fmtLek(totalAr)}</td></tr>
+        <tr><th colspan="2" class="section-header">➖ Zbritje</th></tr>
+        ${row('Vila 1',zb.vila1)}
+        ${row('Vila 2',zb.vila2)}
+        ${row('313',zb.v313)}
+        ${row('Faturë Qërasje',zb.qeraje)}
+        <tr class="total-row"><td>TOTAL ZBRITJE</td><td class="val gold">${fmtLek(totalZb)}</td></tr>
+        <tr class="total-row" style="background:#0a1628"><td>NETO (Ardhura - Shpenzime - Zbritje)</td><td class="val gold">${fmtLek(totalAr-totalSh-totalZb)}</td></tr>
+      </table>
+    </div>
+  `;
+}
+
+// ─── EXCEL EXPORT ────────────────────────────────────────────────────────────
+async function exportExcel(type){
+  try{
+    const res = await fetch(`/api/overview?date=${selectedDate}`);
+    const d = await res.json();
+    let rows = [['Data',selectedDate]];
+    if(type==='cashflow'){
+      const cf = d.cashflow||{};
+      rows.push(['','']);
+      rows.push(['ARKËTIME','']);
+      const ark = cf.arketimet||{};
+      Object.entries({
+        'Non Cash Lek':ark.non_cash_lek||0,'Non Cash Euro':ark.non_cash_euro||0,
+        'Reception Cash Euro':ark.reception_cash_euro||0,'Reception Cash Lek':ark.reception_cash_lek||0,
+        'Allotment Contracts (€)':ark.allotment||0,'Itaka (€)':ark.itaka||0,
+        'Financial Disbursment Loan':ark.financial_loan||0,'F&B Cash Lek':ark.fnb_cash_lek||0,
+        'MICE Bank Euro':ark.mice_euro||0,'MICE Bank Lek':ark.mice_lek||0
+      }).forEach(([k,v])=>rows.push([k,v]));
+      rows.push(['','']);
+      rows.push(['PAGESA','']);
+      const pag = cf.pagesat||{};
+      Object.entries({
+        'Paga':pag.paga||0,'Taxes & Utilities':pag.taxes||0,'Loan Euro':pag.loan_euro||0,
+        'Loan Lek':pag.loan_lek||0,'House Use':pag.house_use||0,
+        'Purchases Cash':pag.purchases_cash||0,'Purchases Bank':pag.purchases_bank||0,
+        'Investments Lek':pag.investments_lek||0,'Investments Euro':pag.investments_euro||0,
+        'Investments Cash':pag.investments_cash||0
+      }).forEach(([k,v])=>rows.push([k,v]));
+    } else if(type==='finance'){
+      const fin = d.finance||{};
+      rows.push(['SHPENZIME MAGAZINË','']);
+      Object.entries(fin.shpenzime||{}).forEach(([k,v])=>rows.push([k,v||0]));
+      rows.push(['TË ARDHURA MAGAZINË','']);
+      Object.entries(fin.ardhura||{}).forEach(([k,v])=>rows.push([k,v||0]));
+      rows.push(['ZBRITJE','']);
+      Object.entries(fin.zbritje||{}).forEach(([k,v])=>rows.push([k,v||0]));
+    }
+    const csv = rows.map(r=>r.join(',')).join('\n');
+    const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=`${type}_${selectedDate}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  } catch(e){ alert('Gabim gjatë eksportimit: '+e.message); }
+}
+
+// ─── NOTIFICATIONS ───────────────────────────────────────────────────────────
+async function toggleNotif(){
+  const btn = document.getElementById('bellBtn');
+  if(notifSub){
+    notifSub=null; btn.textContent='🔕'; return;
+  }
+  try{
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+      alert('Njoftimet nuk suportohen në këtë browser.'); return;
+    }
+    const perm = await Notification.requestPermission();
+    if(perm!=='granted'){ alert('Lejoni njoftimet!'); return; }
+    const reg = await navigator.serviceWorker.ready;
+    const keyRes = await fetch('/api/push/key');
+    const {publicKey} = await keyRes.json();
+    if(!publicKey||publicKey==='') { alert('Push notifications not configured on server.'); return; }
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly:true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+    });
+    await fetch('/api/push/subscribe',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({subscription:sub,user:'MANAGER'})
+    });
+    notifSub=sub; btn.textContent='🔔';
+    btn.style.color='#c9a84c';
+  } catch(e){ console.error(e); }
+}
+
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=window.atob(base64);
+  const arr=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i);
+  return arr;
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none') doLogin();
+});
 
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('/sw.js').catch(e=>console.log('SW:',e));
-  });
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
 }
 </script>
 </body>
