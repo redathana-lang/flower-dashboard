@@ -1,24 +1,25 @@
-const CACHE = 'flow-v3';
-const ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
+// FLOW v4 — clears all old caches
+const CACHE = 'flow-v4';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
-  self.clients.claim();
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.url.includes('/api/')) {
-    // API calls always go to network
-    e.respondWith(fetch(e.request).catch(() => new Response('{"error":"offline"}', {headers:{'Content-Type':'application/json'}})));
-  } else {
-    // App shell from cache, fallback to network
-    e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
-  }
+  e.respondWith(fetch(e.request));
+});
+
+self.addEventListener('push', e => {
+  const d = e.data ? e.data.json() : {};
+  e.waitUntil(self.registration.showNotification(d.title||'FLOW', {
+    body: d.body, icon: d.icon||'/icon-192.png'
+  }));
 });
