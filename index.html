@@ -226,9 +226,9 @@ function bdg(c,p){
 }
 function yP(c,p){ const v=pct(c,p); if(v===null)return{cls:'',txt:'—'}; return{cls:v>=0?'up':'down',txt:(v>=0?'+':'')+v+'%'}; }
 function fDate(s){ if(!s)return''; return new Date(s+'T00:00:00').toLocaleDateString('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); }
-function fRange(){ return fromDate===toDate?fRange():fRange()+' — '+fDate(toDate); }
+function fRange(){ return fromDate===toDate?fDate(fromDate):fDate(fromDate)+' — '+fDate(toDate); }
 function pY(s){ return s?(parseInt(s.slice(0,4))-1)+s.slice(4):''; }
-function pYRange(){ return fromDate===toDate?pYRange():pYRange()+' — '+fDate(pY(toDate)); }
+function pYRange(){ return fromDate===toDate?fDate(pY(fromDate)):fDate(pY(fromDate))+' — '+fDate(pY(toDate)); }
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
 function doLogin(){
