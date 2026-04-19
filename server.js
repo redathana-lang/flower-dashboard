@@ -9,14 +9,20 @@ app.use(express.static(__dirname));
 
 // ─── GOOGLE SHEETS CONFIG ─────────────────────────────────────────────────────
 // Spreadsheet: Sample Data Power Bi Flower
+// Spreadsheet 1 — main hotel data
 const SHEET_ID = '1abLRrgklWeV3wx-KEmA0u4SgCH5ebw3s';
 const GID = {
-  fo:       '398660926',   // HOTEL DAILY PERFORMANCE
-  fnb:      '663170393',   // DAILY F&B REVENUES
-  cashflow: '697395742',   // CASH FLOW
-  finance:  '261763722',   // SHPENZIME DITORE
-  spa:      '1116616961',  // DAILY SPA REVENUES
-  boards:   '1734518042',  // DAILY BOARDS — pax per paketë (BB, AI, HB, etj)
+  fo:       '398660926',  // HOTEL DAILY PERFORMANCE
+  fnb:      '663170393',  // DAILY F&B REVENUES
+  cashflow: '697395742',  // CASH FLOW
+  finance:  '261763722',  // SHPENZIME DITORE
+};
+
+// Spreadsheet 2 — Daily Boards & SPA
+const SHEET_ID2 = '1YpNAPiNQiKLHNtLq_ymqpCFqV5ewqiKTX7uywN66_vA';
+const GID2 = {
+  boards: '0',           // DAILY BOARDS (gid=0)
+  spa:    '2041684400',  // DAILY SPA REVENUES (gid=2041684400)
 };
 
 // ─── EXACT COLUMN MAPS (from screenshots) ────────────────────────────────────
@@ -49,8 +55,8 @@ const GID = {
 //   H[7]=Beach Bar  I[8]=Te tjera  J[9]=TOTAL
 
 // ─── CSV FETCH & PARSE ────────────────────────────────────────────────────────
-async function fetchCSV(gid) {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+async function fetchCSV(gid, sheetId) {
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId||SHEET_ID}/export?format=csv&gid=${gid}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Sheet ${gid} fetch failed: ${res.status}`);
   return await res.text();
@@ -247,8 +253,12 @@ async function refreshCache() {
   console.log('[FLOW] Refreshing Google Sheets...');
   try {
     const [foText, fnbText, cfText, finText, spaText, boardsText] = await Promise.all([
-      fetchCSV(GID.fo), fetchCSV(GID.fnb), fetchCSV(GID.cashflow),
-      fetchCSV(GID.finance), fetchCSV(GID.spa), fetchCSV(GID.boards)
+      fetchCSV(GID.fo),       // Spreadsheet 1
+      fetchCSV(GID.fnb),      // Spreadsheet 1
+      fetchCSV(GID.cashflow), // Spreadsheet 1
+      fetchCSV(GID.finance),  // Spreadsheet 1
+      fetchCSV(GID2.spa,    SHEET_ID2), // Spreadsheet 2
+      fetchCSV(GID2.boards, SHEET_ID2), // Spreadsheet 2
     ]);
     cache.fo       = parseCSV(foText);
     cache.fnb      = parseCSV(fnbText);
@@ -267,26 +277,59 @@ async function ensureCache() {
   if (!lastFetch || Date.now() - lastFetch > CACHE_TTL) await refreshCache();
 }
 
+
+// ─── RANGE AGGREGATION ────────────────────────────────────────────────────────
+function sumDeep(a, b) {
+  if (!b) return a;
+  const r = { ...a };
+  for (const [k, v] of Object.entries(b)) {
+    if (typeof v === 'number') r[k] = (r[k] || 0) + v;
+    else if (v && typeof v === 'object') r[k] = sumDeep(r[k] || {}, v);
+  }
+  return r;
+}
+
+function aggregateRange(parseFn, rows, fromDate, toDate) {
+  let result = {}, cur = new Date(fromDate + 'T00:00:00');
+  const end = new Date(toDate + 'T00:00:00');
+  while (cur <= end) {
+    const d = cur.toISOString().split('T')[0];
+    result = sumDeep(result, parseFn(rows, d));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return result;
+}
+
 // ─── API ──────────────────────────────────────────────────────────────────────
 app.get('/api/overview', async (req, res) => {
   try {
     await ensureCache();
-    const date = req.query.date || new Date().toISOString().split('T')[0];
-    const [y, m, d] = date.split('-');
-    const prevDate = `${parseInt(y)-1}-${m}-${d}`;
+    const today = new Date().toISOString().split('T')[0];
+    const fromDate = req.query.from || req.query.date || today;
+    const toDate   = req.query.to   || req.query.date || today;
+
+    // YoY: same range but previous year
+    const [fy] = fromDate.split('-');
+    const [ty] = toDate.split('-');
+    const fromPrev = `${parseInt(fy)-1}${fromDate.slice(4)}`;
+    const toPrev   = `${parseInt(ty)-1}${toDate.slice(4)}`;
+
+    const isSingle = fromDate === toDate;
+
+    const get = (fn, rows, f, t) => isSingle ? fn(rows, f) : aggregateRange(fn, rows, f, t);
 
     const data = {
-      date,
-      fo:       parseFO(cache.fo, date),
-      fnb:      parseFNB(cache.fnb, date),
-      spa:      parseSPA(cache.spa, date),
-      cashflow: parseCashFlow(cache.cashflow, date),
-      finance:  parseFinance(cache.finance, date),
-      boards:   parseBoards(cache.boards, date),
-      fo_yoy:   parseFO(cache.fo, prevDate),
-      fnb_yoy:  parseFNB(cache.fnb, prevDate),
-      spa_yoy:  parseSPA(cache.spa, prevDate),
-      boards_yoy: parseBoards(cache.boards, prevDate),
+      from: fromDate, to: toDate,
+      fo:       get(parseFO,        cache.fo,       fromDate, toDate),
+      fnb:      get(parseFNB,       cache.fnb,      fromDate, toDate),
+      spa:      get(parseSPA,       cache.spa,      fromDate, toDate),
+      cashflow: get(parseCashFlow,  cache.cashflow, fromDate, toDate),
+      finance:  get(parseFinance,   cache.finance,  fromDate, toDate),
+      boards:   get(parseBoards,    cache.boards,   fromDate, toDate),
+      fo_yoy:   get(parseFO,        cache.fo,       fromPrev, toPrev),
+      fnb_yoy:  get(parseFNB,       cache.fnb,      fromPrev, toPrev),
+      spa_yoy:  get(parseSPA,       cache.spa,      fromPrev, toPrev),
+      boards_yoy: get(parseBoards,  cache.boards,   fromPrev, toPrev),
     };
 
     res.json(data);
