@@ -310,14 +310,20 @@ function renderAll(d){
 // ─── OVERVIEW ─────────────────────────────────────────────────────────────────
 function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
   const el=document.getElementById('c_overview'); if(!el)return;
-  const rooms=n(fo.rooms_occupied), lira=TR-rooms, occ=TR?(rooms/TR*100).toFixed(1):0;
+  // Period occupancy = total nights occupied / total nights available (days × 110)
+  const rooms=n(fo.rooms_occupied);
+  const days=Math.max(1, Math.round((new Date(toDate+'T00:00:00')-new Date(fromDate+'T00:00:00'))/(1000*60*60*24))+1);
+  const nightsAvail=days*TR;
+  const occ=nightsAvail?(rooms/nightsAvail*100).toFixed(1):0;
+  const lira=TR-Math.round(rooms/days); // avg free rooms per day
   const revE=n(fo.revenue_eur), revL=revE*EH;
   const fnbT=n(fnb.flower)+n(fnb.pool_bar)+n(fnb.brutal)+n(fnb.pool_garden)+n(fnb.beach_bar)+n(fnb.house_use);
   const spaR=n(spa.revenues);
   const ark=cf.arketimet||{};
   const cfT=n(ark.non_cash_lek)+n(ark.reception_cash_lek)+n(ark.fnb_cash_lek)+n(ark.mice_lek)+
     (n(ark.non_cash_euro)+n(ark.reception_cash_euro)+n(ark.allotment)+n(ark.itaka)+n(ark.mice_euro))*EC;
-  const roomsY=n(foY.rooms_occupied), occY=TR?(roomsY/TR*100).toFixed(1):0;
+  const roomsY=n(foY.rooms_occupied);
+  const occY=nightsAvail?(roomsY/nightsAvail*100).toFixed(1):0;
   const revEY=n(foY.revenue_eur), revLY=revEY*EH;
   const fnbTY=n(fnbY.flower)+n(fnbY.pool_bar)+n(fnbY.brutal)+n(fnbY.pool_garden)+n(fnbY.beach_bar)+n(fnbY.house_use);
   const spaRY=n(spaY.revenues);
@@ -345,7 +351,7 @@ function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
       <div class="kpi">
         <div class="kpi-lbl">Dhoma të Zëna</div>
         <div class="kpi-val">${rooms}<span class="u">/${TR}</span></div>
-        <div class="kpi-sub">${lira} të lira · ${new Date(fromDate).getFullYear()-1}: <strong>${roomsY||'—'}</strong></div>
+        <div class="kpi-sub">Mesatare/ditë: ${lira} · ${new Date(fromDate).getFullYear()-1}: <strong>${roomsY||'—'}</strong></div>
         ${bdg(rooms,roomsY)}
       </div>
       <div class="kpi teal">
@@ -419,14 +425,16 @@ function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
 // ─── FRONT OFFICE ─────────────────────────────────────────────────────────────
 function rFO(fo,foY){
   const el=document.getElementById('c_fo'); if(!el)return;
-  const rooms=n(fo.rooms_occupied), occ=TR?(rooms/TR*100).toFixed(1):0;
+  const rooms=n(fo.rooms_occupied);
+  const days2=Math.max(1,Math.round((new Date(toDate+'T00:00:00')-new Date(fromDate+'T00:00:00'))/(1000*60*60*24))+1);
+  const occ=(rooms/(days2*TR)*100).toFixed(1);
   el.innerHTML=`<div class="sec-card">
     <div class="sec-hdr2">🏨 Hotel Daily Performance — ${fRange()}</div>
     <table class="dtable">
       <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
       <tr class="sh"><td colspan="3">Dhoma</td></tr>
       <tr><td>Dhoma të Zëna</td><td class="v">${rooms}</td><td class="v">${n(foY.rooms_occupied)||'—'}</td></tr>
-      <tr><td>Dhoma të Lira</td><td class="v">${TR-rooms}</td><td class="v">${foY.rooms_occupied?TR-n(foY.rooms_occupied):'—'}</td></tr>
+      <tr><td>Dhoma të Lira (mesatare/ditë)</td><td class="v">${TR-Math.round(rooms/days2)}</td><td class="v">${foY.rooms_occupied?TR-Math.round(n(foY.rooms_occupied)/days2):'—'}</td></tr>
       <tr><td>Ocupanca</td><td class="v g">${occ}%</td><td class="v">${foY.rooms_occupied?(n(foY.rooms_occupied)/TR*100).toFixed(1)+'%':'—'}</td></tr>
       <tr class="sh"><td colspan="3">Të Ardhura</td></tr>
       <tr class="tr"><td>Revenue Ditore</td><td class="v g">${fE(fo.revenue_eur||0)}</td><td class="v">${fE(foY.revenue_eur||0)}</td></tr>
