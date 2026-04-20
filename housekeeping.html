@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flower HMS">
+<title>Flower HMS — Pastrimi</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --hdr:#252318;--gold:#C9A227;--gold2:#a07d10;
+  --cream:#F4F1EB;--border:#ddd;
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;
+  --orange:#f97316;--amber:#d97706;--gray:#9ca3af;
+  --tbl-hdr:#2c2a1e;--row-occ:#f0fbf4;--row-dep:#fff8f0;--row-arr:#f0f7ff;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+     background:var(--cream);color:#1a1a1a;font-size:13px;min-height:100vh;}
+
+/* ── LOGIN ── */
+#s-login{display:flex;flex-direction:column;align-items:center;justify-content:center;
+         min-height:100vh;background:var(--hdr);}
+.login-logo{font-size:22px;font-weight:700;color:#f0ead0;letter-spacing:1px;margin-bottom:8px;}
+.login-sub{color:#9a9070;font-size:13px;margin-bottom:40px;}
+.login-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;}
+.login-card{background:#302d20;border:1px solid #4a4530;border-radius:12px;
+            padding:28px 36px;text-align:center;cursor:pointer;transition:background .2s;min-width:180px;}
+.login-card:hover{background:#3e3a28;}
+.lc-icon{font-size:32px;margin-bottom:10px;}
+.lc-title{color:#f0ead0;font-size:15px;font-weight:600;margin-bottom:4px;}
+.lc-sub{color:#9a9070;font-size:11px;}
+#fo-pass-wrap{margin-top:24px;display:none;flex-direction:column;align-items:center;gap:10px;}
+#fo-user,#fo-pwd{background:#302d20;border:1px solid #4a4530;border-radius:8px;
+                  padding:10px 16px;color:#f0ead0;font-size:14px;width:240px;outline:none;}
+#fo-user::placeholder,#fo-pwd::placeholder{color:#6a6550;}
+#fo-login-btn{background:var(--gold);color:#1a1500;font-weight:700;border:none;
+               border-radius:8px;padding:10px 32px;cursor:pointer;font-size:14px;}
+#fo-login-btn:hover{background:var(--gold2);color:#fff;}
+#login-err{color:#ef4444;font-size:12px;min-height:16px;}
+
+/* ── HEADER ── */
+.hms-header{background:var(--hdr);padding:0 16px;display:flex;align-items:center;
+            gap:10px;height:46px;position:sticky;top:0;z-index:100;flex-shrink:0;}
+.hms-logo{font-size:15px;font-weight:700;color:#f0ead0;display:flex;align-items:center;
+          gap:7px;letter-spacing:.5px;flex:1;}
+.dot-r{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;}
+.dot-g{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.hdr-badge{background:#3a3620;color:#d4b84a;border:1px solid #5a5030;border-radius:20px;
+           padding:4px 12px;font-size:11px;font-weight:600;}
+.hdr-btn{background:transparent;color:#9a9070;border:1px solid #4a4530;border-radius:20px;
+         padding:4px 12px;font-size:11px;cursor:pointer;}
+.hdr-btn:hover{color:#f0ead0;}
+.hdr-back{background:transparent;color:var(--gold);border:1px solid #5a5030;border-radius:20px;
+          padding:4px 12px;font-size:11px;cursor:pointer;text-decoration:none;display:inline-block;}
+
+/* ── BUILDING TABS ── */
+.bld-tabs{background:#fff;border-bottom:1px solid var(--border);display:flex;padding:0 16px;}
+.bld-tab{padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;
+         border-bottom:2px solid transparent;color:#888;display:flex;align-items:center;gap:6px;}
+.bld-tab.active{color:#1a1a1a;border-bottom-color:var(--gold);}
+.bld-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+/* ── STATS ROW ── */
+.stats-row{display:flex;gap:0;padding:12px 16px;background:#fff;border-bottom:1px solid var(--border);
+           flex-wrap:wrap;gap:6px 0;}
+.stat-item{padding:0 18px 0 0;border-right:1px solid #eee;margin-right:18px;}
+.stat-item:last-child{border-right:none;}
+.stat-num{font-size:24px;font-weight:700;line-height:1;}
+.stat-lbl{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.c-total{color:#1a1a1a;} .c-paster{color:var(--green);} .c-piseet{color:var(--red);}
+.c-liree{color:var(--amber);} .c-totale{color:var(--amber);} .c-ditore{color:var(--blue);}
+.c-ardhje{color:var(--green);} .c-ikje{color:var(--orange);} .c-ooo{color:var(--gray);}
+
+/* ── DATE BAR ── */
+.date-bar{background:var(--hdr);padding:9px 16px;display:flex;align-items:center;
+          justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.date-txt{color:#f0ead0;font-size:13px;font-weight:600;}
+.date-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.btn-gold{background:transparent;border:1px solid var(--gold);color:var(--gold);
+          border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600;}
+.btn-gold:hover{background:var(--gold);color:#1a1500;}
+.btn-upload{background:var(--gold);border:none;color:#1a1500;border-radius:6px;
+            padding:5px 14px;font-size:11px;cursor:pointer;font-weight:700;}
+.btn-upload:hover{background:var(--gold2);color:#fff;}
+
+/* ── FLOOR SECTION ── */
+.floor-section{margin:10px 14px;border:1px solid var(--border);border-radius:8px;
+               overflow:hidden;background:#fff;}
+.floor-header{display:flex;align-items:center;justify-content:space-between;
+              padding:8px 12px;background:#f9f8f4;border-bottom:1px solid var(--border);}
+.floor-title{font-size:11px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;}
+.btn-print{background:var(--hdr);color:#f0ead0;border:none;border-radius:5px;
+           padding:4px 10px;font-size:10px;cursor:pointer;font-weight:600;}
+
+/* ── TABLE ── */
+.hk-table{width:100%;border-collapse:collapse;font-size:11px;}
+.hk-table thead tr{background:var(--tbl-hdr);}
+.hk-table thead th{color:#d0c8a0;padding:7px 7px;text-align:left;font-weight:600;
+                   font-size:10px;white-space:nowrap;}
+.hk-table tbody tr{border-bottom:1px solid #f0f0f0;}
+.hk-table tbody tr:hover{background:#fafaf8;}
+.hk-table tbody tr.row-occ{background:var(--row-occ);}
+.hk-table tbody tr.row-dep{background:var(--row-dep);}
+.hk-table tbody tr.row-arr{background:var(--row-arr);}
+.hk-table td{padding:6px 7px;vertical-align:middle;}
+.td-room{font-weight:700;font-size:13px;color:#1a1a1a;width:44px;}
+.td-pers{width:32px;text-align:center;color:#555;}
+.td-date{color:#555;width:82px;font-size:11px;}
+.status-sel{border:1px solid #ddd;border-radius:5px;padding:3px 5px;font-size:10px;
+            background:#fff;color:#333;width:126px;cursor:pointer;}
+.badge{display:inline-block;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;
+       color:#fff;cursor:pointer;user-select:none;white-space:nowrap;}
+.badge-green{background:var(--green);}
+.badge-red{background:var(--red);}
+.badge:hover{opacity:.85;}
+.flag-cb{width:13px;height:13px;cursor:pointer;accent-color:var(--gold);}
+.notes-inp{border:1px solid #e8e8e8;border-radius:5px;padding:3px 7px;font-size:10px;
+           width:100%;color:#555;background:transparent;}
+.notes-inp:focus{outline:none;border-color:var(--gold);}
+
+/* ── DOWNLOAD BAR ── */
+.dl-bar{display:flex;align-items:center;gap:10px;padding:10px 14px 16px;flex-wrap:wrap;}
+.btn-dl{background:var(--green);color:#fff;border:none;border-radius:7px;padding:8px 18px;
+        font-size:12px;font-weight:700;cursor:pointer;}
+.btn-dl:hover{background:#16a34a;}
+.sync-msg{font-size:11px;color:#9a9070;}
+
+/* ── HK CARDS ── */
+.hk-floor-section{padding:12px 14px 0;}
+.hk-floor-title{font-size:10px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;
+                margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #e5e0d8;}
+.hk-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:12px;}
+.hk-card{border-radius:10px;padding:9px 6px;text-align:center;cursor:pointer;
+         transition:transform .1s;user-select:none;}
+.hk-card:active{transform:scale(.94);}
+.hk-card.paster{background:var(--green);}
+.hk-card.piseet{background:var(--red);}
+.hkc-num{font-size:16px;font-weight:700;color:#fff;line-height:1;}
+.hkc-lbl{font-size:9px;color:rgba(255,255,255,.85);margin-top:3px;}
+.hkc-time{font-size:9px;color:rgba(255,255,255,.7);margin-top:1px;}
+
+/* ── LOADING OVERLAY ── */
+#loading-overlay{position:fixed;inset:0;background:rgba(37,35,24,.85);display:flex;
+                 align-items:center;justify-content:center;z-index:999;display:none;}
+.spinner{width:36px;height:36px;border:3px solid #4a4530;border-top-color:var(--gold);
+         border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:480px){
+  .hk-grid{grid-template-columns:repeat(4,1fr);}
+  .stats-row{gap:0;}
+  .stat-item{padding:0 12px 0 0;margin-right:12px;}
+  .stat-num{font-size:20px;}
+}
+@media print{
+  .hms-header,.bld-tabs,.stats-row,.date-bar,.dl-bar,.btn-print,.floor-header .btn-print{display:none!important;}
+  .floor-section{border:none;margin:0;}
+  .hk-table{font-size:10px;}
+}
+</style>
+</head>
+<body>
+
+<input id="file-input" type="file" accept=".xls,.xlsx,.xml" style="display:none">
+<div id="loading-overlay"><div class="spinner"></div></div>
+
+<!-- ── LOGIN ── -->
+<div id="s-login">
+  <div class="login-logo">🌸 FLOWER HMS</div>
+  <div class="login-sub">Zgjidhni rolin tuaj për të hyrë</div>
+  <div class="login-cards">
+    <div class="login-card" onclick="showFOPass()">
+      <div class="lc-icon">🏨</div>
+      <div class="lc-title">Recepsion</div>
+      <div class="lc-sub">Front Office Staff</div>
+    </div>
+    <div class="login-card" onclick="loginHK()">
+      <div class="lc-icon">🧹</div>
+      <div class="lc-title">Pastrimi</div>
+      <div class="lc-sub">Stafi i Pastrimit</div>
+    </div>
+  </div>
+  <div id="fo-pass-wrap">
+    <input id="fo-user" placeholder="Username" autocomplete="off">
+    <input id="fo-pwd" type="password" placeholder="Fjalëkalimi"
+           onkeydown="if(event.key==='Enter')loginFO()">
+    <button id="fo-login-btn" onclick="loginFO()">Hyr</button>
+    <div id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── FRONT OFFICE ── -->
+<div id="s-fo" style="display:none">
+  <div class="hms-header">
+    <div class="hms-logo"><span class="dot-r"></span>🌸 FLOWER HMS · Pastrimi</div>
+    <div class="hdr-right">
+      <span class="hdr-badge">🏨 Recepsion</span>
+      <a class="hdr-back" id="back-link" href="#">← Dashboard</a>
+      <button class="hdr-btn" onclick="logout()">Dil ↪</button>
+    </div>
+  </div>
+
+  <div class="bld-tabs">
+    <div class="bld-tab active" id="fo-tab-f" onclick="switchBldFO('flower')">
+      <span class="bld-dot" style="background:var(--red)"></span>Flower Hotel
+    </div>
+    <div class="bld-tab" id="fo-tab-g" onclick="switchBldFO('garden')">
+      <span class="bld-dot" style="background:var(--green)"></span>Garden Hotel
+    </div>
+  </div>
+
+  <div class="stats-row" id="fo-stats"></div>
+
+  <div class="date-bar">
+    <div class="date-txt" id="fo-date"></div>
+    <div class="date-actions">
+      <span class="sync-msg" id="sync-msg"></span>
+      <button class="btn-gold" onclick="doReset()">↺ Reset Ditës</button>
+      <button class="btn-upload" onclick="document.getElementById('file-input').click()">
+        📤 Ngarko Excel Trinosoft
+      </button>
+    </div>
+  </div>
+
+  <div id="fo-table-area"></div>
+
+  <div class="dl-bar">
+    <button class="btn-dl" onclick="downloadExcel()">⬇ Shkarko Raport Excel</button>
+    <button class="btn-gold" onclick="saveToSheets()">☁ Ruaj në Sheets</button>
+  </div>
+</div>
+
+<!-- ── HOUSEKEEPING ── -->
+<div id="s-hk" style="display:none">
+  <div class="hms-header">
+    <div class="hms-logo" id="hk-logo"><span class="dot-g"></span>🌸 FLOWER HMS</div>
+    <div class="hdr-right">
+      <span class="hdr-badge" id="hk-badge">🌸 Pastrim · Flower</span>
+      <button class="hdr-btn" onclick="logout()">Dil ↪</button>
+    </div>
+  </div>
+
+  <div class="bld-tabs">
+    <div class="bld-tab active" id="hk-tab-f" onclick="switchBldHK('flower')">
+      <span class="bld-dot" style="background:var(--red)"></span>Flower Hotel
+    </div>
+    <div class="bld-tab" id="hk-tab-g" onclick="switchBldHK('garden')">
+      <span class="bld-dot" style="background:var(--green)"></span>Garden Hotel
+    </div>
+  </div>
+
+  <div class="stats-row" id="hk-stats"></div>
+  <div id="hk-cards-area" style="padding-bottom:20px;"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ══════════════════════════════════════════
+// ROOM INVENTORY
+// ══════════════════════════════════════════
+function rng(a,b){return Array.from({length:b-a+1},(_,i)=>String(a+i));}
+function grng(a,b){return Array.from({length:b-a+1},(_,i)=>'G '+(a+i));}
+
+const FLOORS_FLOWER={
+  'Kati 1':rng(101,114),'Kati 2':rng(201,214),'Kati 3':rng(301,315),
+  'Kati 4':rng(401,414),'Kati 5':rng(501,510),'Vilat':['VILA 1','VILA 2']
+};
+const FLOORS_GARDEN={
+  'Kati 1':grng(101,115),'Kati 2':grng(201,215),'Kati 3':grng(301,315),
+  'Kati 4':grng(401,415),'Kati 5':grng(501,515),'Kati 6':grng(601,616)
+};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let role=null, building='flower', rooms={};
+
+function initRooms(){
+  const inv={flower:FLOORS_FLOWER,garden:FLOORS_GARDEN};
+  for(const[bld,floors] of Object.entries(inv))
+    for(const[fl,nums] of Object.entries(floors))
+      for(const num of nums){
+        const k=`${bld}-${num}`;
+        if(!rooms[k]) rooms[k]={num,bld,fl,
+          status:'liree',clean:'piseet',persons:'',checkin:'',checkout:'',
+          notes:'',flags:{vip:0,rom:0,dec:0,wp:0,bc:0},ts:null};
+      }
+}
+
+// ══════════════════════════════════════════
+// DATE / FORMAT
+// ══════════════════════════════════════════
+function fmtDateAlb(d){
+  const days=['E Diel','E Hënë','E Martë','E Mërkurë','E Enjte','E Premte','E Shtunë'];
+  const months=['Janar','Shkurt','Mars','Prill','Maj','Qershor','Korrik','Gusht','Shtator','Tetor','Nëntor','Dhjetor'];
+  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ══════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ══════════════════════════════════════════
+function showScreen(id){
+  ['s-login','s-fo','s-hk'].forEach(s=>{
+    const el=document.getElementById(s);
+    if(el) el.style.display='none';
+  });
+  const target=document.getElementById(id);
+  if(target) target.style.display='block';
+}
+function showFOPass(){
+  document.getElementById('fo-pass-wrap').style.display='flex';
+  document.getElementById('fo-user').focus();
+}
+function loginFO(){
+  const u=(document.getElementById('fo-user').value||'').trim();
+  const p=(document.getElementById('fo-pwd').value||'').trim();
+  if(u.toLowerCase()==='front office'&&p==='FO2026'){
+    role='fo'; building='flower';
+    showScreen('s-fo'); renderFO();
+  } else {
+    document.getElementById('login-err').textContent='Username ose fjalëkalim i gabuar.';
+  }
+}
+function loginHK(){
+  role='hk'; building='flower';
+  showScreen('s-hk'); renderHK();
+}
+function logout(){
+  role=null; building='flower';
+  showScreen('s-login');
+  document.getElementById('fo-pass-wrap').style.display='none';
+  document.getElementById('fo-user').value='';
+  document.getElementById('fo-pwd').value='';
+  document.getElementById('login-err').textContent='';
+}
+
+// ══════════════════════════════════════════
+// BUILDING SWITCH
+// ══════════════════════════════════════════
+function switchBldFO(b){
+  building=b;
+  document.getElementById('fo-tab-f').className='bld-tab'+(b==='flower'?' active':'');
+  document.getElementById('fo-tab-g').className='bld-tab'+(b==='garden'?' active':'');
+  renderFO();
+}
+function switchBldHK(b){
+  building=b;
+  document.getElementById('hk-tab-f').className='bld-tab'+(b==='flower'?' active':'');
+  document.getElementById('hk-tab-g').className='bld-tab'+(b==='garden'?' active':'');
+  document.getElementById('hk-badge').textContent='🌸 Pastrim · '+(b==='flower'?'Flower':'Garden');
+  renderHK();
+}
+
+// ══════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════
+function stats(bld){
+  const rs=Object.values(rooms).filter(r=>r.bld===bld);
+  return{total:rs.length,
+    liree:rs.filter(r=>r.status==='liree').length,
+    totale:rs.filter(r=>r.status==='ardhje'||r.status==='ikje').length,
+    ditore:rs.filter(r=>r.status==='qendrim').length,
+    ardhje:rs.filter(r=>r.status==='ardhje').length,
+    ikje:rs.filter(r=>r.status==='ikje').length,
+    paster:rs.filter(r=>r.clean==='paster').length,
+    piseet:rs.filter(r=>r.clean==='piseet').length
+  };
+}
+
+// ══════════════════════════════════════════
+// RENDER FO
+// ══════════════════════════════════════════
+function renderFO(){
+  const s=stats(building);
+  document.getElementById('fo-stats').innerHTML=`
+    <div class="stat-item"><div class="stat-num c-total">${s.total}</div><div class="stat-lbl">Total</div></div>
+    <div class="stat-item"><div class="stat-num c-liree">${s.liree}</div><div class="stat-lbl">E Lirë</div></div>
+    <div class="stat-item"><div class="stat-num c-totale">${s.totale}</div><div class="stat-lbl">Totale</div></div>
+    <div class="stat-item"><div class="stat-num c-ditore">${s.ditore}</div><div class="stat-lbl">Ditore</div></div>
+    <div class="stat-item"><div class="stat-num c-ardhje">${s.ardhje}</div><div class="stat-lbl">Ardhje</div></div>
+    <div class="stat-item"><div class="stat-num c-ikje">${s.ikje}</div><div class="stat-lbl">Ikje</div></div>`;
+  document.getElementById('fo-date').textContent='📅 '+fmtDateAlb(new Date());
+  const floors=building==='flower'?FLOORS_FLOWER:FLOORS_GARDEN;
+  let html='';
+  for(const[fl,nums] of Object.entries(floors)){
+    html+=`<div class="floor-section">
+      <div class="floor-header">
+        <span class="floor-title">${fl}</span>
+        <button class="btn-print" onclick="printFloor('${fl}')">🖨 Printo ${fl}</button>
+      </div>
+      <div style="overflow-x:auto">
+      <table class="hk-table">
+        <thead><tr>
+          <th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th>
+          <th>Status</th><th>Pastrimi</th>
+          <th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th>
+          <th style="min-width:110px">Shënime</th>
+        </tr></thead><tbody>`;
+    for(const num of nums){
+      const k=`${building}-${num}`;const r=rooms[k];if(!r)continue;
+      const rc=r.status==='ardhje'?'row-arr':r.status==='ikje'?'row-dep':r.status==='qendrim'?'row-occ':'';
+      const slbl={liree:'E lirë',ardhje:'Ardhje/Totale',ikje:'Ikje/Totale',qendrim:'Qëndrim/Ditor'}[r.status]||'E lirë';
+      const bc=r.clean==='paster'?'badge-green':'badge-red';
+      const bt=r.clean==='paster'?'E Pastër':'E Pisët';
+      const ck=r.checkin?`<span style="color:#3b82f6;font-weight:600">${r.checkin}</span>`:'<span style="color:#bbb">-</span>';
+      const co=r.checkout?`<span style="color:#ef4444;font-weight:600">${r.checkout}</span>`:'<span style="color:#bbb">-</span>';
+      html+=`<tr class="${rc}">
+        <td class="td-room">${num}</td>
+        <td class="td-pers">${r.persons||'-'}</td>
+        <td class="td-date">${ck}</td>
+        <td class="td-date">${co}</td>
+        <td><select class="status-sel" onchange="setStatus('${k}',this.value)">
+          <option value="liree"${r.status==='liree'?' selected':''}>E lirë</option>
+          <option value="ardhje"${r.status==='ardhje'?' selected':''}>Ardhje/Totale</option>
+          <option value="ikje"${r.status==='ikje'?' selected':''}>Ikje/Totale</option>
+          <option value="qendrim"${r.status==='qendrim'?' selected':''}>Qëndrim/Ditor</option>
+        </select></td>
+        <td><span class="badge ${bc}" onclick="toggleClean('${k}')">${bt}</span></td>
+        ${['vip','rom','dec','wp','bc'].map(f=>`<td style="text-align:center"><input type="checkbox" class="flag-cb" ${r.flags[f]?'checked':''} onchange="setFlag('${k}','${f}',this.checked)"></td>`).join('')}
+        <td><input class="notes-inp" value="${(r.notes||'').replace(/"/g,'&quot;')}" placeholder="Shënim..." onchange="setNotes('${k}',this.value)"></td>
+      </tr>`;
+    }
+    html+='</tbody></table></div></div>';
+  }
+  document.getElementById('fo-table-area').innerHTML=html;
+}
+
+// ══════════════════════════════════════════
+// RENDER HK CARDS
+// ══════════════════════════════════════════
+function renderHK(){
+  const s=stats(building);
+  document.getElementById('hk-stats').innerHTML=`
+    <div class="stat-item"><div class="stat-num c-total">${s.total}</div><div class="stat-lbl">Total</div></div>
+    <div class="stat-item"><div class="stat-num c-paster">${s.paster}</div><div class="stat-lbl">E Pastër</div></div>
+    <div class="stat-item"><div class="stat-num c-piseet">${s.piseet}</div><div class="stat-lbl">E Pisët</div></div>
+    <div class="stat-item"><div class="stat-num c-ooo">0</div><div class="stat-lbl">Out of Order</div></div>`;
+  const floors=building==='flower'?FLOORS_FLOWER:FLOORS_GARDEN;
+  let html='';
+  for(const[fl,nums] of Object.entries(floors)){
+    html+=`<div class="hk-floor-section"><div class="hk-floor-title">${fl}</div><div class="hk-grid">`;
+    for(const num of nums){
+      const k=`${building}-${num}`;const r=rooms[k];if(!r)continue;
+      const cls=r.clean==='paster'?'paster':'piseet';
+      const lbl=r.clean==='paster'?'E Pastër':'E Pisët';
+      html+=`<div class="hk-card ${cls}" onclick="toggleClean('${k}',true)">
+        <div class="hkc-num">${num}</div>
+        <div class="hkc-lbl">${lbl}</div>
+        <div class="hkc-time">${r.ts||'--:--'}</div>
+      </div>`;
+    }
+    html+='</div></div>';
+  }
+  document.getElementById('hk-cards-area').innerHTML=html;
+}
+
+// ══════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════
+function setStatus(k,v){rooms[k].status=v;renderFO();}
+function setFlag(k,f,v){rooms[k].flags[f]=v?1:0;}
+function setNotes(k,v){rooms[k].notes=v;}
+function toggleClean(k,fromHK=false){
+  const r=rooms[k];
+  r.clean=r.clean==='paster'?'piseet':'paster';
+  const n=new Date();
+  r.ts=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+  if(fromHK){renderHK();autoSave();}
+  else{renderFO();}
+}
+function doReset(){
+  if(!confirm('Resetohet statusi i pastrimit për të gjitha dhomat. Konfirmoni?'))return;
+  Object.values(rooms).forEach(r=>{r.clean='piseet';r.ts=null;});
+  renderFO();
+}
+function autoSave(){
+  // Silent auto-save after each HK toggle
+  try{google.script.run.saveRoomState(JSON.stringify(rooms));}catch(e){}
+}
+
+// ══════════════════════════════════════════
+// XML PARSE (Trinosoft)
+// ══════════════════════════════════════════
+function parseXML(xmlText){
+  const clean=xmlText.replace(/^\uFEFF/,'').replace(/<\?mso-application[^?]*\?>/g,'');
+  const doc=new DOMParser().parseFromString(clean,'text/xml');
+  const SS='urn:schemas-microsoft-com:office:spreadsheet';
+  const rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
+    const v=cells.map(c=>{const d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
+    const cat=v[1]||'';const rawNum=v[2]||'';
+    if(!['Ardhjet','Largimet','Qëndrimet'].includes(cat)||!rawNum)continue;
+    const num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE)$/i,'').trim();
+    const status=cat==='Ardhjet'?'ardhje':cat==='Largimet'?'ikje':'qendrim';
+    const fd=iso=>{if(!iso)return'';const[y,m,d]=iso.split('T')[0].split('-');return`${d}/${m}/${y}`;};
+    out.push({num,status,persons:v[5]||'',checkin:fd(v[6]),checkout:fd(v[7]),notes:v[8]||''});
+  }
+  return out;
+}
+function applyData(parsed){
+  Object.values(rooms).forEach(r=>{r.status='liree';r.persons='';r.checkin='';r.checkout='';});
+  parsed.forEach(d=>{
+    for(const bld of['flower','garden']){
+      const k=`${bld}-${d.num}`;
+      if(rooms[k]){Object.assign(rooms[k],{status:d.status,persons:d.persons,
+        checkin:d.checkin,checkout:d.checkout,notes:d.notes||rooms[k].notes});break;}
+    }
+  });
+  renderFO();
+}
+
+document.getElementById('file-input').onchange=function(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{applyData(parseXML(ev.target.result));};
+  reader.readAsText(f,'utf-8');
+  this.value='';
+};
+
+// ══════════════════════════════════════════
+// PRINT FLOOR
+// ══════════════════════════════════════════
+function printFloor(fl){
+  const floors=building==='flower'?FLOORS_FLOWER:FLOORS_GARDEN;
+  const nums=floors[fl]||[];
+  let trs='';
+  for(const num of nums){
+    const k=`${building}-${num}`;const r=rooms[k];
+    const slbl={liree:'E lirë',ardhje:'Ardhje/Totale',ikje:'Ikje/Totale',qendrim:'Qëndrim/Ditor'}[r.status]||'-';
+    trs+=`<tr>
+      <td style="font-weight:700">${num}</td><td>${r.persons||'-'}</td>
+      <td>${r.checkin||'-'}</td><td>${r.checkout||'-'}</td><td>${slbl}</td>
+      <td style="color:${r.clean==='paster'?'green':'red'};font-weight:600">${r.clean==='paster'?'E Pastër':'E Pisët'}</td>
+      <td>${r.flags.vip?'✓':''}</td><td>${r.flags.rom?'✓':''}</td>
+      <td>${r.flags.dec?'✓':''}</td><td>${r.flags.wp?'✓':''}</td><td>${r.flags.bc?'✓':''}</td>
+      <td>${r.notes||''}</td>
+    </tr>`;
+  }
+  const pw=window.open('','_blank');
+  pw.document.write(`<!DOCTYPE html><html><head><title>Raport Pastrimi ${fl}</title>
+  <style>body{font-family:Arial,sans-serif;font-size:11px;padding:16px}
+  h2{margin-bottom:3px}h3{color:#666;font-size:12px;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse}
+  th{background:#252318;color:#f0ead0;padding:7px;text-align:left;font-size:10px}
+  td{padding:6px 7px;border-bottom:1px solid #eee}
+  tr:nth-child(even){background:#f9f9f9}</style></head><body>
+  <h2>🌸 FLOWER HMS — Raport Pastrimi</h2>
+  <h3>${building==='flower'?'Flower Hotel':'Garden Hotel'} · ${fl} · ${fmtDateAlb(new Date())}</h3>
+  <table><thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th>
+  <th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th><th>Shënime</th></tr></thead>
+  <tbody>${trs||'<tr><td colspan="12" style="text-align:center;padding:20px;color:#999">Nuk ka dhoma të zëna.</td></tr>'}</tbody></table>
+  <script>window.onload=()=>window.print();<\/script></body></html>`);
+  pw.document.close();
+}
+
+// ══════════════════════════════════════════
+// EXCEL DOWNLOAD
+// ══════════════════════════════════════════
+function downloadExcel(){
+  if(typeof XLSX==='undefined'){alert('Libraria XLSX nuk u ngarkua.');return;}
+  const wb=XLSX.utils.book_new();
+  const floors=building==='flower'?FLOORS_FLOWER:FLOORS_GARDEN;
+  const hdr=['Nr.','Pers.','Check In','Check Out','Status','Pastrimi','VIP','ROM','DEC','WP','BC','Shënime'];
+  const allRows=[hdr];
+  for(const[fl,nums] of Object.entries(floors)){
+    allRows.push([fl]);
+    for(const num of nums){
+      const k=`${building}-${num}`;const r=rooms[k];if(!r)continue;
+      const slbl={liree:'E lirë',ardhje:'Ardhje/Totale',ikje:'Ikje/Totale',qendrim:'Qëndrim/Ditor'}[r.status]||'E lirë';
+      allRows.push([num,r.persons||'',r.checkin||'',r.checkout||'',slbl,
+        r.clean==='paster'?'E Pastër':'E Pisët',
+        r.flags.vip?'Po':'',r.flags.rom?'Po':'',r.flags.dec?'Po':'',r.flags.wp?'Po':'',r.flags.bc?'Po':'',r.notes||'']);
+    }
+  }
+  const ws=XLSX.utils.aoa_to_sheet(allRows);
+  ws['!cols']=[{wch:10},{wch:6},{wch:12},{wch:12},{wch:18},{wch:12},{wch:5},{wch:5},{wch:5},{wch:5},{wch:5},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,ws,building==='flower'?'Flower Hotel':'Garden Hotel');
+  const t=new Date();
+  XLSX.writeFile(wb,`Raport_Pastrimi_${t.getDate().toString().padStart(2,'0')}-${(t.getMonth()+1).toString().padStart(2,'0')}-${t.getFullYear()}.xlsx`);
+}
+
+// ══════════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ══════════════════════════════════════════
+function saveToSheets(){
+  const msg=document.getElementById('sync-msg');
+  msg.textContent='⏳ Duke ruajtur...';
+  try{
+    google.script.run
+      .withSuccessHandler(()=>{msg.textContent='✅ U ruajt në Sheets!';setTimeout(()=>msg.textContent='',3000);})
+      .withFailureHandler(e=>{msg.textContent='⚠ Gabim: '+e;})
+      .saveRoomState(JSON.stringify(rooms));
+  }catch(e){msg.textContent='⚠ Apps Script jo i disponueshëm';}
+}
+
+function loadFromSheets(){
+  showLoading(true);
+  try{
+    google.script.run
+      .withSuccessHandler(r=>{
+        showLoading(false);
+        if(r&&r.data){
+          try{
+            const saved=JSON.parse(r.data);
+            for(const[k,v] of Object.entries(saved))
+              if(rooms[k])Object.assign(rooms[k],v);
+          }catch(e){}
+        }
+        if(role==='fo')renderFO();
+        else if(role==='hk')renderHK();
+      })
+      .withFailureHandler(e=>{showLoading(false);})
+      .loadRoomState();
+  }catch(e){showLoading(false);}
+}
+
+function showLoading(v){
+  document.getElementById('loading-overlay').style.display=v?'flex':'none';
+}
+
+// ══════════════════════════════════════════
+// INIT — set back link URL dynamically
+// ══════════════════════════════════════════
+(function(){
+  initRooms();
+  // Set back-to-dashboard link (same Apps Script URL without ?page=)
+  try{
+    const url=new URL(window.location.href);
+    url.searchParams.delete('page');
+    document.getElementById('back-link').href=url.toString();
+  }catch(e){}
+  // Load from Sheets on startup
+  loadFromSheets();
+})();
+</script>
+</body>
+</html>
