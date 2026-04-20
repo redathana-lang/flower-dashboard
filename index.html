@@ -129,43 +129,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
 
-/* ══ HMS HOUSEKEEPING ═══════════════════════════════════════════ */
+/* ══ HMS HOUSEKEEPING ══════════════════════════════════════════════════════ */
 #sec_housekeeping{padding:0;}
-.hms-bld-tabs{display:flex;padding:0 4px;border-bottom:1px solid var(--border);background:var(--card);margin-bottom:0;}
-.hms-bld-tab{padding:10px 16px;font-size:12px;font-weight:600;cursor:pointer;
-             border-bottom:2px solid transparent;color:var(--muted);
-             display:flex;align-items:center;gap:5px;background:none;border-top:none;border-left:none;border-right:none;}
+.hms-bld-tabs{display:flex;padding:0 4px;border-bottom:1px solid var(--border);background:var(--card);}
+.hms-bld-tab{padding:10px 16px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);display:flex;align-items:center;gap:5px;background:none;border-top:none;border-left:none;border-right:none;}
 .hms-bld-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
-.hms-stats{display:flex;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0;}
-.hms-stat{padding:0 18px 0 0;border-right:1px solid var(--border);margin-right:18px;flex-shrink:0;}
+.hms-stats{display:flex;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.hms-stat{padding:0 16px 0 0;border-right:1px solid var(--border);margin-right:16px;}
 .hms-stat:last-child{border-right:none;}
-.hms-stat-n{font-size:22px;font-weight:800;line-height:1;}
+.hms-stat-n{font-size:20px;font-weight:800;line-height:1;}
 .hms-stat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
-.hms-c-k{color:var(--text);}.hms-c-lire{color:var(--gold);}.hms-c-tot{color:var(--gold);}
-.hms-c-dit{color:var(--blue);}.hms-c-arr{color:var(--up);}.hms-c-dep{color:#f97316;}
-.hms-c-pas{color:var(--up);}.hms-c-pis{color:var(--down);}
-.hms-date-bar{background:var(--bg);padding:8px 16px;display:flex;align-items:center;
-              justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border);}
+.hms-date-bar{background:var(--bg);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border);}
 .hms-date-txt{color:var(--gold);font-size:12px;font-weight:600;}
-.hms-bar-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .hms-sync{font-size:10px;color:var(--muted);}
-.hms-btn-g{background:transparent;border:1px solid var(--gold);color:var(--gold);
-           border-radius:6px;padding:5px 11px;font-size:11px;cursor:pointer;font-weight:600;}
+.hms-btn-g{background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:6px;padding:5px 11px;font-size:11px;cursor:pointer;font-weight:600;}
 .hms-btn-g:hover{background:var(--gold);color:var(--bg);}
-.hms-btn-up{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;
-            color:var(--bg);border-radius:6px;padding:5px 13px;font-size:11px;cursor:pointer;font-weight:700;}
-.hms-floor-wrap{margin:8px 12px;border:1px solid var(--border);border-radius:8px;
-                overflow:hidden;background:var(--card);}
-.hms-floor-hdr{display:flex;align-items:center;justify-content:space-between;
-               padding:7px 10px;background:var(--bg);border-bottom:1px solid var(--border);}
+.hms-btn-up{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;color:var(--bg);border-radius:6px;padding:5px 13px;font-size:11px;cursor:pointer;font-weight:700;}
+.hms-floor-wrap{margin:8px 12px;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--card);}
+.hms-floor-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg);border-bottom:1px solid var(--border);}
 .hms-floor-lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
-.hms-btn-prn{background:var(--border);color:var(--text);border:none;border-radius:5px;
-             padding:4px 9px;font-size:10px;cursor:pointer;font-weight:600;}
+.hms-btn-prn{background:var(--border);color:var(--text);border:none;border-radius:5px;padding:4px 9px;font-size:10px;cursor:pointer;font-weight:600;}
 .hms-btn-prn:hover{background:var(--gold);color:var(--bg);}
 .hms-tbl-wrap{overflow-x:auto;}
 .hms-table{width:100%;border-collapse:collapse;font-size:11px;}
 .hms-table thead tr{background:var(--bg);}
-.hms-table thead th{color:var(--gold);padding:6px 6px;text-align:left;font-weight:600;font-size:10px;white-space:nowrap;border-bottom:1px solid var(--border);}
+.hms-table thead th{color:var(--gold);padding:6px;text-align:left;font-weight:600;font-size:10px;white-space:nowrap;border-bottom:1px solid var(--border);}
 .hms-table tbody tr{border-bottom:1px solid rgba(26,51,88,.5);}
 .hms-table tbody tr:hover{background:rgba(255,255,255,.03);}
 .hms-table tbody tr.hr-arr{background:rgba(59,130,246,.08);}
@@ -175,22 +163,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hms-td-nr{font-weight:700;font-size:12px;width:46px;color:var(--gold);}
 .hms-td-ps{width:30px;text-align:center;color:var(--muted);}
 .hms-td-dt{font-size:10px;color:var(--muted);width:76px;}
-.hms-sel{border:1px solid var(--border);border-radius:5px;padding:3px 4px;font-size:10px;
-         background:var(--bg);color:var(--text);width:128px;cursor:pointer;}
-.hms-badge{display:inline-block;border-radius:20px;padding:3px 9px;font-size:10px;
-           font-weight:700;color:#fff;cursor:pointer;user-select:none;transition:opacity .15s;}
+.hms-sel{border:1px solid var(--border);border-radius:5px;padding:3px 4px;font-size:10px;background:var(--bg);color:var(--text);width:128px;cursor:pointer;}
+.hms-badge{display:inline-block;border-radius:20px;padding:3px 9px;font-size:10px;font-weight:700;color:#fff;cursor:pointer;user-select:none;}
 .hms-bg{background:#22c55e;}.hms-br{background:#ef4444;}
 .hms-badge:hover{opacity:.82;}
 .hms-fcb{width:13px;height:13px;cursor:pointer;accent-color:var(--gold);}
-.hms-ni{border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:10px;
-        width:100%;color:var(--text);background:var(--bg);}
+.hms-ni{border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:10px;width:100%;color:var(--text);background:var(--bg);}
 .hms-ni:focus{outline:none;border-color:var(--gold);}
 .hms-bot-bar{display:flex;align-items:center;gap:8px;padding:10px 12px 16px;flex-wrap:wrap;}
-.hms-btn-dl{background:var(--up);color:#fff;border:none;border-radius:7px;
-            padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;}
-.hms-btn-dl:hover{background:#16a34a;}
-.hms-note{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);
-          border-radius:8px;padding:10px 14px;margin:10px 12px 0;font-size:11px;color:var(--muted);}
+.hms-btn-dl{background:var(--up);color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;}
+.hms-note{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 14px;margin:10px 12px 0;font-size:11px;color:var(--muted);}
 .hms-note strong{color:var(--gold);}
 
 </style>
@@ -219,8 +201,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <p id="tbSub">MANAGERIAL DASHBOARD</p>
     </div>
     <div class="tb-right">
-      <span id="tbRole" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;
-            background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:#c9a84c;"></span>
+      <span id="tbRole" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:#c9a84c;white-space:nowrap;"></span>
       <button class="btn-refresh" id="btnRefresh" onclick="forceRefresh()">↻ Rifresko</button>
       <button class="btn-logout" onclick="doLogout()">Dil</button>
     </div>
@@ -271,37 +252,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
 
     <div id="sec_housekeeping" class="fsec" style="display:none">
-      <!-- HMS BUILDING TABS -->
       <div class="hms-bld-tabs">
-        <button class="hms-bld-tab active" id="hms-tf" onclick="hmsSwitchBld('flower')">
-          <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block"></span>Flower Hotel
-        </button>
-        <button class="hms-bld-tab" id="hms-tg" onclick="hmsSwitchBld('garden')">
-          <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block"></span>Garden Hotel
-        </button>
+        <button class="hms-bld-tab active" id="hms-tf" onclick="hmsSwitchBld('flower')"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block"></span>Flower Hotel</button>
+        <button class="hms-bld-tab" id="hms-tg" onclick="hmsSwitchBld('garden')"><span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block"></span>Garden Hotel</button>
       </div>
-      <!-- HMS STATS -->
       <div class="hms-stats" id="hms-stats"></div>
-      <!-- HMS DATE BAR -->
       <div class="hms-date-bar">
         <div class="hms-date-txt" id="hms-date"></div>
-        <div class="hms-bar-right">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <span class="hms-sync" id="hms-sync"></span>
           <button class="hms-btn-g" onclick="hmsReset()">↺ Reset Ditës</button>
           <button class="hms-btn-up" onclick="document.getElementById('hms-file-in').click()">📤 Ngarko Excel Trinosoft</button>
         </div>
       </div>
-      <!-- HMS NOTE FOR CLEANERS -->
-      <div class="hms-note">
-        <strong>Pastrueset</strong> — për pamjen e kartave në telefon, hyni tek:
-        <strong id="hms-hk-url">flower-dashboard.onrender.com/hk</strong>
-      </div>
-      <!-- HMS TABLE CONTENT -->
+      <div class="hms-note"><strong>Pastrueset</strong> — hyjnë tek: <strong>flower-dashboard.onrender.com/hk</strong></div>
       <div id="hms-content"></div>
-      <!-- HMS BOTTOM BAR -->
       <div class="hms-bot-bar">
-        <button class="hms-btn-dl" onclick="hmsDlExcel()">⬇ Shkarko Raport Excel</button>
-        <button class="hms-btn-g"  onclick="hmsPush(false)">☁ Ruaj në Server</button>
+        <button class="hms-btn-dl" onclick="hmsDlExcel()">⬇ Shkarko Excel</button>
+        <button class="hms-btn-g" onclick="hmsPush(false)">☁ Ruaj në Server</button>
       </div>
       <input id="hms-file-in" type="file" accept=".xls,.xlsx,.xml" style="display:none">
     </div>
@@ -312,8 +280,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const MANAGER  = { user:'MANAGER',      pass:'Flow2026' };
 const FO_USER  = { user:'FRONT OFFICE', pass:'FO2026'   };
-
-// Tabs visible per role
 const ROLE_TABS = {
   manager: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping'],
   fo:      ['fo','spa','pax','housekeeping']
@@ -346,13 +312,9 @@ function pYRange(){ return fromDate===toDate?fDate(pY(fromDate)):fDate(pY(fromDa
 function doLogin(){
   const u=document.getElementById('lgU').value.trim();
   const p=document.getElementById('lgP').value.trim();
-  if(u===MANAGER.user && p===MANAGER.pass){
-    currentRole='manager';
-  } else if(u===FO_USER.user && p===FO_USER.pass){
-    currentRole='fo';
-  } else {
-    document.getElementById('lgE').style.display='block'; return;
-  }
+  if(u===MANAGER.user&&p===MANAGER.pass){ currentRole='manager'; }
+  else if(u===FO_USER.user&&p===FO_USER.pass){ currentRole='fo'; }
+  else { document.getElementById('lgE').style.display='block'; return; }
   document.getElementById('lgE').style.display='none';
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -361,26 +323,20 @@ function doLogin(){
   applyRoleVisibility();
   loadData();
 }
-
 function applyRoleVisibility(){
-  const allowed = ROLE_TABS[currentRole] || ROLE_TABS.manager;
-  // Show/hide tabs
-  document.querySelectorAll('.nav-tab').forEach(btn => {
-    const id = btn.id.replace('tab_','');
-    btn.style.display = allowed.includes(id) ? '' : 'none';
+  const allowed=ROLE_TABS[currentRole]||ROLE_TABS.manager;
+  document.querySelectorAll('.nav-tab').forEach(btn=>{
+    const id=btn.id.replace('tab_','');
+    btn.style.display=allowed.includes(id)?'':'none';
   });
-  // Show/hide refresh button (FO doesn't need it)
-  const refreshBtn = document.getElementById('btnRefresh');
-  if(refreshBtn) refreshBtn.style.display = currentRole==='fo' ? 'none' : '';
-  // Show role badge in topbar
-  document.getElementById('tbRole').textContent = currentRole==='fo' ? 'FRONT OFFICE' : 'MANAGER';
-  document.getElementById('tbRole').style.color = currentRole==='fo' ? '#3b82f6' : '#c9a84c';
-  // Set default tab for role
-  const defaultTab = currentRole==='fo' ? 'housekeeping' : 'overview';
-  showSec(defaultTab);
+  const rb=document.getElementById('btnRefresh');
+  if(rb) rb.style.display=currentRole==='fo'?'none':'';
+  const badge=document.getElementById('tbRole');
+  if(badge){ badge.textContent=currentRole==='fo'?'FRONT OFFICE':'MANAGER'; badge.style.color=currentRole==='fo'?'#3b82f6':'#c9a84c'; }
+  showSec(currentRole==='fo'?'housekeeping':'overview');
 }
 function doLogout(){
-  currentRole = null;
+  currentRole=null;
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('app').style.display='none';
   document.getElementById('lgU').value=''; document.getElementById('lgP').value='';
@@ -391,13 +347,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElement
 function showSec(id){
   document.querySelectorAll('.fsec').forEach(s=>s.style.display='none');
   document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
-  document.getElementById('sec_'+id).style.display='block';
-  const tab = document.getElementById('tab_'+id);
-  if(tab) tab.classList.add('active');
-  document.getElementById('tbSub').textContent = id.toUpperCase()+' · '+fRange()+' VS '+pYRange();
-  // Hide shared date bar for Housekeeping (has its own controls)
-  const dateBar = document.querySelector('.date-bar');
-  if(dateBar) dateBar.style.display = id==='housekeeping' ? 'none' : 'flex';
+  const sec=document.getElementById('sec_'+id); if(sec) sec.style.display='block';
+  const tab=document.getElementById('tab_'+id); if(tab) tab.classList.add('active');
+  document.getElementById('tbSub').textContent=id.toUpperCase()+' · '+fRange()+' VS '+pYRange();
+  const db=document.querySelector('.date-bar');
+  if(db) db.style.display=id==='housekeeping'?'none':'flex';
 }
 
 // ─── DATE ─────────────────────────────────────────────────────────────────────
@@ -762,43 +716,33 @@ async function exportFin(){
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
-// ══════════════════════════════════════════════════════════════════════════════
-// HMS HOUSEKEEPING MODULE
-// ══════════════════════════════════════════════════════════════════════════════
+// ══ HMS HOUSEKEEPING MODULE ══════════════════════════════════════════════════
 (function(){
 'use strict';
-
 function rng(a,b){return Array.from({length:b-a+1},(_,i)=>String(a+i));}
 function grng(a,b){return Array.from({length:b-a+1},(_,i)=>'G '+(a+i));}
-
 const HMS_INV={
   flower:{'Kati 1':rng(101,114),'Kati 2':rng(201,214),'Kati 3':rng(301,315),'Kati 4':rng(401,414),'Kati 5':rng(501,510),'Vilat':['VILA 1','VILA 2']},
   garden:{'Kati 1':grng(101,115),'Kati 2':grng(201,215),'Kati 3':grng(301,315),'Kati 4':grng(401,415),'Kati 5':grng(501,515),'Kati 6':grng(601,616)}
 };
-
-let hmsBld='flower', hmsRooms={};
+let hmsBld='flower',hmsRooms={};
+const HMS_DAYS=['E Diel','E Hënë','E Martë','E Mërkurë','E Enjte','E Premte','E Shtunë'];
+const HMS_MONS=['Janar','Shkurt','Mars','Prill','Maj','Qershor','Korrik','Gusht','Shtator','Tetor','Nëntor','Dhjetor'];
+function hmsDateAlb(d){return HMS_DAYS[d.getDay()]+', '+d.getDate()+' '+HMS_MONS[d.getMonth()]+' '+d.getFullYear();}
+function hmsNowHM(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
 
 function hmsInit(){
   for(const[b,floors] of Object.entries(HMS_INV))
     for(const[fl,nums] of Object.entries(floors))
       for(const num of nums){
-        const k=`${b}-${num}`;
+        const k=b+'-'+num;
         if(!hmsRooms[k]) hmsRooms[k]={num,bld:b,fl,status:'liree',clean:'piseet',persons:'',checkin:'',checkout:'',notes:'',flags:{vip:0,rom:0,dec:0,wp:0,bc:0},ts:null};
       }
 }
 
-const HMS_DAYS=['E Diel','E Hënë','E Martë','E Mërkurë','E Enjte','E Premte','E Shtunë'];
-const HMS_MONS=['Janar','Shkurt','Mars','Prill','Maj','Qershor','Korrik','Gusht','Shtator','Tetor','Nëntor','Dhjetor'];
-function hmsDateAlb(d){return`${HMS_DAYS[d.getDay()]}, ${d.getDate()} ${HMS_MONS[d.getMonth()]} ${d.getFullYear()}`;}
-function hmsNowHM(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
-
 function hmsSt(b){
   const rs=Object.values(hmsRooms).filter(r=>r.bld===b);
-  return{total:rs.length,liree:rs.filter(r=>r.status==='liree').length,
-    totale:rs.filter(r=>r.status==='ardhje'||r.status==='ikje').length,
-    ditore:rs.filter(r=>r.status==='qendrim').length,
-    ardhje:rs.filter(r=>r.status==='ardhje').length,ikje:rs.filter(r=>r.status==='ikje').length,
-    paster:rs.filter(r=>r.clean==='paster').length,piseet:rs.filter(r=>r.clean==='piseet').length};
+  return{total:rs.length,liree:rs.filter(r=>r.status==='liree').length,totale:rs.filter(r=>r.status==='ardhje'||r.status==='ikje').length,ditore:rs.filter(r=>r.status==='qendrim').length,ardhje:rs.filter(r=>r.status==='ardhje').length,ikje:rs.filter(r=>r.status==='ikje').length};
 }
 
 window.hmsSwitchBld=function(b){
@@ -810,74 +754,58 @@ window.hmsSwitchBld=function(b){
 
 function hmsRenderFO(){
   const s=hmsSt(hmsBld);
-  document.getElementById('hms-stats').innerHTML=`
-    <div class="hms-stat"><div class="hms-stat-n hms-c-k">${s.total}</div><div class="hms-stat-l">Total</div></div>
-    <div class="hms-stat"><div class="hms-stat-n hms-c-lire">${s.liree}</div><div class="hms-stat-l">E Lirë</div></div>
-    <div class="hms-stat"><div class="hms-stat-n hms-c-tot">${s.totale}</div><div class="hms-stat-l">Totale</div></div>
-    <div class="hms-stat"><div class="hms-stat-n hms-c-dit">${s.ditore}</div><div class="hms-stat-l">Ditore</div></div>
-    <div class="hms-stat"><div class="hms-stat-n hms-c-arr">${s.ardhje}</div><div class="hms-stat-l">Ardhje</div></div>
-    <div class="hms-stat"><div class="hms-stat-n hms-c-dep">${s.ikje}</div><div class="hms-stat-l">Ikje</div></div>`;
-  const el=document.getElementById('hms-date');
-  if(el) el.textContent='📅 '+hmsDateAlb(new Date());
+  const statsEl=document.getElementById('hms-stats');
+  if(statsEl) statsEl.innerHTML='<div class="hms-stat"><div class="hms-stat-n" style="color:var(--text)">'+s.total+'</div><div class="hms-stat-l">Total</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--gold)">'+s.liree+'</div><div class="hms-stat-l">E Lirë</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--gold)">'+s.totale+'</div><div class="hms-stat-l">Totale</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--blue)">'+s.ditore+'</div><div class="hms-stat-l">Ditore</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--up)">'+s.ardhje+'</div><div class="hms-stat-l">Ardhje</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:#f97316">'+s.ikje+'</div><div class="hms-stat-l">Ikje</div></div>';
+  const dateEl=document.getElementById('hms-date');
+  if(dateEl) dateEl.textContent='📅 '+hmsDateAlb(new Date());
   const floors=HMS_INV[hmsBld];
   let out='';
-  for(const[fl,nums] of Object.entries(floors)){
-    out+=`<div class="hms-floor-wrap">
-      <div class="hms-floor-hdr">
-        <span class="hms-floor-lbl">${fl}</span>
-        <button class="hms-btn-prn" onclick="hmsPrintFloor('${fl}')">🖨 Printo ${fl}</button>
-      </div>
-      <div class="hms-tbl-wrap"><table class="hms-table">
-        <thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th>
-        <th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th>
-        <th style="min-width:100px">Shënime</th></tr></thead><tbody>`;
-    for(const num of nums){
-      const k=`${hmsBld}-${num}`,room=hmsRooms[k];if(!room)continue;
+  for(const fl in floors){
+    const nums=floors[fl];
+    out+='<div class="hms-floor-wrap"><div class="hms-floor-hdr"><span class="hms-floor-lbl">'+fl+'</span><button class="hms-btn-prn" onclick="hmsPrintFloor(\''+fl+'\')">🖨 Printo '+fl+'</button></div><div class="hms-tbl-wrap"><table class="hms-table"><thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th><th style="min-width:100px">Shënime</th></tr></thead><tbody>';
+    for(let ni=0;ni<nums.length;ni++){
+      const num=nums[ni],k=hmsBld+'-'+num,room=hmsRooms[k];if(!room)continue;
       const rc={ardhje:'hr-arr',ikje:'hr-dep',qendrim:'hr-occ'}[room.status]||'';
       const bc=room.clean==='paster'?'hms-bg':'hms-br';
       const bt=room.clean==='paster'?'E Pastër':'E Pisët';
-      const ck=room.checkin?`<span style="color:#60a5fa;font-weight:600">${room.checkin}</span>`:'<span style="color:#374151">–</span>';
-      const co=room.checkout?`<span style="color:#f87171;font-weight:600">${room.checkout}</span>`:'<span style="color:#374151">–</span>';
-      out+=`<tr class="${rc}">
-        <td class="hms-td-nr">${num}</td><td class="hms-td-ps">${room.persons||'–'}</td>
-        <td class="hms-td-dt">${ck}</td><td class="hms-td-dt">${co}</td>
-        <td><select class="hms-sel" onchange="hmsSetStatus('${k}',this.value)">
-          <option value="liree" ${room.status==='liree'?'selected':''}>E lirë</option>
-          <option value="ardhje" ${room.status==='ardhje'?'selected':''}>Ardhje / Totale</option>
-          <option value="ikje" ${room.status==='ikje'?'selected':''}>Ikje / Totale</option>
-          <option value="qendrim" ${room.status==='qendrim'?'selected':''}>Qëndrim / Ditor</option>
-        </select></td>
-        <td><span class="hms-badge ${bc}" onclick="hmsToggleClean('${k}')">${bt}</span></td>
-        ${['vip','rom','dec','wp','bc'].map(f=>`<td style="text-align:center"><input type="checkbox" class="hms-fcb" ${room.flags[f]?'checked':''} onchange="hmsSetFlag('${k}','${f}',this.checked)"></td>`).join('')}
-        <td><input class="hms-ni" value="${(room.notes||'').replace(/"/g,'&quot;')}" placeholder="Shënim…" onchange="hmsSetNotes('${k}',this.value)"></td>
-      </tr>`;
+      const ck=room.checkin?'<span style="color:#60a5fa;font-weight:600">'+room.checkin+'</span>':'<span style="color:#374151">–</span>';
+      const co=room.checkout?'<span style="color:#f87171;font-weight:600">'+room.checkout+'</span>':'<span style="color:#374151">–</span>';
+      const flags=['vip','rom','dec','wp','bc'];
+      let flagCells='';
+      for(let fi=0;fi<flags.length;fi++){
+        const f=flags[fi];
+        flagCells+='<td style="text-align:center"><input type="checkbox" class="hms-fcb" '+(room.flags[f]?'checked':'')+' onchange="hmsSetFlag(\''+k+'\',\''+f+'\',this.checked)"></td>';
+      }
+      out+='<tr class="'+rc+'"><td class="hms-td-nr">'+num+'</td><td class="hms-td-ps">'+(room.persons||'–')+'</td><td class="hms-td-dt">'+ck+'</td><td class="hms-td-dt">'+co+'</td><td><select class="hms-sel" onchange="hmsSetStatus(\''+k+'\',this.value)"><option value="liree"'+(room.status==='liree'?' selected':'')+'>E lirë</option><option value="ardhje"'+(room.status==='ardhje'?' selected':'')+'>Ardhje / Totale</option><option value="ikje"'+(room.status==='ikje'?' selected':'')+'>Ikje / Totale</option><option value="qendrim"'+(room.status==='qendrim'?' selected':'')+'>Qëndrim / Ditor</option></select></td><td><span class="hms-badge '+bc+'" onclick="hmsToggleClean(\''+k+'\')">'+bt+'</span></td>'+flagCells+'<td><input class="hms-ni" value="'+room.notes.replace(/"/g,'&quot;')+'" placeholder="Shënim…" onchange="hmsSetNotes(\''+k+'\',this.value)"></td></tr>';
     }
     out+='</tbody></table></div></div>';
   }
-  document.getElementById('hms-content').innerHTML=out;
+  const contentEl=document.getElementById('hms-content');
+  if(contentEl) contentEl.innerHTML=out;
 }
 
-window.hmsSetStatus=function(k,v){hmsRooms[k].status=v;hmsRenderFO();};
-window.hmsSetFlag=function(k,f,v){hmsRooms[k].flags[f]=v?1:0;};
-window.hmsSetNotes=function(k,v){hmsRooms[k].notes=v;};
+window.hmsSetStatus=function(k,v){if(hmsRooms[k])hmsRooms[k].status=v;hmsRenderFO();};
+window.hmsSetFlag=function(k,f,v){if(hmsRooms[k])hmsRooms[k].flags[f]=v?1:0;};
+window.hmsSetNotes=function(k,v){if(hmsRooms[k])hmsRooms[k].notes=v;};
 window.hmsToggleClean=function(k){
-  const r=hmsRooms[k];r.clean=r.clean==='paster'?'piseet':'paster';r.ts=hmsNowHM();hmsRenderFO();
+  if(!hmsRooms[k])return;
+  hmsRooms[k].clean=hmsRooms[k].clean==='paster'?'piseet':'paster';
+  hmsRooms[k].ts=hmsNowHM();
+  hmsRenderFO();
 };
 window.hmsReset=function(){
   if(!confirm('Resetohet I GJITHË raporti i ditës. Konfirmoni?'))return;
-  Object.values(hmsRooms).forEach(r=>{r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';r.notes='';r.flags={vip:0,rom:0,dec:0,wp:0,bc:0};});
+  Object.values(hmsRooms).forEach(function(r){r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';r.notes='';r.flags={vip:0,rom:0,dec:0,wp:0,bc:0};});
   hmsRenderFO(); hmsPush(true);
 };
 
-window.hmsPush=async function(silent=false){
+window.hmsPush=async function(silent){
   const lbl=document.getElementById('hms-sync');
   if(!silent&&lbl)lbl.textContent='⏳ Duke ruajtur…';
   try{
     const res=await fetch('/api/hms/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:hmsRooms})});
-    const ct=res.headers.get('content-type')||'';
-    if(!ct.includes('json'))throw new Error('non-json');
     const data=await res.json();
-    if(!silent&&lbl){lbl.textContent=data.ok?'✅ U ruajt':'⚠ Gabim';setTimeout(()=>{if(lbl)lbl.textContent='';},2500);}
+    if(!silent&&lbl){lbl.textContent=data.ok?'✅ U ruajt':'⚠ Gabim';setTimeout(function(){if(lbl)lbl.textContent='';},2500);}
   }catch(e){if(!silent&&lbl)lbl.textContent='⚠ Server';console.warn('[HMS]',e.message);}
 };
 
@@ -887,8 +815,7 @@ async function hmsPull(){
     const ct=res.headers.get('content-type')||'';
     if(!ct.includes('json'))return;
     const data=await res.json();
-    if(data&&data.data&&Object.keys(data.data).length>0)
-      for(const[k,v] of Object.entries(data.data))if(hmsRooms[k])Object.assign(hmsRooms[k],v);
+    if(data&&data.data)for(const k in data.data)if(hmsRooms[k])Object.assign(hmsRooms[k],data.data[k]);
   }catch(e){console.warn('[HMS] pull:',e.message);}
 }
 
@@ -900,51 +827,49 @@ function hmsParseXML(xmlText){
   const out=[];
   for(let i=1;i<rows.length;i++){
     const cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
-    const v=cells.map(c=>{const d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
+    const v=cells.map(function(c){const d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
     const cat=v[1]||'',rawNum=v[2]||'';
     if(!['Ardhjet','Largimet','Qëndrimet'].includes(cat)||!rawNum)continue;
     const num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE)$/i,'').trim();
     const status={Ardhjet:'ardhje',Largimet:'ikje',Qëndrimet:'qendrim'}[cat];
-    const fd=iso=>{if(!iso)return'';const[y,m,d]=iso.split('T')[0].split('-');return`${d}/${m}/${y}`;};
-    out.push({num,status,persons:v[5]||'',checkin:fd(v[6]),checkout:fd(v[7]),notes:v[8]||''});
+    const fd=function(iso){if(!iso)return'';const p=iso.split('T')[0].split('-');return p[2]+'/'+p[1]+'/'+p[0];};
+    out.push({num:num,status:status,persons:v[5]||'',checkin:fd(v[6]),checkout:fd(v[7]),notes:v[8]||''});
   }
   return out;
 }
 
 function hmsApplyUpload(parsed){
-  Object.values(hmsRooms).forEach(r=>{r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';});
-  parsed.forEach(d=>{
-    for(const b of['flower','garden']){const k=`${b}-${d.num}`;if(hmsRooms[k]){Object.assign(hmsRooms[k],{status:d.status,persons:d.persons,checkin:d.checkin,checkout:d.checkout,notes:d.notes||hmsRooms[k].notes});break;}}
+  Object.values(hmsRooms).forEach(function(r){r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';});
+  parsed.forEach(function(d){
+    for(let bi=0;bi<['flower','garden'].length;bi++){
+      const b=['flower','garden'][bi],k=b+'-'+d.num;
+      if(hmsRooms[k]){Object.assign(hmsRooms[k],{status:d.status,persons:d.persons,checkin:d.checkin,checkout:d.checkout,notes:d.notes||hmsRooms[k].notes});break;}
+    }
   });
   hmsRenderFO();
-  setTimeout(()=>hmsPush(true),400);
+  setTimeout(function(){hmsPush(true);},400);
 }
 
 document.getElementById('hms-file-in').onchange=function(e){
   const f=e.target.files[0];if(!f)return;
   const reader=new FileReader();
-  reader.onload=ev=>hmsApplyUpload(hmsParseXML(ev.target.result));
+  reader.onload=function(ev){hmsApplyUpload(hmsParseXML(ev.target.result));};
   reader.readAsText(f,'utf-8');
   this.value='';
 };
 
 window.hmsPrintFloor=function(fl){
-  const nums=(HMS_INV[hmsBld][fl]||[]);
+  const nums=HMS_INV[hmsBld][fl]||[];
   let trs='';
-  for(const num of nums){
-    const k=`${hmsBld}-${num}`,room=hmsRooms[k];
+  for(let ni=0;ni<nums.length;ni++){
+    const num=nums[ni],k=hmsBld+'-'+num,room=hmsRooms[k];if(!room)continue;
     const sl={liree:'E lirë',ardhje:'Ardhje/Totale',ikje:'Ikje/Totale',qendrim:'Qëndrim/Ditor'}[room.status]||'–';
-    trs+=`<tr><td style="font-weight:700">${num}</td><td>${room.persons||'–'}</td><td>${room.checkin||'–'}</td><td>${room.checkout||'–'}</td><td>${sl}</td><td style="color:${room.clean==='paster'?'#16a34a':'#dc2626'};font-weight:600">${room.clean==='paster'?'E Pastër':'E Pisët'}</td><td>${room.flags.vip?'✓':''}</td><td>${room.flags.rom?'✓':''}</td><td>${room.flags.dec?'✓':''}</td><td>${room.flags.wp?'✓':''}</td><td>${room.flags.bc?'✓':''}</td><td>${room.notes||''}</td></tr>`;
+    trs+='<tr><td style="font-weight:700">'+num+'</td><td>'+(room.persons||'–')+'</td><td>'+(room.checkin||'–')+'</td><td>'+(room.checkout||'–')+'</td><td>'+sl+'</td><td style="color:'+(room.clean==='paster'?'#16a34a':'#dc2626')+';font-weight:600">'+(room.clean==='paster'?'E Pastër':'E Pisët')+'</td><td>'+(room.flags.vip?'✓':'')+'</td><td>'+(room.flags.rom?'✓':'')+'</td><td>'+(room.flags.dec?'✓':'')+'</td><td>'+(room.flags.wp?'✓':'')+'</td><td>'+(room.flags.bc?'✓':'')+'</td><td>'+room.notes+'</td></tr>';
   }
   const pw=window.open('','_blank');
-  pw.document.write(`<!DOCTYPE html><html><head><title>Housekeeping ${fl}</title><meta charset="UTF-8">
-  <style>body{font-family:Arial,sans-serif;font-size:11px;padding:16px}h2{margin-bottom:3px}h3{color:#666;font-size:11px;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#0f2040;color:#c9a84c;padding:7px;text-align:left;font-size:10px}td{padding:5px 6px;border-bottom:1px solid #eee}tr:nth-child(even){background:#f9f9f9}</style></head><body>
-  <h2>FLOWER HOTEL — Raport Housekeeping</h2>
-  <h3>${hmsBld==='flower'?'Flower Hotel':'Garden Hotel'} · ${fl} · ${hmsDateAlb(new Date())}</h3>
-  <table><thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th><th>Shënime</th></tr></thead>
-  <tbody>${trs||'<tr><td colspan="12" style="text-align:center;padding:16px;color:#aaa">Nuk ka dhoma të zëna.</td></tr>'}</tbody></table>
-  <script>window.onload=()=>window.print();<\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-</body></html>`);
+  const bldName=hmsBld==='flower'?'Flower Hotel':'Garden Hotel';
+  const dateStr=hmsDateAlb(new Date());
+  pw.document.write('<!DOCTYPE html><html><head><title>Housekeeping '+fl+'</title><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;font-size:11px;padding:16px}h2{margin-bottom:3px}h3{color:#666;font-size:11px;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#0f2040;color:#c9a84c;padding:7px;text-align:left;font-size:10px}td{padding:5px 6px;border-bottom:1px solid #eee}tr:nth-child(even){background:#f9f9f9}</style></head><body><h2>FLOWER HOTEL — Raport Housekeeping</h2><h3>'+bldName+' · '+fl+' · '+dateStr+'</h3><table><thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th><th>Shënime</th></tr></thead><tbody>'+(trs||'<tr><td colspan="12" style="text-align:center;padding:16px;color:#aaa">Nuk ka dhoma të zëna.</td></tr>')+'</tbody></table><script>window.onload=function(){window.print();}<\/script></body></html>');
   pw.document.close();
 };
 
@@ -953,10 +878,12 @@ window.hmsDlExcel=function(){
   const wb=XLSX.utils.book_new();
   const hdr=['Nr.','Pers.','Check In','Check Out','Status','Pastrimi','VIP','ROM','DEC','WP','BC','Shënime'];
   const rows=[hdr];
-  for(const[fl,nums] of Object.entries(HMS_INV[hmsBld])){
+  const floors=HMS_INV[hmsBld];
+  for(const fl in floors){
     rows.push([fl]);
-    for(const num of nums){
-      const k=`${hmsBld}-${num}`,room=hmsRooms[k];if(!room)continue;
+    const nums=floors[fl];
+    for(let ni=0;ni<nums.length;ni++){
+      const num=nums[ni],k=hmsBld+'-'+num,room=hmsRooms[k];if(!room)continue;
       const sl={liree:'E lirë',ardhje:'Ardhje/Totale',ikje:'Ikje/Totale',qendrim:'Qëndrim/Ditor'}[room.status]||'E lirë';
       rows.push([num,room.persons||'',room.checkin||'',room.checkout||'',sl,room.clean==='paster'?'E Pastër':'E Pisët',room.flags.vip?'Po':'',room.flags.rom?'Po':'',room.flags.dec?'Po':'',room.flags.wp?'Po':'',room.flags.bc?'Po':'',room.notes||'']);
     }
@@ -965,16 +892,17 @@ window.hmsDlExcel=function(){
   ws['!cols']=[{wch:10},{wch:6},{wch:12},{wch:12},{wch:18},{wch:12},{wch:5},{wch:5},{wch:5},{wch:5},{wch:5},{wch:22}];
   XLSX.utils.book_append_sheet(wb,ws,hmsBld==='flower'?'Flower Hotel':'Garden Hotel');
   const t=new Date();
-  XLSX.writeFile(wb,`Housekeeping_${String(t.getDate()).padStart(2,'0')}-${String(t.getMonth()+1).padStart(2,'0')}-${t.getFullYear()}.xlsx`);
+  XLSX.writeFile(wb,'Housekeeping_'+String(t.getDate()).padStart(2,'0')+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+t.getFullYear()+'.xlsx');
 };
 
 // INIT
 hmsInit();
-hmsPull().then(()=>hmsRenderFO());
+hmsPull().then(function(){hmsRenderFO();});
 
 })(); // end HMS module
 
 </script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </body>
 </html>
