@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>FLOW — Flower Hotels</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#0a1628"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="FLOW"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--bg:#0a1628;--card:#0f2040;--border:#1a3358;--gold:#c9a84c;--gold2:#e8c96d;--text:#e8eaf6;--muted:#6b7fa3;--up:#22c55e;--down:#ef4444;--teal:#14b8a6;--blue:#3b82f6;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:radial-gradient(ellipse at 30% 20%,#112347,#0a1628 70%);}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:44px 36px;width:100%;max-width:360px;text-align:center;}
+.login-logo{width:76px;height:76px;border-radius:18px;margin:0 auto 18px;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.login-logo img{width:100%;height:100%;object-fit:contain;}
+.login-box h1{font-size:28px;font-weight:800;color:var(--gold);letter-spacing:-1px;}
+.login-box p{color:var(--muted);font-size:13px;margin-top:4px;margin-bottom:30px;}
+.login-box input{width:100%;padding:13px 16px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;margin-bottom:10px;outline:none;}
+.login-box input:focus{border-color:var(--gold);}
+.btn-login{width:100%;padding:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:10px;color:#0a1628;font-size:15px;font-weight:700;cursor:pointer;}
+.login-error{color:var(--down);font-size:13px;margin-top:10px;display:none;}
+
+/* TOPBAR */
+#topbar{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;}
+.tb-logo{width:34px;height:34px;border-radius:8px;background:var(--bg);overflow:hidden;flex-shrink:0;}
+.tb-logo img{width:100%;height:100%;object-fit:contain;}
+.tb-info{flex:1;}
+.tb-info h1{font-size:14px;font-weight:700;color:var(--gold);}
+.tb-info p{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.btn-refresh{background:var(--border);border:none;color:var(--muted);font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:5px;}
+.btn-refresh.spinning{color:var(--gold);}
+.btn-logout{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;}
+
+/* TABS */
+#navTabs{background:var(--card);border-bottom:1px solid var(--border);padding:0 16px;display:flex;overflow-x:auto;gap:0;}
+#navTabs::-webkit-scrollbar{display:none;}
+.nav-tab{padding:11px 16px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;}
+.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+
+/* MAIN */
+#mainContent{padding:16px;max-width:1400px;margin:0 auto;padding-bottom:20px;}
+
+/* DATE BAR */
+.date-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+.date-bar label{color:var(--muted);font-size:13px;}
+.date-bar input[type=date]{background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:9px;font-size:14px;outline:none;}
+.date-bar input[type=date]:focus{border-color:var(--gold);}
+.btn-filtro{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a1628;border:none;padding:9px 22px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;}
+.btn-sot{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:9px;font-size:12px;cursor:pointer;}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
+@media(max-width:700px){.kpi-grid{grid-template-columns:1fr 1fr;}}
+
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.kpi.teal::before{background:linear-gradient(90deg,var(--teal),#2dd4bf);}
+.kpi.blue::before{background:linear-gradient(90deg,var(--blue),#60a5fa);}
+.kpi.red::before{background:linear-gradient(90deg,var(--down),#f87171);}
+.kpi.purple::before{background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.kpi-val{font-size:26px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-1px;}
+.kpi-val .u{font-size:14px;font-weight:600;color:var(--muted);margin-left:2px;}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px;}
+.kpi-bdg{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;margin-top:7px;}
+.kpi-bdg.up{background:rgba(34,197,94,.12);color:var(--up);}
+.kpi-bdg.down{background:rgba(239,68,68,.12);color:var(--down);}
+
+/* PANELS */
+.panels{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-bottom:16px;}
+@media(max-width:800px){.panels{grid-template-columns:1fr;}}
+
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.panel-title{font-size:13px;font-weight:700;color:var(--text);}
+.panel-tag{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+
+/* DEPT BARS */
+.dept-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.dept-name{font-size:12px;color:var(--muted);width:120px;flex-shrink:0;text-align:right;}
+.dept-bar-wrap{flex:1;height:14px;background:#070f1e;border-radius:3px;overflow:hidden;}
+.dept-bar{height:100%;border-radius:3px;transition:width .6s ease;}
+.dept-val{font-size:12px;font-weight:700;color:var(--text);width:55px;text-align:right;flex-shrink:0;}
+.dept-row.tot .dept-name,.dept-row.tot .dept-val{color:var(--gold);font-weight:800;}
+.dept-row.tot .dept-val{font-size:13px;}
+
+/* YOY TABLE */
+.yoy-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
+.yoy-row:last-child{border-bottom:none;}
+.yoy-lbl{font-size:13px;color:var(--muted);flex:1;}
+.yoy-curr{font-size:14px;font-weight:700;min-width:70px;text-align:right;}
+.yoy-prev{font-size:12px;color:var(--muted);min-width:55px;text-align:right;}
+.yoy-pct{min-width:50px;text-align:right;font-size:12px;font-weight:700;}
+.yoy-pct.up{color:var(--up);}
+.yoy-pct.down{color:var(--down);}
+.yoy-row.tot .yoy-lbl{color:var(--gold);font-weight:700;}
+.yoy-row.tot .yoy-curr{color:var(--gold);font-size:15px;font-weight:800;}
+
+/* DETAIL CARDS */
+.sec-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.sec-hdr2{padding:12px 18px;background:rgba(201,168,76,.04);border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--gold);}
+.dtable{width:100%;border-collapse:collapse;}
+.dtable th{text-align:left;padding:9px 16px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+.dtable td{padding:10px 16px;font-size:13px;border-bottom:1px solid rgba(26,51,88,.4);}
+.dtable tr:last-child td{border-bottom:none;}
+.dtable .v{text-align:right;font-weight:600;}
+.dtable .g{color:var(--gold);}
+.dtable .sh td{background:rgba(201,168,76,.05);color:var(--gold);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.dtable .tr td{font-weight:700;color:var(--gold);border-top:2px solid rgba(201,168,76,.25)!important;}
+
+/* LOADING */
+.loading{text-align:center;padding:60px 20px;color:var(--muted);}
+.spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 12px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:20px;text-align:center;color:var(--down);font-size:14px;}
+.no-data{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
+
+.btn-xl{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#22c55e;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;}
+
+/* TWO COL GRID */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+
+/* ══ HMS HOUSEKEEPING ═══════════════════════════════════════════ */
+#sec_housekeeping{padding:0;}
+.hms-bld-tabs{display:flex;padding:0 4px;border-bottom:1px solid var(--border);background:var(--card);margin-bottom:0;}
+.hms-bld-tab{padding:10px 16px;font-size:12px;font-weight:600;cursor:pointer;
+             border-bottom:2px solid transparent;color:var(--muted);
+             display:flex;align-items:center;gap:5px;background:none;border-top:none;border-left:none;border-right:none;}
+.hms-bld-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
+.hms-stats{display:flex;padding:12px 16px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:0;}
+.hms-stat{padding:0 18px 0 0;border-right:1px solid var(--border);margin-right:18px;flex-shrink:0;}
+.hms-stat:last-child{border-right:none;}
+.hms-stat-n{font-size:22px;font-weight:800;line-height:1;}
+.hms-stat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.hms-c-k{color:var(--text);}.hms-c-lire{color:var(--gold);}.hms-c-tot{color:var(--gold);}
+.hms-c-dit{color:var(--blue);}.hms-c-arr{color:var(--up);}.hms-c-dep{color:#f97316;}
+.hms-c-pas{color:var(--up);}.hms-c-pis{color:var(--down);}
+.hms-date-bar{background:var(--bg);padding:8px 16px;display:flex;align-items:center;
+              justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border);}
+.hms-date-txt{color:var(--gold);font-size:12px;font-weight:600;}
+.hms-bar-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.hms-sync{font-size:10px;color:var(--muted);}
+.hms-btn-g{background:transparent;border:1px solid var(--gold);color:var(--gold);
+           border-radius:6px;padding:5px 11px;font-size:11px;cursor:pointer;font-weight:600;}
+.hms-btn-g:hover{background:var(--gold);color:var(--bg);}
+.hms-btn-up{background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;
+            color:var(--bg);border-radius:6px;padding:5px 13px;font-size:11px;cursor:pointer;font-weight:700;}
+.hms-floor-wrap{margin:8px 12px;border:1px solid var(--border);border-radius:8px;
+                overflow:hidden;background:var(--card);}
+.hms-floor-hdr{display:flex;align-items:center;justify-content:space-between;
+               padding:7px 10px;background:var(--bg);border-bottom:1px solid var(--border);}
+.hms-floor-lbl{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.hms-btn-prn{background:var(--border);color:var(--text);border:none;border-radius:5px;
+             padding:4px 9px;font-size:10px;cursor:pointer;font-weight:600;}
+.hms-btn-prn:hover{background:var(--gold);color:var(--bg);}
+.hms-tbl-wrap{overflow-x:auto;}
+.hms-table{width:100%;border-collapse:collapse;font-size:11px;}
+.hms-table thead tr{background:var(--bg);}
+.hms-table thead th{color:var(--gold);padding:6px 6px;text-align:left;font-weight:600;font-size:10px;white-space:nowrap;border-bottom:1px solid var(--border);}
+.hms-table tbody tr{border-bottom:1px solid rgba(26,51,88,.5);}
+.hms-table tbody tr:hover{background:rgba(255,255,255,.03);}
+.hms-table tbody tr.hr-arr{background:rgba(59,130,246,.08);}
+.hms-table tbody tr.hr-dep{background:rgba(249,115,22,.08);}
+.hms-table tbody tr.hr-occ{background:rgba(34,197,94,.06);}
+.hms-table td{padding:5px 6px;vertical-align:middle;color:var(--text);}
+.hms-td-nr{font-weight:700;font-size:12px;width:46px;color:var(--gold);}
+.hms-td-ps{width:30px;text-align:center;color:var(--muted);}
+.hms-td-dt{font-size:10px;color:var(--muted);width:76px;}
+.hms-sel{border:1px solid var(--border);border-radius:5px;padding:3px 4px;font-size:10px;
+         background:var(--bg);color:var(--text);width:128px;cursor:pointer;}
+.hms-badge{display:inline-block;border-radius:20px;padding:3px 9px;font-size:10px;
+           font-weight:700;color:#fff;cursor:pointer;user-select:none;transition:opacity .15s;}
+.hms-bg{background:#22c55e;}.hms-br{background:#ef4444;}
+.hms-badge:hover{opacity:.82;}
+.hms-fcb{width:13px;height:13px;cursor:pointer;accent-color:var(--gold);}
+.hms-ni{border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:10px;
+        width:100%;color:var(--text);background:var(--bg);}
+.hms-ni:focus{outline:none;border-color:var(--gold);}
+.hms-bot-bar{display:flex;align-items:center;gap:8px;padding:10px 12px 16px;flex-wrap:wrap;}
+.hms-btn-dl{background:var(--up);color:#fff;border:none;border-radius:7px;
+            padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;}
+.hms-btn-dl:hover{background:#16a34a;}
+.hms-note{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);
+          border-radius:8px;padding:10px 14px;margin:10px 12px 0;font-size:11px;color:var(--muted);}
+.hms-note strong{color:var(--gold);}
+
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo"><img src="icon-192.png" alt="F"/></div>
+    <h1>FLOW</h1>
+    <p>Flower Hotels · Managerial Dashboard</p>
+    <input type="text" id="lgU" placeholder="Username" autocomplete="username"/>
+    <input type="password" id="lgP" placeholder="Fjalëkalimi" autocomplete="current-password"/>
+    <button class="btn-login" onclick="doLogin()">Hyr →</button>
+    <div class="login-error" id="lgE">❌ Kredenciale gabim</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div id="topbar">
+    <div class="tb-logo"><img src="icon-192.png" alt=""/></div>
+    <div class="tb-info">
+      <h1>Flower Hotels — FLOW</h1>
+      <p id="tbSub">MANAGERIAL DASHBOARD</p>
+    </div>
+    <div class="tb-right">
+      <span id="tbRole" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;
+            background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:#c9a84c;"></span>
+      <button class="btn-refresh" id="btnRefresh" onclick="forceRefresh()">↻ Rifresko</button>
+      <button class="btn-logout" onclick="doLogout()">Dil</button>
+    </div>
+  </div>
+
+  <div id="navTabs">
+    <button class="nav-tab active" id="tab_overview" onclick="showSec('overview')">📊 Overview</button>
+    <button class="nav-tab" id="tab_fo" onclick="showSec('fo')">🏨 Front Office</button>
+    <button class="nav-tab" id="tab_fnb" onclick="showSec('fnb')">🍽️ F&B</button>
+    <button class="nav-tab" id="tab_spa" onclick="showSec('spa')">💆 SPA</button>
+    <button class="nav-tab" id="tab_pax" onclick="showSec('pax')">👥 PAX</button>
+    <button class="nav-tab" id="tab_cashflow" onclick="showSec('cashflow')">💰 Cash Flow</button>
+    <button class="nav-tab" id="tab_finance" onclick="showSec('finance')">📋 Shpenzime</button>
+    <button class="nav-tab" id="tab_housekeeping" onclick="showSec('housekeeping')">🧹 Housekeeping</button>
+  </div>
+
+  <div id="mainContent">
+    <!-- DATE BAR (shared) -->
+    <div class="date-bar">
+      <label>Nga</label>
+      <input type="date" id="dateFrom" value=""/>
+      <label>deri</label>
+      <input type="date" id="dateTo" value=""/>
+      <button class="btn-sot" onclick="setSot()">Sot</button>
+      <button class="btn-filtro" onclick="applyDate()">Shfaq</button>
+    </div>
+
+    <div id="sec_overview" class="fsec">
+      <div id="c_overview"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_fo" class="fsec" style="display:none">
+      <div id="c_fo"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_fnb" class="fsec" style="display:none">
+      <div id="c_fnb"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_spa" class="fsec" style="display:none">
+      <div id="c_spa"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_pax" class="fsec" style="display:none">
+      <div id="c_pax"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_cashflow" class="fsec" style="display:none">
+      <div id="c_cashflow"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+    <div id="sec_finance" class="fsec" style="display:none">
+      <div id="c_finance"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+    </div>
+
+    <div id="sec_housekeeping" class="fsec" style="display:none">
+      <!-- HMS BUILDING TABS -->
+      <div class="hms-bld-tabs">
+        <button class="hms-bld-tab active" id="hms-tf" onclick="hmsSwitchBld('flower')">
+          <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block"></span>Flower Hotel
+        </button>
+        <button class="hms-bld-tab" id="hms-tg" onclick="hmsSwitchBld('garden')">
+          <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block"></span>Garden Hotel
+        </button>
+      </div>
+      <!-- HMS STATS -->
+      <div class="hms-stats" id="hms-stats"></div>
+      <!-- HMS DATE BAR -->
+      <div class="hms-date-bar">
+        <div class="hms-date-txt" id="hms-date"></div>
+        <div class="hms-bar-right">
+          <span class="hms-sync" id="hms-sync"></span>
+          <button class="hms-btn-g" onclick="hmsReset()">↺ Reset Ditës</button>
+          <button class="hms-btn-up" onclick="document.getElementById('hms-file-in').click()">📤 Ngarko Excel Trinosoft</button>
+        </div>
+      </div>
+      <!-- HMS NOTE FOR CLEANERS -->
+      <div class="hms-note">
+        <strong>Pastrueset</strong> — për pamjen e kartave në telefon, hyni tek:
+        <strong id="hms-hk-url">flower-dashboard.onrender.com/hk</strong>
+      </div>
+      <!-- HMS TABLE CONTENT -->
+      <div id="hms-content"></div>
+      <!-- HMS BOTTOM BAR -->
+      <div class="hms-bot-bar">
+        <button class="hms-btn-dl" onclick="hmsDlExcel()">⬇ Shkarko Raport Excel</button>
+        <button class="hms-btn-g"  onclick="hmsPush(false)">☁ Ruaj në Server</button>
+      </div>
+      <input id="hms-file-in" type="file" accept=".xls,.xlsx,.xml" style="display:none">
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const MANAGER  = { user:'MANAGER',      pass:'Flow2026' };
+const FO_USER  = { user:'FRONT OFFICE', pass:'FO2026'   };
+
+// Tabs visible per role
+const ROLE_TABS = {
+  manager: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping'],
+  fo:      ['fo','spa','pax','housekeeping']
+};
+let currentRole = null;
+const TR = 110;        // total rooms
+const EH = 100;        // hotel EUR→LEK rate
+const EC = 95;         // cash flow EUR→LEK rate
+
+let fromDate = dStr(), toDate = dStr();
+
+function dStr(){ return new Date().toISOString().split('T')[0]; }
+function fK(v){ v=Number(v||0); return Math.abs(v)>=1000?(Math.round(v/1000))+'K':String(Math.round(v)); }
+function fL(v){ if(!v&&v!==0)return'—'; return Number(v).toLocaleString('sq-AL')+' Lek'; }
+function fE(v){ if(!v&&v!==0)return'—'; return'€'+Number(v).toLocaleString('sq-AL',{minimumFractionDigits:0}); }
+function n(v){ return Number(v||0); }
+function pct(a,b){ if(!b)return null; return((a-b)/b*100).toFixed(0); }
+function bdg(c,p){
+  const v=pct(c,p); if(v===null)return'';
+  const u=v>=0;
+  return`<span class="kpi-bdg ${u?'up':'down'}">${u?'↑':'↓'} ${Math.abs(v)}% vs ${new Date(fromDate).getFullYear()-1}</span>`;
+}
+function yP(c,p){ const v=pct(c,p); if(v===null)return{cls:'',txt:'—'}; return{cls:v>=0?'up':'down',txt:(v>=0?'+':'')+v+'%'}; }
+function fDate(s){ if(!s)return''; return new Date(s+'T00:00:00').toLocaleDateString('sq-AL',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase(); }
+function fRange(){ return fromDate===toDate?fDate(fromDate):fDate(fromDate)+' — '+fDate(toDate); }
+function pY(s){ return s?(parseInt(s.slice(0,4))-1)+s.slice(4):''; }
+function pYRange(){ return fromDate===toDate?fDate(pY(fromDate)):fDate(pY(fromDate))+' — '+fDate(pY(toDate)); }
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+function doLogin(){
+  const u=document.getElementById('lgU').value.trim();
+  const p=document.getElementById('lgP').value.trim();
+  if(u===MANAGER.user && p===MANAGER.pass){
+    currentRole='manager';
+  } else if(u===FO_USER.user && p===FO_USER.pass){
+    currentRole='fo';
+  } else {
+    document.getElementById('lgE').style.display='block'; return;
+  }
+  document.getElementById('lgE').style.display='none';
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('dateFrom').value=fromDate;
+  document.getElementById('dateTo').value=toDate;
+  applyRoleVisibility();
+  loadData();
+}
+
+function applyRoleVisibility(){
+  const allowed = ROLE_TABS[currentRole] || ROLE_TABS.manager;
+  // Show/hide tabs
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    const id = btn.id.replace('tab_','');
+    btn.style.display = allowed.includes(id) ? '' : 'none';
+  });
+  // Show/hide refresh button (FO doesn't need it)
+  const refreshBtn = document.getElementById('btnRefresh');
+  if(refreshBtn) refreshBtn.style.display = currentRole==='fo' ? 'none' : '';
+  // Show role badge in topbar
+  document.getElementById('tbRole').textContent = currentRole==='fo' ? 'FRONT OFFICE' : 'MANAGER';
+  document.getElementById('tbRole').style.color = currentRole==='fo' ? '#3b82f6' : '#c9a84c';
+  // Set default tab for role
+  const defaultTab = currentRole==='fo' ? 'housekeeping' : 'overview';
+  showSec(defaultTab);
+}
+function doLogout(){
+  currentRole = null;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('lgU').value=''; document.getElementById('lgP').value='';
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin(); });
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function showSec(id){
+  document.querySelectorAll('.fsec').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec_'+id).style.display='block';
+  const tab = document.getElementById('tab_'+id);
+  if(tab) tab.classList.add('active');
+  document.getElementById('tbSub').textContent = id.toUpperCase()+' · '+fRange()+' VS '+pYRange();
+  // Hide shared date bar for Housekeeping (has its own controls)
+  const dateBar = document.querySelector('.date-bar');
+  if(dateBar) dateBar.style.display = id==='housekeeping' ? 'none' : 'flex';
+}
+
+// ─── DATE ─────────────────────────────────────────────────────────────────────
+function setSot(){ fromDate=dStr(); toDate=dStr(); document.getElementById('dateFrom').value=fromDate; document.getElementById('dateTo').value=toDate; loadData(); }
+function applyDate(){ const f=document.getElementById('dateFrom').value; const t=document.getElementById('dateTo').value; if(f)fromDate=f; if(t)toDate=t||f; loadData(); }
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+async function loadData(){
+  setLoading();
+  try{
+    const url=fromDate===toDate?`/api/overview?date=${fromDate}`:`/api/overview?from=${fromDate}&to=${toDate}`;
+    const r=await fetch(url);
+    if(!r.ok) throw new Error('Server '+r.status);
+    const d=await r.json();
+    renderAll(d);
+  }catch(e){ setErr(e.message); }
+}
+
+async function forceRefresh(){
+  const btn=document.getElementById('btnRefresh');
+  btn.classList.add('spinning'); btn.textContent='↻ Duke u rifreskuar...';
+  try{ await fetch('/api/refresh',{method:'POST'}); await loadData(); }
+  catch(e){ setErr(e.message); }
+  btn.classList.remove('spinning'); btn.textContent='↻ Rifresko';
+}
+
+function setLoading(){
+  ['overview','fo','fnb','spa','pax','cashflow','finance'].forEach(id=>{
+    const el=document.getElementById('c_'+id);
+    if(el) el.innerHTML='<div class="loading"><div class="spin"></div>Duke ngarkuar...</div>';
+  });
+}
+function setErr(m){
+  ['overview','fo','fnb','spa','pax','cashflow','finance'].forEach(id=>{
+    const el=document.getElementById('c_'+id);
+    if(el) el.innerHTML=`<div class="err">⚠️ ${m}</div>`;
+  });
+}
+
+// ─── RENDER ALL ───────────────────────────────────────────────────────────────
+function renderAll(d){
+  const fo=d.fo||{}, fnb=d.fnb||{}, spa=d.spa||{}, cf=d.cashflow||{}, fin=d.finance||{}, boards=d.boards||{};
+  const foY=d.fo_yoy||{}, fnbY=d.fnb_yoy||{}, spaY=d.spa_yoy||{}, boardsY=d.boards_yoy||{};
+  rOV(fo,fnb,spa,cf,foY,fnbY,spaY);
+  rFO(fo,foY);
+  rFNB(fnb,fnbY);
+  rSPA(spa,spaY);
+  rPAX(boards,boardsY);
+  rCF(cf);
+  rFin(fin);
+}
+
+// ─── OVERVIEW ─────────────────────────────────────────────────────────────────
+function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
+  const el=document.getElementById('c_overview'); if(!el)return;
+  // Period occupancy = total nights occupied / total nights available (days × 110)
+  const rooms=n(fo.rooms_occupied);
+  const days=Math.max(1, Math.round((new Date(toDate+'T00:00:00')-new Date(fromDate+'T00:00:00'))/(1000*60*60*24))+1);
+  const nightsAvail=days*TR;
+  const occ=nightsAvail?(rooms/nightsAvail*100).toFixed(1):0;
+  const lira=TR-Math.round(rooms/days); // avg free rooms per day
+  const revE=n(fo.revenue_eur), revL=revE*EH;
+  const fnbT=n(fnb.flower)+n(fnb.pool_bar)+n(fnb.brutal)+n(fnb.pool_garden)+n(fnb.beach_bar)+n(fnb.house_use);
+  const spaR=n(spa.revenues);
+  const ark=cf.arketimet||{};
+  const cfT=n(ark.non_cash_lek)+n(ark.reception_cash_lek)+n(ark.fnb_cash_lek)+n(ark.mice_lek)+
+    (n(ark.non_cash_euro)+n(ark.reception_cash_euro)+n(ark.allotment)+n(ark.itaka)+n(ark.mice_euro))*EC;
+  const roomsY=n(foY.rooms_occupied);
+  const occY=nightsAvail?(roomsY/nightsAvail*100).toFixed(1):0;
+  const revEY=n(foY.revenue_eur), revLY=revEY*EH;
+  const fnbTY=n(fnbY.flower)+n(fnbY.pool_bar)+n(fnbY.brutal)+n(fnbY.pool_garden)+n(fnbY.beach_bar)+n(fnbY.house_use);
+  const spaRY=n(spaY.revenues);
+  const tot=revL+fnbT+spaR, totY=revLY+fnbTY+spaRY;
+
+  const depts=[
+    {nm:'Hotel (€×100)',v:revL,c:'#c9a84c'},
+    {nm:'Brutal Garden',v:n(fnb.brutal),c:'#ef4444'},
+    {nm:'Flower Rest.',v:n(fnb.flower),c:'#eab308'},
+    {nm:'Beach Bar',v:n(fnb.beach_bar),c:'#22c55e'},
+    {nm:'Pool Bar',v:n(fnb.pool_bar),c:'#3b82f6'},
+    {nm:'Pool Bar Garden',v:n(fnb.pool_garden),c:'#8b5cf6'},
+    {nm:'House Use',v:n(fnb.house_use),c:'#6b7a8d'},
+    {nm:'SPA',v:spaR,c:'#a855f7'},
+  ];
+  const mx=Math.max(...depts.map(d=>Math.abs(d.v)),1);
+
+  const yr=(l,c,p,fmt)=>{
+    const yp=yP(c,p);
+    return`<div class="yoy-row"><div class="yoy-lbl">${l}</div><div class="yoy-curr">${fmt(c)}</div><div class="yoy-prev">${p?fmt(p):'—'}</div><div class="yoy-pct ${yp.cls}">${yp.txt}</div></div>`;
+  };
+
+  el.innerHTML=`
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-lbl">Dhoma të Zëna</div>
+        <div class="kpi-val">${rooms}<span class="u">/${TR}</span></div>
+        <div class="kpi-sub">Mesatare/ditë: ${lira} · ${new Date(fromDate).getFullYear()-1}: <strong>${roomsY||'—'}</strong></div>
+        ${bdg(rooms,roomsY)}
+      </div>
+      <div class="kpi teal">
+        <div class="kpi-lbl">Okupanca</div>
+        <div class="kpi-val">${occ}<span class="u">%</span></div>
+        <div class="kpi-sub">${rooms}/${TR} dhoma · ${new Date(fromDate).getFullYear()-1}: <strong>${occY?occY+'%':'—'}</strong></div>
+        ${bdg(parseFloat(occ),parseFloat(occY))}
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Revenue Hotel</div>
+        <div class="kpi-val"><span class="u" style="font-size:18px">€</span>${n(revE).toLocaleString()}</div>
+        <div class="kpi-sub">${fL(revL)} · ${new Date(fromDate).getFullYear()-1}: <strong>${fE(revEY)}</strong></div>
+        ${bdg(revE,revEY)}
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-lbl">F&B Total</div>
+        <div class="kpi-val">${fK(fnbT)}<span class="u">Lek</span></div>
+        <div class="kpi-sub">${new Date(fromDate).getFullYear()-1}: <strong>${fK(fnbTY)}K Lek</strong></div>
+        ${bdg(fnbT,fnbTY)}
+      </div>
+      <div class="kpi">
+        <div class="kpi-lbl">Hyrje Cash Flow</div>
+        <div class="kpi-val">${fK(cfT)}<span class="u">Lek</span></div>
+        <div class="kpi-sub">Kurs ${EC} Lek/€</div>
+      </div>
+      <div class="kpi ${lira<=10?'red':''}">
+        <div class="kpi-lbl">Dhoma të Lira</div>
+        <div class="kpi-val">${lira}</div>
+        <div class="kpi-sub">Disponibël · ${new Date(fromDate).getFullYear()-1}: <strong>${roomsY?TR-roomsY:'—'}</strong></div>
+      </div>
+    </div>
+
+    <div class="panels">
+      <div class="panel">
+        <div class="panel-hdr">
+          <span class="panel-title">Të Ardhurat sipas Departamentit</span>
+          <span class="panel-tag">${fRange()}</span>
+        </div>
+        ${depts.map(d=>{
+          const w=Math.max(0,Math.abs(d.v)/mx*100); const neg=d.v<0;
+          return`<div class="dept-row"><div class="dept-name">${d.nm}</div>
+            <div class="dept-bar-wrap"><div class="dept-bar" style="width:${w}%;background:${neg?'#ef4444':d.c};opacity:${neg?.5:1}"></div></div>
+            <div class="dept-val" style="${neg?'color:var(--down)':''}">${neg?'-':''}${fK(Math.abs(d.v))}K</div></div>`;
+        }).join('')}
+        <div class="dept-row tot">
+          <div class="dept-name">TOTAL</div>
+          <div class="dept-bar-wrap"><div class="dept-bar" style="width:100%;background:var(--gold)"></div></div>
+          <div class="dept-val">${fK(tot)}K</div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr">
+          <span class="panel-title">Krahasimi YoY</span>
+          <span class="panel-tag">vs ${pYRange()}</span>
+        </div>
+        ${yr('Dhoma të Zëna',rooms,roomsY,v=>v)}
+        ${yr('Ocupanca',parseFloat(occ),parseFloat(occY),v=>v+'%')}
+        ${yr('Revenue (€)',revE,revEY,fE)}
+        ${yr('F&B Total',fnbT,fnbTY,v=>fK(v)+'K')}
+        ${yr('SPA',spaR,spaRY,v=>fK(v)+'K')}
+        <div class="yoy-row tot" style="border-top:2px solid rgba(201,168,76,.3);margin-top:4px;">
+          <div class="yoy-lbl">Total Ardhura</div>
+          <div class="yoy-curr" style="color:var(--gold);font-size:15px">${fK(tot)}K</div>
+          <div class="yoy-prev">${totY?fK(totY)+'K':'—'}</div>
+          <div class="yoy-pct ${yP(tot,totY).cls}">${yP(tot,totY).txt}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─── FRONT OFFICE ─────────────────────────────────────────────────────────────
+function rFO(fo,foY){
+  const el=document.getElementById('c_fo'); if(!el)return;
+  const rooms=n(fo.rooms_occupied);
+  const days2=Math.max(1,Math.round((new Date(toDate+'T00:00:00')-new Date(fromDate+'T00:00:00'))/(1000*60*60*24))+1);
+  const occ=(rooms/(days2*TR)*100).toFixed(1);
+  el.innerHTML=`<div class="sec-card">
+    <div class="sec-hdr2">🏨 Hotel Daily Performance — ${fRange()}</div>
+    <table class="dtable">
+      <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
+      <tr class="sh"><td colspan="3">Dhoma</td></tr>
+      <tr><td>Dhoma të Zëna</td><td class="v">${rooms}</td><td class="v">${n(foY.rooms_occupied)||'—'}</td></tr>
+      <tr><td>Dhoma të Lira (mesatare/ditë)</td><td class="v">${TR-Math.round(rooms/days2)}</td><td class="v">${foY.rooms_occupied?TR-Math.round(n(foY.rooms_occupied)/days2):'—'}</td></tr>
+      <tr><td>Ocupanca</td><td class="v g">${occ}%</td><td class="v">${foY.rooms_occupied?(n(foY.rooms_occupied)/TR*100).toFixed(1)+'%':'—'}</td></tr>
+      <tr class="sh"><td colspan="3">Të Ardhura</td></tr>
+      <tr class="tr"><td>Revenue Ditore</td><td class="v g">${fE(fo.revenue_eur||0)}</td><td class="v">${fE(foY.revenue_eur||0)}</td></tr>
+      <tr><td>Ekuivalent Lek (×${EH})</td><td class="v">${fL(n(fo.revenue_eur)*EH)}</td><td class="v">${fL(n(foY.revenue_eur)*EH)}</td></tr>
+    </table>
+  </div>`;
+}
+
+// ─── F&B ──────────────────────────────────────────────────────────────────────
+function rFNB(fnb,fnbY){
+  const el=document.getElementById('c_fnb'); if(!el)return;
+  const tot=n(fnb.flower)+n(fnb.pool_bar)+n(fnb.brutal)+n(fnb.pool_garden)+n(fnb.beach_bar)+n(fnb.house_use);
+  const neto=tot-n(fnb.house_use);
+  const totY=n(fnbY.flower)+n(fnbY.pool_bar)+n(fnbY.brutal)+n(fnbY.pool_garden)+n(fnbY.beach_bar)+n(fnbY.house_use);
+  const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v">${fL(v)}</td><td class="v">${vy!==undefined?fL(vy):'—'}</td></tr>`;
+  el.innerHTML=`<div class="sec-card">
+    <div class="sec-hdr2">🍽️ F&B Daily Revenues — ${fRange()}</div>
+    <table class="dtable">
+      <tr><th>Outlet</th><th class="v">Sot (Lek)</th><th class="v">YoY</th></tr>
+      ${row('🌸 Flower Restaurant',n(fnb.flower),n(fnbY.flower))}
+      ${row('🍹 Pool Bar',n(fnb.pool_bar),n(fnbY.pool_bar))}
+      ${row('🍖 Brutal Garden',n(fnb.brutal),n(fnbY.brutal))}
+      ${row('🏊 Pool Bar Garden',n(fnb.pool_garden),n(fnbY.pool_garden))}
+      ${row('🏖️ Beach Bar',n(fnb.beach_bar),n(fnbY.beach_bar))}
+      ${row('🏠 House Use',n(fnb.house_use),undefined)}
+      <tr><td>Xhiro Neto</td><td class="v g">${fL(neto)}</td><td class="v">—</td></tr>
+      <tr class="tr"><td>Total Xhiro</td><td class="v g">${fL(tot)}</td><td class="v">${fL(totY)}</td></tr>
+    </table>
+  </div>`;
+}
+
+// ─── SPA ──────────────────────────────────────────────────────────────────────
+function rSPA(spa,spaY){
+  const el=document.getElementById('c_spa'); if(!el)return;
+  el.innerHTML=`<div class="sec-card">
+    <div class="sec-hdr2">💆 SPA Daily Revenues — ${fRange()}</div>
+    <table class="dtable">
+      <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY</th></tr>
+      <tr><td>💰 Të Ardhura Ditore</td><td class="v g">${fL(n(spa.revenues))}</td><td class="v">${fL(n(spaY.revenues))}</td></tr>
+      <tr class="tr"><td>🧖 Total Shërbime</td><td class="v g">${spa.total_services||0}</td><td class="v">${spaY.total_services||0}</td></tr>
+    </table>
+  </div>`;
+}
+
+// ─── PAX (Daily Boards) ───────────────────────────────────────────────────────
+function rPAX(boards,boardsY){
+  const el=document.getElementById('c_pax'); if(!el)return;
+  const tot=n(boards.total_pax)||n(boards.pax_bb)+n(boards.pax_hb)+n(boards.pax_ai)+n(boards.pax_romantic);
+  const totY=n(boardsY.pax_bb)+n(boardsY.pax_hb)+n(boardsY.pax_ai)+n(boardsY.pax_romantic);
+  const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v g">${v||0}</td><td class="v">${vy!==undefined?vy:'—'}</td></tr>`;
+  el.innerHTML=`<div class="sec-card">
+    <div class="sec-hdr2">👥 PAX / Daily Boards — ${fRange()}</div>
+    <table class="dtable">
+      <tr><th>Pako</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
+      ${row('🛏️ BB PAX',n(boards.pax_bb),n(boardsY.pax_bb))}
+      ${row('🍽️ HB PAX',n(boards.pax_hb),n(boardsY.pax_hb))}
+      ${row('⭐ AI PAX',n(boards.pax_ai),n(boardsY.pax_ai))}
+      ${row('💑 Romantic PAX',n(boards.pax_romantic),n(boardsY.pax_romantic))}
+      <tr class="tr"><td>TOTAL PAX</td><td class="v g">${tot}</td><td class="v">${totY||'—'}</td></tr>
+    </table>
+  </div>`;
+}
+
+// ─── CASH FLOW ────────────────────────────────────────────────────────────────
+function rCF(cf){
+  const el=document.getElementById('c_cashflow'); if(!el)return;
+  const ark=cf.arketimet||{}, pag=cf.pagesat||{};
+  const tArk=n(ark.non_cash_lek)+n(ark.reception_cash_lek)+n(ark.fnb_cash_lek)+n(ark.mice_lek)+
+    (n(ark.non_cash_euro)+n(ark.reception_cash_euro)+n(ark.allotment)+n(ark.itaka)+n(ark.mice_euro))*EC;
+  const tPag=n(pag.paga)+n(pag.taxes)+n(pag.loan_lek)+n(pag.house_use)+n(pag.furnitore_cash)+n(pag.furnitore_bank)+n(pag.investime_lek)+
+    (n(pag.loan_euro)+n(pag.investime_euro))*EC;
+  const row=(l,v,e=false)=>`<tr><td>${l}${e?' <span style="color:var(--muted);font-size:11px">(€)</span>':''}</td><td class="v">${e?fE(v):fL(v)}</td></tr>`;
+  el.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn-xl" onclick="exportCF()">📊 Shkarko Excel</button>
+    </div>
+    <div class="two-col">
+      <div class="sec-card">
+        <div class="sec-hdr2">✅ HYRJE — Kurs ${EC} Lek/€</div>
+        <table class="dtable">
+          <tr><th>Zëri</th><th class="v">Vlera</th></tr>
+          ${row('Non Cash Lek',n(ark.non_cash_lek))}
+          ${row('Non Cash Bank Euro',n(ark.non_cash_euro),true)}
+          ${row('Reception Cash Euro',n(ark.reception_cash_euro),true)}
+          ${row('Reception Cash Lek',n(ark.reception_cash_lek))}
+          ${row('Allotments Euro',n(ark.allotment),true)}
+          ${row('Itaka',n(ark.itaka))}
+          ${row('F&B Cash Lek',n(ark.fnb_cash_lek))}
+          ${row('MICE Euro',n(ark.mice_euro),true)}
+          ${row('MICE Lek',n(ark.mice_lek))}
+          <tr class="tr"><td>TOTAL HYRJE (Lek)</td><td class="v g">${fL(tArk)}</td></tr>
+        </table>
+      </div>
+      <div class="sec-card">
+        <div class="sec-hdr2">❌ DALJE</div>
+        <table class="dtable">
+          <tr><th>Zëri</th><th class="v">Vlera</th></tr>
+          ${row('Paga',n(pag.paga))}
+          ${row('Taksa dhe Utilitete',n(pag.taxes))}
+          ${row('Kredi Euro',n(pag.loan_euro),true)}
+          ${row('Kredi Lek',n(pag.loan_lek))}
+          ${row('House Use',n(pag.house_use))}
+          ${row('Furnitore Cash',n(pag.furnitore_cash))}
+          ${row('Furnitore BAnke',n(pag.furnitore_bank))}
+          ${row('Investime Euro',n(pag.investime_euro),true)}
+          ${row('Investime Lek',n(pag.investime_lek))}
+          <tr class="tr"><td>TOTAL DALJE (Lek)</td><td class="v g">${fL(tPag)}</td></tr>
+        </table>
+        <div style="padding:14px 16px;background:rgba(201,168,76,.06);border-top:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-weight:700;color:var(--gold)">BALANCA NETO</span>
+            <span style="font-size:18px;font-weight:800;color:var(--gold)">${fL(tArk-tPag)}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─── FINANCE / SHPENZIME ──────────────────────────────────────────────────────
+function rFin(fin){
+  const el=document.getElementById('c_finance'); if(!el)return;
+  const tot=n(fin.total)||[fin.hoteli,fin.ai_fnb,fin.flower,fin.pool_bar,fin.brutal,fin.pool_garden,fin.beach_bar,fin.tjera].reduce((a,v)=>a+n(v),0);
+  const row=(l,v)=>`<tr><td>${l}</td><td class="v">${fL(n(v))}</td></tr>`;
+  el.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+      <button class="btn-xl" onclick="exportFin()">📊 Shkarko Excel</button>
+    </div>
+    <div class="sec-card">
+      <div class="sec-hdr2">📦 Shpenzime Ditore sipas Departamentit — ${fRange()}</div>
+      <table class="dtable">
+        <tr><th>Departamenti</th><th class="v">Lek</th></tr>
+        ${row('🏨 Shpenzime Hoteli',fin.hoteli)}
+        ${row('⭐ All Inclusive F&B',fin.ai_fnb)}
+        ${row('🌸 Flower Restorant',fin.flower)}
+        ${row('🍹 Pool Bar',fin.pool_bar)}
+        ${row('🍖 Brutal',fin.brutal)}
+        ${row('🏊 Pool Bar Garden',fin.pool_garden)}
+        ${row('🏖️ Beach Bar',fin.beach_bar)}
+        ${row('📦 Të Tjera',fin.tjera)}
+        <tr class="tr"><td>TOTAL SHPENZIME</td><td class="v g">${fL(tot)}</td></tr>
+      </table>
+    </div>`;
+}
+
+// ─── EXCEL EXPORT ─────────────────────────────────────────────────────────────
+function dlCSV(rows, fname){
+  const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:fname});
+  a.click(); URL.revokeObjectURL(a.href);
+}
+async function exportCF(){
+  const url=fromDate===toDate?`/api/overview?date=${fromDate}`:`/api/overview?from=${fromDate}&to=${toDate}`;
+    const r=await fetch(url);
+  const d=await r.json(); const cf=d.cashflow||{};
+  const ark=cf.arketimet||{}, pag=cf.pagesat||{};
+  const rows=[['CASH FLOW',fromDate],[''],['HYRJE',''],
+    ...Object.entries({
+      'Non Cash Lek':n(ark.non_cash_lek),'Non Cash Bank Euro':n(ark.non_cash_euro),
+      'Reception Cash Euro':n(ark.reception_cash_euro),'Reception Cash Lek':n(ark.reception_cash_lek),
+      'Allotments Euro':n(ark.allotment),'Itaka':n(ark.itaka),'F&B Cash Lek':n(ark.fnb_cash_lek),
+      'MICE Euro':n(ark.mice_euro),'MICE Lek':n(ark.mice_lek)}).map(([k,v])=>[k,v]),
+    [''],['DALJE',''],
+    ...Object.entries({
+      'Paga':n(pag.paga),'Taksa dhe Utilitete':n(pag.taxes),'Kredi Euro':n(pag.loan_euro),
+      'Kredi Lek':n(pag.loan_lek),'House Use':n(pag.house_use),'Furnitore Cash':n(pag.furnitore_cash),
+      'Furnitore BAnke':n(pag.furnitore_bank),'Investime Euro':n(pag.investime_euro),'Investime Lek':n(pag.investime_lek)
+    }).map(([k,v])=>[k,v])];
+  dlCSV(rows,`cashflow_${fromDate}.csv`);
+}
+async function exportFin(){
+  const url=fromDate===toDate?`/api/overview?date=${fromDate}`:`/api/overview?from=${fromDate}&to=${toDate}`;
+    const r=await fetch(url);
+  const d=await r.json(); const fin=d.finance||{};
+  const rows=[['SHPENZIME DITORE',fromDate],[''],
+    ['Shpenzime Hoteli',n(fin.hoteli)],['All Inclusive F&B',n(fin.ai_fnb)],
+    ['Flower Restorant',n(fin.flower)],['Pool Bar',n(fin.pool_bar)],
+    ['Brutal',n(fin.brutal)],['Pool Bar Garden',n(fin.pool_garden)],
+    ['Beach Bar',n(fin.beach_bar)],['Te Tjera',n(fin.tjera)],['TOTAL',n(fin.total)]];
+  dlCSV(rows,`shpenzime_${fromDate}.csv`);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// HMS HOUSEKEEPING MODULE
+// ══════════════════════════════════════════════════════════════════════════════
+(function(){
+'use strict';
+
+function rng(a,b){return Array.from({length:b-a+1},(_,i)=>String(a+i));}
+function grng(a,b){return Array.from({length:b-a+1},(_,i)=>'G '+(a+i));}
+
+const HMS_INV={
+  flower:{'Kati 1':rng(101,114),'Kati 2':rng(201,214),'Kati 3':rng(301,315),'Kati 4':rng(401,414),'Kati 5':rng(501,510),'Vilat':['VILA 1','VILA 2']},
+  garden:{'Kati 1':grng(101,115),'Kati 2':grng(201,215),'Kati 3':grng(301,315),'Kati 4':grng(401,415),'Kati 5':grng(501,515),'Kati 6':grng(601,616)}
+};
+
+let hmsBld='flower', hmsRooms={};
+
+function hmsInit(){
+  for(const[b,floors] of Object.entries(HMS_INV))
+    for(const[fl,nums] of Object.entries(floors))
+      for(const num of nums){
+        const k=`${b}-${num}`;
+        if(!hmsRooms[k]) hmsRooms[k]={num,bld:b,fl,status:'liree',clean:'piseet',persons:'',checkin:'',checkout:'',notes:'',flags:{vip:0,rom:0,dec:0,wp:0,bc:0},ts:null};
+      }
+}
+
+const HMS_DAYS=['E Diel','E Hënë','E Martë','E Mërkurë','E Enjte','E Premte','E Shtunë'];
+const HMS_MONS=['Janar','Shkurt','Mars','Prill','Maj','Qershor','Korrik','Gusht','Shtator','Tetor','Nëntor','Dhjetor'];
+function hmsDateAlb(d){return`${HMS_DAYS[d.getDay()]}, ${d.getDate()} ${HMS_MONS[d.getMonth()]} ${d.getFullYear()}`;}
+function hmsNowHM(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
+
+function hmsSt(b){
+  const rs=Object.values(hmsRooms).filter(r=>r.bld===b);
+  return{total:rs.length,liree:rs.filter(r=>r.status==='liree').length,
+    totale:rs.filter(r=>r.status==='ardhje'||r.status==='ikje').length,
+    ditore:rs.filter(r=>r.status==='qendrim').length,
+    ardhje:rs.filter(r=>r.status==='ardhje').length,ikje:rs.filter(r=>r.status==='ikje').length,
+    paster:rs.filter(r=>r.clean==='paster').length,piseet:rs.filter(r=>r.clean==='piseet').length};
+}
+
+window.hmsSwitchBld=function(b){
+  hmsBld=b;
+  document.getElementById('hms-tf').className='hms-bld-tab'+(b==='flower'?' active':'');
+  document.getElementById('hms-tg').className='hms-bld-tab'+(b==='garden'?' active':'');
+  hmsRenderFO();
+};
+
+function hmsRenderFO(){
+  const s=hmsSt(hmsBld);
+  document.getElementById('hms-stats').innerHTML=`
+    <div class="hms-stat"><div class="hms-stat-n hms-c-k">${s.total}</div><div class="hms-stat-l">Total</div></div>
+    <div class="hms-stat"><div class="hms-stat-n hms-c-lire">${s.liree}</div><div class="hms-stat-l">E Lirë</div></div>
+    <div class="hms-stat"><div class="hms-stat-n hms-c-tot">${s.totale}</div><div class="hms-stat-l">Totale</div></div>
+    <div class="hms-stat"><div class="hms-stat-n hms-c-dit">${s.ditore}</div><div class="hms-stat-l">Ditore</div></div>
+    <div class="hms-stat"><div class="hms-stat-n hms-c-arr">${s.ardhje}</div><div class="hms-stat-l">Ardhje</div></div>
+    <div class="hms-stat"><div class="hms-stat-n hms-c-dep">${s.ikje}</div><div class="hms-stat-l">Ikje</div></div>`;
+  const el=document.getElementById('hms-date');
+  if(el) el.textContent='📅 '+hmsDateAlb(new Date());
+  const floors=HMS_INV[hmsBld];
+  let out='';
+  for(const[fl,nums] of Object.entries(floors)){
+    out+=`<div class="hms-floor-wrap">
+      <div class="hms-floor-hdr">
+        <span class="hms-floor-lbl">${fl}</span>
+        <button class="hms-btn-prn" onclick="hmsPrintFloor('${fl}')">🖨 Printo ${fl}</button>
+      </div>
+      <div class="hms-tbl-wrap"><table class="hms-table">
+        <thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th>
+        <th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th>
+        <th style="min-width:100px">Shënime</th></tr></thead><tbody>`;
+    for(const num of nums){
+      const k=`${hmsBld}-${num}`,room=hmsRooms[k];if(!room)continue;
+      const rc={ardhje:'hr-arr',ikje:'hr-dep',qendrim:'hr-occ'}[room.status]||'';
+      const bc=room.clean==='paster'?'hms-bg':'hms-br';
+      const bt=room.clean==='paster'?'E Pastër':'E Pisët';
+      const ck=room.checkin?`<span style="color:#60a5fa;font-weight:600">${room.checkin}</span>`:'<span style="color:#374151">–</span>';
+      const co=room.checkout?`<span style="color:#f87171;font-weight:600">${room.checkout}</span>`:'<span style="color:#374151">–</span>';
+      out+=`<tr class="${rc}">
+        <td class="hms-td-nr">${num}</td><td class="hms-td-ps">${room.persons||'–'}</td>
+        <td class="hms-td-dt">${ck}</td><td class="hms-td-dt">${co}</td>
+        <td><select class="hms-sel" onchange="hmsSetStatus('${k}',this.value)">
+          <option value="liree" ${room.status==='liree'?'selected':''}>E lirë</option>
+          <option value="ardhje" ${room.status==='ardhje'?'selected':''}>Ardhje / Totale</option>
+          <option value="ikje" ${room.status==='ikje'?'selected':''}>Ikje / Totale</option>
+          <option value="qendrim" ${room.status==='qendrim'?'selected':''}>Qëndrim / Ditor</option>
+        </select></td>
+        <td><span class="hms-badge ${bc}" onclick="hmsToggleClean('${k}')">${bt}</span></td>
+        ${['vip','rom','dec','wp','bc'].map(f=>`<td style="text-align:center"><input type="checkbox" class="hms-fcb" ${room.flags[f]?'checked':''} onchange="hmsSetFlag('${k}','${f}',this.checked)"></td>`).join('')}
+        <td><input class="hms-ni" value="${(room.notes||'').replace(/"/g,'&quot;')}" placeholder="Shënim…" onchange="hmsSetNotes('${k}',this.value)"></td>
+      </tr>`;
+    }
+    out+='</tbody></table></div></div>';
+  }
+  document.getElementById('hms-content').innerHTML=out;
+}
+
+window.hmsSetStatus=function(k,v){hmsRooms[k].status=v;hmsRenderFO();};
+window.hmsSetFlag=function(k,f,v){hmsRooms[k].flags[f]=v?1:0;};
+window.hmsSetNotes=function(k,v){hmsRooms[k].notes=v;};
+window.hmsToggleClean=function(k){
+  const r=hmsRooms[k];r.clean=r.clean==='paster'?'piseet':'paster';r.ts=hmsNowHM();hmsRenderFO();
+};
+window.hmsReset=function(){
+  if(!confirm('Resetohet I GJITHË raporti i ditës. Konfirmoni?'))return;
+  Object.values(hmsRooms).forEach(r=>{r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';r.notes='';r.flags={vip:0,rom:0,dec:0,wp:0,bc:0};});
+  hmsRenderFO(); hmsPush(true);
+};
+
+window.hmsPush=async function(silent=false){
+  const lbl=document.getElementById('hms-sync');
+  if(!silent&&lbl)lbl.textContent='⏳ Duke ruajtur…';
+  try{
+    const res=await fetch('/api/hms/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:hmsRooms})});
+    const ct=res.headers.get('content-type')||'';
+    if(!ct.includes('json'))throw new Error('non-json');
+    const data=await res.json();
+    if(!silent&&lbl){lbl.textContent=data.ok?'✅ U ruajt':'⚠ Gabim';setTimeout(()=>{if(lbl)lbl.textContent='';},2500);}
+  }catch(e){if(!silent&&lbl)lbl.textContent='⚠ Server';console.warn('[HMS]',e.message);}
+};
+
+async function hmsPull(){
+  try{
+    const res=await fetch('/api/hms/state');
+    const ct=res.headers.get('content-type')||'';
+    if(!ct.includes('json'))return;
+    const data=await res.json();
+    if(data&&data.data&&Object.keys(data.data).length>0)
+      for(const[k,v] of Object.entries(data.data))if(hmsRooms[k])Object.assign(hmsRooms[k],v);
+  }catch(e){console.warn('[HMS] pull:',e.message);}
+}
+
+function hmsParseXML(xmlText){
+  const clean=xmlText.replace(/^\uFEFF/,'').replace(/<\?mso-application[^?]*\?>/g,'');
+  const doc=new DOMParser().parseFromString(clean,'text/xml');
+  const SS='urn:schemas-microsoft-com:office:spreadsheet';
+  const rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
+    const v=cells.map(c=>{const d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
+    const cat=v[1]||'',rawNum=v[2]||'';
+    if(!['Ardhjet','Largimet','Qëndrimet'].includes(cat)||!rawNum)continue;
+    const num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE)$/i,'').trim();
+    const status={Ardhjet:'ardhje',Largimet:'ikje',Qëndrimet:'qendrim'}[cat];
+    const fd=iso=>{if(!iso)return'';const[y,m,d]=iso.split('T')[0].split('-');return`${d}/${m}/${y}`;};
+    out.push({num,status,persons:v[5]||'',checkin:fd(v[6]),checkout:fd(v[7]),notes:v[8]||''});
+  }
+  return out;
+}
+
+function hmsApplyUpload(parsed){
+  Object.values(hmsRooms).forEach(r=>{r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';});
+  parsed.forEach(d=>{
+    for(const b of['flower','garden']){const k=`${b}-${d.num}`;if(hmsRooms[k]){Object.assign(hmsRooms[k],{status:d.status,persons:d.persons,checkin:d.checkin,checkout:d.checkout,notes:d.notes||hmsRooms[k].notes});break;}}
+  });
+  hmsRenderFO();
+  setTimeout(()=>hmsPush(true),400);
+}
+
+document.getElementById('hms-file-in').onchange=function(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>hmsApplyUpload(hmsParseXML(ev.target.result));
+  reader.readAsText(f,'utf-8');
+  this.value='';
+};
+
+window.hmsPrintFloor=function(fl){
+  const nums=(HMS_INV[hmsBld][fl]||[]);
+  let trs='';
+  for(const num of nums){
+    const k=`${hmsBld}-${num}`,room=hmsRooms[k];
+    const sl={liree:'E lirë',ardhje:'Ardhje/Totale',ikje:'Ikje/Totale',qendrim:'Qëndrim/Ditor'}[room.status]||'–';
+    trs+=`<tr><td style="font-weight:700">${num}</td><td>${room.persons||'–'}</td><td>${room.checkin||'–'}</td><td>${room.checkout||'–'}</td><td>${sl}</td><td style="color:${room.clean==='paster'?'#16a34a':'#dc2626'};font-weight:600">${room.clean==='paster'?'E Pastër':'E Pisët'}</td><td>${room.flags.vip?'✓':''}</td><td>${room.flags.rom?'✓':''}</td><td>${room.flags.dec?'✓':''}</td><td>${room.flags.wp?'✓':''}</td><td>${room.flags.bc?'✓':''}</td><td>${room.notes||''}</td></tr>`;
+  }
+  const pw=window.open('','_blank');
+  pw.document.write(`<!DOCTYPE html><html><head><title>Housekeeping ${fl}</title><meta charset="UTF-8">
+  <style>body{font-family:Arial,sans-serif;font-size:11px;padding:16px}h2{margin-bottom:3px}h3{color:#666;font-size:11px;margin-bottom:12px}table{width:100%;border-collapse:collapse}th{background:#0f2040;color:#c9a84c;padding:7px;text-align:left;font-size:10px}td{padding:5px 6px;border-bottom:1px solid #eee}tr:nth-child(even){background:#f9f9f9}</style></head><body>
+  <h2>FLOWER HOTEL — Raport Housekeeping</h2>
+  <h3>${hmsBld==='flower'?'Flower Hotel':'Garden Hotel'} · ${fl} · ${hmsDateAlb(new Date())}</h3>
+  <table><thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th><th>Shënime</th></tr></thead>
+  <tbody>${trs||'<tr><td colspan="12" style="text-align:center;padding:16px;color:#aaa">Nuk ka dhoma të zëna.</td></tr>'}</tbody></table>
+  <script>window.onload=()=>window.print();<\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</body></html>`);
+  pw.document.close();
+};
+
+window.hmsDlExcel=function(){
+  if(typeof XLSX==='undefined'){alert('XLSX nuk u ngarkua.');return;}
+  const wb=XLSX.utils.book_new();
+  const hdr=['Nr.','Pers.','Check In','Check Out','Status','Pastrimi','VIP','ROM','DEC','WP','BC','Shënime'];
+  const rows=[hdr];
+  for(const[fl,nums] of Object.entries(HMS_INV[hmsBld])){
+    rows.push([fl]);
+    for(const num of nums){
+      const k=`${hmsBld}-${num}`,room=hmsRooms[k];if(!room)continue;
+      const sl={liree:'E lirë',ardhje:'Ardhje/Totale',ikje:'Ikje/Totale',qendrim:'Qëndrim/Ditor'}[room.status]||'E lirë';
+      rows.push([num,room.persons||'',room.checkin||'',room.checkout||'',sl,room.clean==='paster'?'E Pastër':'E Pisët',room.flags.vip?'Po':'',room.flags.rom?'Po':'',room.flags.dec?'Po':'',room.flags.wp?'Po':'',room.flags.bc?'Po':'',room.notes||'']);
+    }
+  }
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:10},{wch:6},{wch:12},{wch:12},{wch:18},{wch:12},{wch:5},{wch:5},{wch:5},{wch:5},{wch:5},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,ws,hmsBld==='flower'?'Flower Hotel':'Garden Hotel');
+  const t=new Date();
+  XLSX.writeFile(wb,`Housekeeping_${String(t.getDate()).padStart(2,'0')}-${String(t.getMonth()+1).padStart(2,'0')}-${t.getFullYear()}.xlsx`);
+};
+
+// INIT
+hmsInit();
+hmsPull().then(()=>hmsRenderFO());
+
+})(); // end HMS module
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</body>
+</html>

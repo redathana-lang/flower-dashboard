@@ -406,6 +406,52 @@ app.post('/api/push/notify', async (req, res) => {
   res.json({ ok: true, sent });
 });
 
+
+// ─── HMS HOUSEKEEPING STATE ───────────────────────────────────────────────────
+const fs_mod = require('fs');
+const HMS_FILE = require('path').join(__dirname, 'hms_state.json');
+let hmsRooms = {}, hmsLastSaved = null;
+
+(function loadHMS() {
+  try {
+    if (fs_mod.existsSync(HMS_FILE)) {
+      const d = JSON.parse(fs_mod.readFileSync(HMS_FILE, 'utf8'));
+      hmsRooms = d.rooms || {}; hmsLastSaved = d.ts || null;
+      console.log(`[HMS] Ngarkuar ${Object.keys(hmsRooms).length} dhoma`);
+    }
+  } catch(e) { console.warn('[HMS] Load error:', e.message); }
+})();
+
+function saveHMS() {
+  try { fs_mod.writeFileSync(HMS_FILE, JSON.stringify({ rooms: hmsRooms, ts: hmsLastSaved }), 'utf8'); }
+  catch(e) { console.warn('[HMS] Save error:', e.message); }
+}
+
+app.get('/api/hms/state', (req, res) => {
+  res.json({ ok: true, data: hmsRooms, ts: hmsLastSaved });
+});
+
+app.post('/api/hms/state', (req, res) => {
+  try {
+    hmsRooms = req.body.state || req.body;
+    hmsLastSaved = new Date().toISOString();
+    saveHMS();
+    console.log(`[HMS] Ruajtur ${Object.keys(hmsRooms).length} dhoma`);
+    res.json({ ok: true, ts: hmsLastSaved });
+  } catch(e) { res.status(400).json({ error: e.message }); }
+});
+
+app.post('/api/hms/reset', (req, res) => {
+  hmsRooms = {}; hmsLastSaved = new Date().toISOString();
+  saveHMS(); res.json({ ok: true });
+});
+
+
+// ─── HK CLEANERS PAGE (pa login) ─────────────────────────────────────────────
+app.get('/hk', (req, res) => {
+  res.sendFile(path.join(__dirname, 'hk.html'));
+});
+
 // ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
