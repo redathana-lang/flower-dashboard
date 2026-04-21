@@ -175,6 +175,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hms-note{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:10px 14px;margin:10px 12px 0;font-size:11px;color:var(--muted);}
 .hms-note strong{color:var(--gold);}
 
+
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.kpi-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.kpi-val{font-size:22px;font-weight:800;color:var(--text);line-height:1;}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:4px;}
 </style>
 </head>
 <body>
@@ -216,6 +221,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button class="nav-tab" id="tab_cashflow" onclick="showSec('cashflow')">💰 Cash Flow</button>
     <button class="nav-tab" id="tab_finance" onclick="showSec('finance')">📋 Shpenzime</button>
     <button class="nav-tab" id="tab_housekeeping" onclick="showSec('housekeeping')">🧹 Housekeeping</button>
+    <button class="nav-tab" id="tab_sales" onclick="showSec('sales')">📈 Sales Report</button>
   </div>
 
   <div id="mainContent">
@@ -251,6 +257,90 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div id="c_finance"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
     </div>
 
+
+    <div id="sec_sales" class="fsec" style="display:none">
+      <!-- SALES UPLOAD BAR -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:18px;font-weight:700;color:var(--gold)">Sales Report 2026</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Rezervimet · Flower Hotels &amp; Resorts (Pa Vila 1, Vila 2, Dhoma 313)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div id="salesFileInfo" style="font-size:11px;color:var(--muted);font-style:italic"></div>
+          <label style="background:linear-gradient(135deg,#c9a84c,#e8c96d);color:#0a1628;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+            ⬆ Ngarko Excel Trinisoft
+            <input type="file" accept=".xls,.xlsx" style="display:none" onchange="salesUpload(this)" />
+          </label>
+        </div>
+      </div>
+
+      <!-- KPI CARDS: Occupancy | Roomnights | Revenue | Rezervime -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;" id="salesKpiGrid">
+        <div class="kpi-card" id="skpi_occ">
+          <div class="kpi-lbl">Occupancy</div>
+          <div class="kpi-val" id="sv_occ">—</div>
+          <div class="kpi-sub" id="sv_occ_sub">Nuk ka të dhëna</div>
+        </div>
+        <div class="kpi-card" id="skpi_nights">
+          <div class="kpi-lbl">Roomnights Sold</div>
+          <div class="kpi-val" id="sv_nights">—</div>
+          <div class="kpi-sub" id="sv_nights_sub">—</div>
+        </div>
+        <div class="kpi-card" id="skpi_rev">
+          <div class="kpi-lbl">Revenue Total (€)</div>
+          <div class="kpi-val" id="sv_rev">—</div>
+          <div class="kpi-sub" id="sv_rev_sub">ADR: —</div>
+        </div>
+        <div class="kpi-card" id="skpi_res">
+          <div class="kpi-lbl">Total Rezervime</div>
+          <div class="kpi-val" id="sv_res">—</div>
+          <div class="kpi-sub" id="sv_res_sub">—</div>
+        </div>
+      </div>
+
+      <!-- CHARTS + SOURCES -->
+      <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:14px;">
+        <!-- LEFT: charts -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
+          <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)">Roomnights &amp; Revenue sipas Muajit</div>
+          <div id="salesChartArea">
+            <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;">Ngarko Excel për të parë grafikën</div>
+          </div>
+        </div>
+        <!-- RIGHT: sources + nationalities -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">Shitjet sipas Burimit</div>
+            <div id="salesSourceList"><div style="color:var(--muted);font-size:12px;">—</div></div>
+          </div>
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">Nacionalitetet Top 5</div>
+            <div id="salesNatList"><div style="color:var(--muted);font-size:12px;">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MONTHLY TABLE -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;" id="salesMonthTable">
+          <thead>
+            <tr style="background:var(--bg);">
+              <th style="color:var(--gold);padding:10px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Muaji</th>
+              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Rezervime</th>
+              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Roomnights</th>
+              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Revenue (€)</th>
+              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">ADR (€)</th>
+              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Occupancy</th>
+              <th style="color:var(--gold);padding:10px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Burimi #1</th>
+            </tr>
+          </thead>
+          <tbody id="salesMonthBody">
+            <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted);">Ngarko Excel për të parë tabelën</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div id="sec_housekeeping" class="fsec" style="display:none">
       <div class="hms-bld-tabs">
         <button class="hms-bld-tab active" id="hms-tf" onclick="hmsSwitchBld('flower')"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block"></span>Flower Hotel</button>
@@ -281,7 +371,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 const MANAGER  = { user:'MANAGER',      pass:'Flow2026' };
 const FO_USER  = { user:'FRONT OFFICE', pass:'FO2026'   };
 const ROLE_TABS = {
-  manager: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping'],
+  manager: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping','sales'],
   fo:      ['fo','spa','pax','housekeeping']
 };
 let currentRole = null;
@@ -904,5 +994,215 @@ hmsPull().then(function(){hmsRenderFO();});
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+(function(){
+// ─── SALES REPORT ──────────────────────────────────────────────────────────────
+// Rooms for occupancy: Flower 68 (excl 313+villas) + Garden 42 = 110
+const SALES_ROOMS = 110;
+const MONTH_DAYS = {1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31};
+const MONTH_AL = {1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
+
+// Exclusions
+const EXCL_ROOMS = new Set(['VILA 1','VILA 2','VILA1','VILA2','VILA2 ','313','313 ','VILA 1 ','VILA 2 ']);
+const EXCL_CLIENTS = ['jasht pune','jashte pune','jasht punë','jashte punë'];
+const EXCL_RTYPES = ['z vila','z vile'];
+
+let salesChartInst = null;
+
+function salesNormRoom(raw){
+  // Fix Garden space: "G 101" -> "G101"
+  return (raw||'').trim().replace(/^(G)\s+(\d)/,'$1$2');
+}
+
+function salesIsExcluded(v){
+  const room = salesNormRoom(v[2]);
+  if(EXCL_ROOMS.has(room)) return true;
+  if(room==='313'||room.startsWith('313 ')) return true;
+  const client = (v[5]||'').toLowerCase();
+  if(EXCL_CLIENTS.some(x=>client.includes(x))) return true;
+  const rtype = (v[1]||'').toLowerCase().trim();
+  if(EXCL_RTYPES.some(x=>rtype.includes(x))) return true;
+  return false;
+}
+
+function salesParseXML(xmlStr){
+  const SS='urn:schemas-microsoft-com:office:spreadsheet';
+  const parser=new DOMParser();
+  const clean=xmlStr.replace(/<\?mso-application[^?]*\?>/,'');
+  const doc=parser.parseFromString(clean,'application/xml');
+  const rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
+    const v=cells.map(c=>{const d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
+    if(v.length<12) continue;
+    if(salesIsExcluded(v)) continue;
+    const dateStr=(v[3]||'').split('T')[0];
+    if(!dateStr||!dateStr.match(/\d{4}-\d{2}/)) continue;
+    const [yr,mo]=dateStr.split('-').map(Number);
+    const nights=parseInt(v[10])||0;
+    const rev=parseFloat(v[11])||0;
+    const source=(v[21]||'').trim();
+    const rtype=(v[1]||'').trim();
+    const nat=(v[22]||'').trim();
+    out.push({yr,mo,nights,rev,source,rtype,nat,res:1});
+  }
+  return out;
+}
+
+function salesAggregate(rows){
+  const months={};
+  const totalSrc={}, totalNat={};
+  let totNights=0,totRev=0,totRes=0;
+  rows.forEach(r=>{
+    const k=r.yr+'-'+String(r.mo).padStart(2,'0');
+    if(!months[k]) months[k]={yr:r.yr,mo:r.mo,nights:0,rev:0,res:0,src:{},nat:{}};
+    months[k].nights+=r.nights;
+    months[k].rev+=r.rev;
+    months[k].res+=1;
+    if(r.source){months[k].src[r.source]=(months[k].src[r.source]||0)+1;totalSrc[r.source]=(totalSrc[r.source]||0)+1;}
+    if(r.nat){months[k].nat[r.nat]=(months[k].nat[r.nat]||0)+1;totalNat[r.nat]=(totalNat[r.nat]||0)+1;}
+    totNights+=r.nights; totRev+=r.rev; totRes+=1;
+  });
+  return {months,totalSrc,totalNat,totNights,totRev,totRes};
+}
+
+function availNights(yr,mo){
+  return SALES_ROOMS*(MONTH_DAYS[mo]||(mo===2&&yr%4===0?29:28));
+}
+
+function fmtEuro(v){return '€'+Math.round(v).toLocaleString('de-DE');}
+function fmtPct(v){return (v*100).toFixed(1)+'%';}
+
+function salesRender(agg){
+  const {months,totalSrc,totalNat,totNights,totRev,totRes}=agg;
+  // Total available nights across all months with data
+  let totAvail=0;
+  Object.values(months).forEach(m=>{totAvail+=availNights(m.yr,m.mo);});
+  const occ=totAvail>0?totNights/totAvail:0;
+  const adr=totNights>0?totRev/totNights:0;
+
+  // KPI
+  document.getElementById('sv_occ').textContent=fmtPct(occ);
+  document.getElementById('sv_occ_sub').textContent=totNights.toLocaleString()+' net / '+totAvail.toLocaleString()+' disponueshme';
+  document.getElementById('sv_nights').textContent=totNights.toLocaleString();
+  document.getElementById('sv_nights_sub').textContent='Mesatare ADR: '+fmtEuro(adr);
+  document.getElementById('sv_rev').textContent=fmtEuro(totRev);
+  document.getElementById('sv_rev_sub').textContent='ADR: '+fmtEuro(adr)+' / net';
+  document.getElementById('sv_res').textContent=totRes.toLocaleString();
+  document.getElementById('sv_res_sub').textContent='Mesatare: '+(totNights/Math.max(totRes,1)).toFixed(1)+' net/rez.';
+
+  // Monthly chart
+  const sortedKeys=Object.keys(months).sort();
+  const labels=sortedKeys.map(k=>{const m=months[k];return (MONTH_AL[m.mo]||k).substring(0,3)+' '+m.yr;});
+  const nightsData=sortedKeys.map(k=>months[k].nights);
+  const revData=sortedKeys.map(k=>Math.round(months[k].rev));
+
+  const chartArea=document.getElementById('salesChartArea');
+  chartArea.innerHTML='<div style="position:relative;width:100%;height:220px;"><canvas id="salesBarChart" role="img" aria-label="Bar chart roomnights and revenue by month"></canvas></div><div style="position:relative;width:100%;height:160px;margin-top:12px;"><canvas id="salesRevChart" role="img" aria-label="Revenue by month"></canvas></div>';
+  
+  if(salesChartInst) salesChartInst.destroy();
+  const isDark=document.body.classList.contains('dark')||(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  const textCol=isDark?'#a0aec0':'#374151';
+  const gridCol=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)';
+
+  new Chart(document.getElementById('salesBarChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Roomnights',data:nightsData,backgroundColor:'#c9a84c',borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'Roomnights: '+ctx.raw.toLocaleString()}}},scales:{x:{ticks:{color:textCol,font:{size:10}},grid:{color:gridCol}},y:{ticks:{color:textCol,font:{size:10}},grid:{color:gridCol}}}}
+  });
+  new Chart(document.getElementById('salesRevChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Revenue (€)',data:revData,backgroundColor:'#3b82f6',borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'€'+ctx.raw.toLocaleString('de-DE')}}},scales:{x:{ticks:{color:textCol,font:{size:10}},grid:{color:gridCol}},y:{ticks:{color:textCol,font:{size:10},callback:v=>'€'+(v/1000).toFixed(0)+'K'},grid:{color:gridCol}}}}
+  });
+
+  // Sources list
+  const srcList=document.getElementById('salesSourceList');
+  const srcSorted=Object.entries(totalSrc).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const srcMax=srcSorted[0]?srcSorted[0][1]:1;
+  srcList.innerHTML=srcSorted.map(([s,n])=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+      <div style="font-size:11px;color:var(--text);width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${s||'—'}</div>
+      <div style="flex:1;background:var(--bg);border-radius:3px;height:6px;overflow:hidden;">
+        <div style="height:100%;border-radius:3px;background:#c9a84c;width:${Math.round(n/srcMax*100)}%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--gold);font-weight:700;width:28px;text-align:right;">${n}</div>
+    </div>`).join('');
+
+  // Nationalities
+  const natList=document.getElementById('salesNatList');
+  const natSorted=Object.entries(totalNat).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const natMax=natSorted[0]?natSorted[0][1]:1;
+  natList.innerHTML=natSorted.map(([n,c])=>`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+      <div style="font-size:11px;color:var(--text);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n||'—'}</div>
+      <div style="flex:1;background:var(--bg);border-radius:3px;height:6px;overflow:hidden;">
+        <div style="height:100%;border-radius:3px;background:#8b5cf6;width:${Math.round(c/natMax*100)}%"></div>
+      </div>
+      <div style="font-size:11px;color:#8b5cf6;font-weight:700;width:28px;text-align:right;">${c}</div>
+    </div>`).join('');
+
+  // Monthly table
+  const tbody=document.getElementById('salesMonthBody');
+  let rowsHtml='';
+  sortedKeys.forEach(k=>{
+    const m=months[k];
+    const mAvail=availNights(m.yr,m.mo);
+    const mOcc=mAvail>0?m.nights/mAvail:0;
+    const mAdr=m.nights>0?m.rev/m.nights:0;
+    const topSrc=Object.entries(m.src).sort((a,b)=>b[1]-a[1])[0];
+    const badge=topSrc?`<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold)">${topSrc[0]}</span>`:'—';
+    rowsHtml+=`<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:9px 12px;color:var(--gold);font-weight:700;">${MONTH_AL[m.mo]||k} ${m.yr}</td>
+      <td style="padding:9px 12px;text-align:center;color:var(--text);">${m.res}</td>
+      <td style="padding:9px 12px;text-align:center;color:var(--muted);">${m.nights.toLocaleString()}</td>
+      <td style="padding:9px 12px;text-align:center;color:var(--gold);font-weight:700;">${fmtEuro(m.rev)}</td>
+      <td style="padding:9px 12px;text-align:center;color:var(--text);">${fmtEuro(mAdr)}</td>
+      <td style="padding:9px 12px;text-align:center;color:var(--text);">${fmtPct(mOcc)}</td>
+      <td style="padding:9px 12px;">${badge}</td>
+    </tr>`;
+  });
+  // Total row
+  rowsHtml+=`<tr style="background:rgba(201,168,76,.06);">
+    <td style="padding:9px 12px;color:var(--gold);font-weight:800;">TOTAL</td>
+    <td style="padding:9px 12px;text-align:center;font-weight:700;color:var(--text);">${totRes.toLocaleString()}</td>
+    <td style="padding:9px 12px;text-align:center;font-weight:700;color:var(--muted);">${totNights.toLocaleString()}</td>
+    <td style="padding:9px 12px;text-align:center;font-weight:800;color:var(--gold);">${fmtEuro(totRev)}</td>
+    <td style="padding:9px 12px;text-align:center;color:var(--text);">${fmtEuro(adr)}</td>
+    <td style="padding:9px 12px;text-align:center;font-weight:700;color:var(--text);">${fmtPct(occ)}</td>
+    <td style="padding:9px 12px;">—</td>
+  </tr>`;
+  tbody.innerHTML=rowsHtml;
+}
+
+function salesUpload(input){
+  const file=input.files[0]; if(!file) return;
+  document.getElementById('salesFileInfo').textContent='Duke ngarkuar...';
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const xmlStr=e.target.result;
+      const rows=salesParseXML(xmlStr);
+      if(!rows.length){alert('Nuk u gjet asnjë rezervim i vlefshëm.');return;}
+      const agg=salesAggregate(rows);
+      salesRender(agg);
+      document.getElementById('salesFileInfo').textContent=file.name+' ('+rows.length+' rez.)';
+    }catch(err){
+      alert('Gabim gjatë leximit: '+err.message);
+      document.getElementById('salesFileInfo').textContent='Gabim: '+err.message;
+    }
+    input.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+// expose globally
+window.salesUpload=salesUpload;
+})();
+</script>
+
 </body>
 </html>
