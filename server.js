@@ -456,6 +456,22 @@ app.get('/api/sheets-csv', function(req, res) {
 });
 
 
+// Debug: show first rows of sheets CSV
+app.get('/api/sheets-debug', function(req, res) {
+  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/export?format=csv&gid='+SALES_GID+'&usp=sharing';
+  new Promise(function(resolve, reject){ fetchUrl(url, 0, resolve, reject); })
+    .then(function(csv){
+      var lines = csv.split('\n').slice(0,6);
+      res.json({
+        raw_first_lines: lines,
+        total_chars: csv.length,
+        starts_with: csv.substring(0,100)
+      });
+    })
+    .catch(function(e){ res.status(500).json({error: e.message}); });
+});
+
+
 // ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

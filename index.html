@@ -1050,8 +1050,9 @@ function parseDate(s){
   s=s.trim();
   var m;
   m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return {yr:+m[1],mo:+m[2]};
-  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return {yr:+m[3],mo:+m[1]};
-  m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if(m) return {yr:+m[3],mo:+m[2]};
+  m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})$/);
+  if(m){var yr=+m[3]; if(yr<100) yr+=2000; return {yr:yr,mo:+m[2]};}
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return {yr:+m[3],mo:+m[2]};
   return null;
 }
 
@@ -1090,43 +1091,20 @@ function parseCsvLine(line){
 }
 
 function salesParseCSV(csvStr){
-  var lines=csvStr.split('\n');
+  var lines=csvStr.split('\n').filter(function(l){return l.trim();});
   if(lines.length<2) return [];
-  // Detect headers
-  var headers=parseCsvLine(lines[0]).map(function(h){return h.toLowerCase().replace(/[^a-z0-9]/g,'');});
-  // Map column indices
-  var iRoom   = findCol(headers,['nrdhomes','dhoma','roomnumber','room']);
-  var iType   = findCol(headers,['llojidhomes','roomtype','lloji']);
-  var iDate   = findCol(headers,['datafillimit','checkin','startdate','datafillimit','data']);
-  var iNights = findCol(headers,['ditetqendrimit','dite','nights','ditet','ditqendrimit','netedisponueshme']);
-  var iRev    = findCol(headers,['totali','total','revenue','rev','shuma']);
-  var iSource = findCol(headers,['burimiinfo','burimi','source','kanal']);
-  var iNat    = findCol(headers,['nacionaliteti','nationality','nat']);
-  var iClient = findCol(headers,['klienti','client','guest']);
-
-  // Fallback to Trinosoft column order if headers not recognized
-  if(iRoom<0)   iRoom=2;
-  if(iType<0)   iType=1;
-  if(iDate<0)   iDate=3;
-  if(iNights<0) iNights=10;
-  if(iRev<0)    iRev=11;
-  if(iSource<0) iSource=21;
-  if(iNat<0)    iNat=22;
-  if(iClient<0) iClient=5;
-
+  // Col: 1=LlojiDhomes 2=NrDhomes 3=DataFillimit 5=Klienti 10=Ditet 11=Totali 21=Burimi 22=Nat
   var out=[];
   for(var i=1;i<lines.length;i++){
-    var line=lines[i].trim();
-    if(!line) continue;
-    var v=parseCsvLine(line);
-    if(v.length<4) continue;
-    var room=salesNormRoom(v[iRoom]||'');
-    if(salesIsExcluded(room, v[iClient]||'', v[iType]||'')) continue;
-    var d=parseDate(v[iDate]); if(!d) continue;
-    var nights=parseInt((v[iNights]||'0').replace(/[^\d]/g,''))||0;
-    var rev=parseFloat((v[iRev]||'0').replace(',','.'))||0;
-    var source=(v[iSource]||'').trim()||'N/A';
-    var nat=(v[iNat]||'').trim();
+    var v=parseCsvLine(lines[i]);
+    if(v.length<12) continue;
+    var room=salesNormRoom(v[2]||''  );
+    if(salesIsExcluded(room, v[5]||''  , v[1]||''  )) continue;
+    var d=parseDate(v[3]); if(!d) continue;
+    var nights=parseFloat((v[10]||'0').replace(',','.'))||0;
+    var rev=parseFloat((v[11]||'0').replace(',','.'))||0;
+    var source=(v[21]||''  ).trim()||'N/A';
+    var nat=(v[22]||''  ).trim();
     out.push({yr:d.yr,mo:d.mo,nights:nights,rev:rev,room:room,source:source,nat:nat});
   }
   return out;
