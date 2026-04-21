@@ -920,7 +920,7 @@ function hmsParseXML(xmlText){
     const v=cells.map(function(c){const d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
     const cat=v[1]||'',rawNum=v[2]||'';
     if(!['Ardhjet','Largimet','Qëndrimet'].includes(cat)||!rawNum)continue;
-    const num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE)$/i,'').replace(/^(G)\s+(\d)/,'$1$2').trim();
+    const num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE)$/i,'').replace(/^(G)\s+(\d)/,'$1$2').replace(/\s+[A-Z]$/i,'').trim();
     const status={Ardhjet:'ardhje',Largimet:'ikje',Qëndrimet:'qendrim'}[cat];
     const fd=function(iso){if(!iso)return'';const p=iso.split('T')[0].split('-');return p[2]+'/'+p[1]+'/'+p[0];};
     out.push({num:num,status:status,persons:v[5]||'',checkin:fd(v[6]),checkout:fd(v[7]),notes:v[8]||''});
