@@ -1021,10 +1021,9 @@ const SALES_ROOMS = 110;
 const MONTH_DAYS = {1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31};
 const MONTH_AL = {1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
 const EXCL_ROOMS = new Set(['VILA 1','VILA 2','VILA1','VILA2','VILA2 ','313','313 ','VILA 1 ','VILA 2 ']);
-const EXCL_CLIENTS = ['jasht pune','jashte pune','jasht punë','jashte punë'];
+const EXCL_CLIENTS = ['jasht pune','jashte pune','jasht pun\u00eb','jashte pun\u00eb'];
 const EXCL_RTYPES = ['z vila','z vile'];
 let salesChartInst = null;
-let salesLastTs = null;
 
 function salesNormRoom(raw){
   return (raw||'').trim()
@@ -1033,109 +1032,138 @@ function salesNormRoom(raw){
     .replace(/\s+[A-Z]$/i,'')
     .trim();
 }
-function isGardenRoom(normRoom){
-  return /^G\d/i.test(normRoom);
-}
-function salesIsExcluded(v){
-  const room = salesNormRoom(v[2]);
-  if(EXCL_ROOMS.has(room)) return true;
-  if(room==='313'||room.startsWith('313 ')) return true;
-  const client = (v[5]||'').toLowerCase();
-  if(EXCL_CLIENTS.some(function(x){return client.includes(x);})) return true;
-  const rtype = (v[1]||'').toLowerCase().trim();
-  if(EXCL_RTYPES.some(function(x){return rtype.includes(x);})) return true;
+function isGardenRoom(r){ return /^G\d/i.test(r); }
+
+function salesIsExcluded(room, client, rtype){
+  var nr = salesNormRoom(room);
+  if(EXCL_ROOMS.has(nr)) return true;
+  if(nr==='313'||nr.startsWith('313 ')) return true;
+  var cl=(client||'').toLowerCase();
+  if(EXCL_CLIENTS.some(function(x){return cl.includes(x);})) return true;
+  var rt=(rtype||'').toLowerCase().trim();
+  if(EXCL_RTYPES.some(function(x){return rt.includes(x);})) return true;
   return false;
 }
+
 function parseDate(s){
   if(!s) return null;
-  s = s.trim();
-  // ISO: 2026-04-25T... or 2026-04-25
-  var m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-  if(m) return {yr:+m[1], mo:+m[2]};
-  // US: 4/25/2026
-  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-  if(m) return {yr:+m[3], mo:+m[1]};
-  // EU: 25/4/2026
-  m = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
-  if(m) return {yr:+m[3], mo:+m[2]};
+  s=s.trim();
+  var m;
+  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return {yr:+m[1],mo:+m[2]};
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return {yr:+m[3],mo:+m[1]};
+  m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if(m) return {yr:+m[3],mo:+m[2]};
   return null;
 }
-function rowToRecord(v){
-  if(salesIsExcluded(v)) return null;
-  var d = parseDate(v[3]||v[4]);
-  if(!d) return null;
-  var nights = parseInt(v[10])||0;
-  var rev = parseFloat((v[11]||'0').replace(',','.'))||0;
-  var room = salesNormRoom(v[2]);
-  var source = (v[21]||'').trim() || 'N/A';
-  var nat = (v[22]||'').trim();
-  return {yr:d.yr, mo:d.mo, nights:nights, rev:rev, room:room, source:source, nat:nat};
-}
 
+// ── XML parser (Trinosoft XLS) ──────────────────────────────────
 function salesParseXML(xmlStr){
-  const SS='urn:schemas-microsoft-com:office:spreadsheet';
-  const parser=new DOMParser();
-  const clean=xmlStr.replace(/<\?mso-application[^?]*\?>/,'');
-  const doc=parser.parseFromString(clean,'application/xml');
-  const rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
-  const out=[];
+  var SS='urn:schemas-microsoft-com:office:spreadsheet';
+  var parser=new DOMParser();
+  var clean=xmlStr.replace(/<\?mso-application[^?]*\?>/,'');
+  var doc=parser.parseFromString(clean,'application/xml');
+  var rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
+  var out=[];
   for(var i=1;i<rows.length;i++){
     var cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
     var v=cells.map(function(c){var d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
     if(v.length<12) continue;
-    var rec=rowToRecord(v);
-    if(rec) out.push(rec);
+    // Trinosoft columns: [0]Nr [1]LlojiDhomes [2]NrDhomes [3]DataFillimit [4]DataMbarimit [5]Klienti ... [10]Ditet [11]Totali ... [21]BurimiInfo [22]Nacionaliteti
+    var room=salesNormRoom(v[2]);
+    if(salesIsExcluded(room, v[5], v[1])) continue;
+    var d=parseDate(v[3]); if(!d) continue;
+    out.push({yr:d.yr,mo:d.mo,nights:parseInt(v[10])||0,rev:parseFloat((v[11]||'0').replace(',','.'))||0,room:room,source:(v[21]||'').trim()||'N/A',nat:(v[22]||'').trim()});
   }
   return out;
+}
+
+// ── CSV parser (Google Sheets) ──────────────────────────────────
+function parseCsvLine(line){
+  var res=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else{inQ=!inQ;}}
+    else if(c===','&&!inQ){res.push(cur.trim());cur='';}
+    else{cur+=c;}
+  }
+  res.push(cur.trim());
+  return res;
 }
 
 function salesParseCSV(csvStr){
-  var lines = csvStr.split('\n');
-  var out = [];
-  // Parse a CSV line handling quoted fields
-  function parseLine(line){
-    var res=[], cur='', inQ=false;
-    for(var i=0;i<line.length;i++){
-      var c=line[i];
-      if(c==='"'){inQ=!inQ;}
-      else if(c===','&&!inQ){res.push(cur.trim());cur='';}
-      else{cur+=c;}
-    }
-    res.push(cur.trim());
-    return res;
-  }
+  var lines=csvStr.split('\n');
+  if(lines.length<2) return [];
+  // Detect headers
+  var headers=parseCsvLine(lines[0]).map(function(h){return h.toLowerCase().replace(/[^a-z0-9]/g,'');});
+  // Map column indices
+  var iRoom   = findCol(headers,['nrdhomes','dhoma','roomnumber','room']);
+  var iType   = findCol(headers,['llojidhomes','roomtype','lloji']);
+  var iDate   = findCol(headers,['datafillimit','checkin','startdate','datafillimit','data']);
+  var iNights = findCol(headers,['ditetqendrimit','dite','nights','ditet','ditqendrimit','netedisponueshme']);
+  var iRev    = findCol(headers,['totali','total','revenue','rev','shuma']);
+  var iSource = findCol(headers,['burimiinfo','burimi','source','kanal']);
+  var iNat    = findCol(headers,['nacionaliteti','nationality','nat']);
+  var iClient = findCol(headers,['klienti','client','guest']);
+
+  // Fallback to Trinosoft column order if headers not recognized
+  if(iRoom<0)   iRoom=2;
+  if(iType<0)   iType=1;
+  if(iDate<0)   iDate=3;
+  if(iNights<0) iNights=10;
+  if(iRev<0)    iRev=11;
+  if(iSource<0) iSource=21;
+  if(iNat<0)    iNat=22;
+  if(iClient<0) iClient=5;
+
+  var out=[];
   for(var i=1;i<lines.length;i++){
     var line=lines[i].trim();
     if(!line) continue;
-    var v=parseLine(line);
-    if(v.length<12) continue;
-    var rec=rowToRecord(v);
-    if(rec) out.push(rec);
+    var v=parseCsvLine(line);
+    if(v.length<4) continue;
+    var room=salesNormRoom(v[iRoom]||'');
+    if(salesIsExcluded(room, v[iClient]||'', v[iType]||'')) continue;
+    var d=parseDate(v[iDate]); if(!d) continue;
+    var nights=parseInt((v[iNights]||'0').replace(/[^\d]/g,''))||0;
+    var rev=parseFloat((v[iRev]||'0').replace(',','.'))||0;
+    var source=(v[iSource]||'').trim()||'N/A';
+    var nat=(v[iNat]||'').trim();
+    out.push({yr:d.yr,mo:d.mo,nights:nights,rev:rev,room:room,source:source,nat:nat});
   }
   return out;
 }
 
+function findCol(headers, candidates){
+  for(var j=0;j<candidates.length;j++){
+    var idx=headers.indexOf(candidates[j]);
+    if(idx>=0) return idx;
+  }
+  // partial match
+  for(var j=0;j<candidates.length;j++){
+    for(var k=0;k<headers.length;k++){
+      if(headers[k].includes(candidates[j])||candidates[j].includes(headers[k])) return k;
+    }
+  }
+  return -1;
+}
+
+// ── Aggregation ─────────────────────────────────────────────────
 function salesAggregate(rows){
-  var months={}, totalSrc={}, totalNat={};
+  var months={},totalSrc={},totalNat={};
   var totNights=0,totRev=0,totRes=0;
   var flowerNights=0,flowerRev=0,gardenNights=0,gardenRev=0;
   rows.forEach(function(r){
     var k=r.yr+'-'+String(r.mo).padStart(2,'0');
     if(!months[k]) months[k]={yr:r.yr,mo:r.mo,nights:0,rev:0,res:0,src:{},nat:{},flowerRev:0,gardenRev:0,flowerNights:0,gardenNights:0};
-    months[k].nights+=r.nights;
-    months[k].rev+=r.rev;
-    months[k].res+=1;
+    months[k].nights+=r.nights; months[k].rev+=r.rev; months[k].res++;
     var src=r.source||'N/A';
     if(!months[k].src[src]) months[k].src[src]={cnt:0,rev:0};
-    months[k].src[src].cnt++;
-    months[k].src[src].rev+=r.rev;
+    months[k].src[src].cnt++; months[k].src[src].rev+=r.rev;
     if(!totalSrc[src]) totalSrc[src]={cnt:0,rev:0};
-    totalSrc[src].cnt++;
-    totalSrc[src].rev+=r.rev;
+    totalSrc[src].cnt++; totalSrc[src].rev+=r.rev;
     if(r.nat){totalNat[r.nat]=(totalNat[r.nat]||0)+1;}
     if(isGardenRoom(r.room)){gardenNights+=r.nights;gardenRev+=r.rev;months[k].gardenRev+=r.rev;months[k].gardenNights+=r.nights;}
     else{flowerNights+=r.nights;flowerRev+=r.rev;months[k].flowerRev+=r.rev;months[k].flowerNights+=r.nights;}
-    totNights+=r.nights;totRev+=r.rev;totRes++;
+    totNights+=r.nights; totRev+=r.rev; totRes++;
   });
   return {months,totalSrc,totalNat,totNights,totRev,totRes,flowerNights,flowerRev,gardenNights,gardenRev};
 }
@@ -1144,17 +1172,15 @@ function availNights(yr,mo){return SALES_ROOMS*(MONTH_DAYS[mo]||(mo===2&&yr%4===
 function fmtEuro(v){return '\u20ac'+Math.round(v).toLocaleString('de-DE');}
 function fmtPct(v){return (v*100).toFixed(1)+'%';}
 
+// ── Render ──────────────────────────────────────────────────────
 function salesRender(agg){
   var months=agg.months,totalSrc=agg.totalSrc,totalNat=agg.totalNat;
   var totNights=agg.totNights,totRev=agg.totRev,totRes=agg.totRes;
-  var flowerNights=agg.flowerNights,flowerRev=agg.flowerRev;
-  var gardenNights=agg.gardenNights,gardenRev=agg.gardenRev;
   var totAvail=0;
   Object.values(months).forEach(function(m){totAvail+=availNights(m.yr,m.mo);});
   var occ=totAvail>0?totNights/totAvail:0;
   var adr=totNights>0?totRev/totNights:0;
 
-  // KPI
   document.getElementById('sv_occ').textContent=fmtPct(occ);
   document.getElementById('sv_occ_sub').textContent=totNights.toLocaleString()+' net / '+totAvail.toLocaleString()+' disponueshme';
   document.getElementById('sv_nights').textContent=totNights.toLocaleString();
@@ -1164,13 +1190,11 @@ function salesRender(agg){
   document.getElementById('sv_res').textContent=totRes.toLocaleString();
   document.getElementById('sv_res_sub').textContent='Mesatare: '+(totNights/Math.max(totRes,1)).toFixed(1)+' net/rez.';
 
-  // Flower / Garden breakdown
-  document.getElementById('sf_rev').textContent=fmtEuro(flowerRev);
-  document.getElementById('sf_sub').textContent=flowerNights.toLocaleString()+' roomnights · ADR '+fmtEuro(flowerNights>0?flowerRev/flowerNights:0);
-  document.getElementById('sg_rev').textContent=fmtEuro(gardenRev);
-  document.getElementById('sg_sub').textContent=gardenNights.toLocaleString()+' roomnights · ADR '+fmtEuro(gardenNights>0?gardenRev/gardenNights:0);
+  document.getElementById('sf_rev').textContent=fmtEuro(agg.flowerRev);
+  document.getElementById('sf_sub').textContent=agg.flowerNights.toLocaleString()+' roomnights \u00b7 ADR '+fmtEuro(agg.flowerNights>0?agg.flowerRev/agg.flowerNights:0);
+  document.getElementById('sg_rev').textContent=fmtEuro(agg.gardenRev);
+  document.getElementById('sg_sub').textContent=agg.gardenNights.toLocaleString()+' roomnights \u00b7 ADR '+fmtEuro(agg.gardenNights>0?agg.gardenRev/agg.gardenNights:0);
 
-  // Charts
   var sortedKeys=Object.keys(months).sort();
   var labels=sortedKeys.map(function(k){var m=months[k];return (MONTH_AL[m.mo]||k).substring(0,3)+' '+m.yr;});
   var nightsData=sortedKeys.map(function(k){return months[k].nights;});
@@ -1178,49 +1202,31 @@ function salesRender(agg){
   var chartArea=document.getElementById('salesChartArea');
   chartArea.innerHTML='<div style="position:relative;width:100%;height:200px;"><canvas id="salesBarChart" role="img" aria-label="Roomnights by month"></canvas></div><div style="position:relative;width:100%;height:150px;margin-top:10px;"><canvas id="salesRevChart" role="img" aria-label="Revenue by month"></canvas></div>';
   if(salesChartInst) salesChartInst.destroy();
-  var textCol='#a0aec0';
-  var gridCol='rgba(255,255,255,0.06)';
-  new Chart(document.getElementById('salesBarChart'),{
-    type:'bar',
-    data:{labels:labels,datasets:[{label:'Roomnights',data:nightsData,backgroundColor:'#c9a84c',borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return 'Roomnights: '+ctx.raw.toLocaleString();}}}},scales:{x:{ticks:{color:textCol,font:{size:10}},grid:{color:gridCol}},y:{ticks:{color:textCol,font:{size:10}},grid:{color:gridCol}}}}
-  });
-  new Chart(document.getElementById('salesRevChart'),{
-    type:'bar',
-    data:{labels:labels,datasets:[{label:'Revenue (\u20ac)',data:revData,backgroundColor:'#3b82f6',borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return '\u20ac'+ctx.raw.toLocaleString('de-DE');}}}},scales:{x:{ticks:{color:textCol,font:{size:10}},grid:{color:gridCol}},y:{ticks:{color:textCol,font:{size:10},callback:function(v){return '\u20ac'+(v/1000).toFixed(0)+'K';}},grid:{color:gridCol}}}}
-  });
+  var tc='#a0aec0',gc='rgba(255,255,255,0.06)';
+  new Chart(document.getElementById('salesBarChart'),{type:'bar',data:{labels:labels,datasets:[{label:'Roomnights',data:nightsData,backgroundColor:'#c9a84c',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return 'Roomnights: '+ctx.raw.toLocaleString();}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{color:gc}}}}});
+  new Chart(document.getElementById('salesRevChart'),{type:'bar',data:{labels:labels,datasets:[{label:'Revenue',data:revData,backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return '\u20ac'+ctx.raw.toLocaleString('de-DE');}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10},callback:function(v){return '\u20ac'+(v/1000).toFixed(0)+'K';}},grid:{color:gc}}}}});
 
-  // Sources by REVENUE
   var srcSorted=Object.entries(totalSrc).sort(function(a,b){return b[1].rev-a[1].rev;}).slice(0,10);
   var srcMax=srcSorted[0]?srcSorted[0][1].rev:1;
-  var srcList=document.getElementById('salesSourceList');
-  srcList.innerHTML=srcSorted.map(function(entry){
-    var s=entry[0],d=entry[1];
-    var pct=Math.round(d.rev/srcMax*100);
-    var isNA=(s==='N/A');
-    var barColor=isNA?'#6b7fa3':'#c9a84c';
+  document.getElementById('salesSourceList').innerHTML=srcSorted.map(function(e){
+    var s=e[0],d=e[1],pct=Math.round(d.rev/srcMax*100),isNA=(s==='N/A');
     return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
       +'<div style="font-size:11px;color:var(--text);width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:'+(isNA?'italic':'normal')+'">'+(isNA?'N/A (pa burim)':s)+'</div>'
-      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:3px;background:'+barColor+';width:'+pct+'%"></div></div>'
+      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:3px;background:'+(isNA?'#6b7fa3':'#c9a84c')+';width:'+pct+'%"></div></div>'
       +'<div style="font-size:11px;color:var(--gold);font-weight:700;width:60px;text-align:right;">'+fmtEuro(d.rev)+'</div>'
       +'</div>';
   }).join('');
 
-  // Nationalities by count
   var natSorted=Object.entries(totalNat).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   var natMax=natSorted[0]?natSorted[0][1]:1;
-  var natList=document.getElementById('salesNatList');
-  natList.innerHTML=natSorted.map(function(entry){
-    var n=entry[0],c=entry[1];
+  document.getElementById('salesNatList').innerHTML=natSorted.map(function(e){
     return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
-      +'<div style="font-size:11px;color:var(--text);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+n+'</div>'
-      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:3px;background:#8b5cf6;width:'+Math.round(c/natMax*100)+'%"></div></div>'
-      +'<div style="font-size:11px;color:#8b5cf6;font-weight:700;width:28px;text-align:right;">'+c+'</div>'
+      +'<div style="font-size:11px;color:var(--text);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e[0]+'</div>'
+      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;overflow:hidden;"><div style="height:100%;border-radius:3px;background:#8b5cf6;width:'+Math.round(e[1]/natMax*100)+'%"></div></div>'
+      +'<div style="font-size:11px;color:#8b5cf6;font-weight:700;width:28px;text-align:right;">'+e[1]+'</div>'
       +'</div>';
   }).join('');
 
-  // Monthly table
   var tbody=document.getElementById('salesMonthBody');
   var rowsHtml='';
   sortedKeys.forEach(function(k){
@@ -1230,8 +1236,6 @@ function salesRender(agg){
     var mAdr=m.nights>0?m.rev/m.nights:0;
     var topSrc=Object.entries(m.src).sort(function(a,b){return b[1].rev-a[1].rev;})[0];
     var srcLabel=topSrc?('<span style="display:inline-block;padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold)">'+topSrc[0]+'</span>'):'—';
-    var fPct=mAvail>0?Math.round(m.flowerNights/mAvail*100)+'%':'—';
-    var gPct=mAvail>0?Math.round(m.gardenNights/mAvail*100)+'%':'—';
     rowsHtml+='<tr style="border-bottom:1px solid var(--border);">'
       +'<td style="padding:9px 12px;color:var(--gold);font-weight:700;">'+(MONTH_AL[m.mo]||k)+' '+m.yr+'</td>'
       +'<td style="padding:9px 12px;text-align:center;color:var(--text);">'+m.res+'</td>'
@@ -1250,43 +1254,41 @@ function salesRender(agg){
     +'<td style="padding:9px 12px;text-align:center;font-weight:800;color:var(--gold);">'+fmtEuro(totRev)+'</td>'
     +'<td style="padding:9px 12px;text-align:center;color:var(--text);">'+fmtEuro(adr)+'</td>'
     +'<td style="padding:9px 12px;text-align:center;font-weight:700;color:var(--text);">'+fmtPct(occ)+'</td>'
-    +'<td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+fmtEuro(flowerRev)+' / '+fmtEuro(gardenRev)+'</td>'
+    +'<td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+fmtEuro(agg.flowerRev)+' / '+fmtEuro(agg.gardenRev)+'</td>'
     +'<td style="padding:9px 12px;">—</td>'
     +'</tr>';
   tbody.innerHTML=rowsHtml;
 }
 
+// ── Timestamps & loaders ─────────────────────────────────────────
 function salesSetTimestamp(label){
   var now=new Date();
   var ts=now.toLocaleDateString('sq-AL')+' '+now.toLocaleTimeString('sq-AL',{hour:'2-digit',minute:'2-digit'});
-  salesLastTs=ts;
   var el=document.getElementById('salesLastUpdate');
-  if(el) el.textContent='Rezervimet · Pa Vila 1/2, Dhoma 313 | ' + label + ' · ' + ts;
+  if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313 | '+label+' \u00b7 '+ts;
 }
 
 function salesLoadSheets(){
   var btn=document.querySelector('[onclick="salesLoadSheets()"]');
-  if(btn){btn.textContent='⏳ Duke ngarkuar...';btn.disabled=true;}
+  if(btn){btn.textContent='\u23f3 Duke ngarkuar...';btn.disabled=true;}
   var fi=document.getElementById('salesFileInfo');
   if(fi) fi.textContent='Duke lexuar Google Sheets...';
   fetch('/api/sheets-csv')
-    .then(function(r){
-      if(!r.ok) throw new Error('HTTP '+r.status);
-      return r.text();
-    })
+    .then(function(r){if(!r.ok) throw new Error('HTTP '+r.status+' \u2014 kontrolloni se Sheet\u0027i \u00ebsht\u00eb publik');return r.text();})
     .then(function(csv){
+      if(csv.trim().startsWith('<!DOCTYPE')||csv.trim().startsWith('<html')) throw new Error('Sheet nuk \u00ebsht\u00eb publik \u2014 Share \u2192 Anyone with link \u2192 Viewer');
       var rows=salesParseCSV(csv);
-      if(!rows.length) throw new Error('Nuk u gjetën të dhëna të vlefshme');
-      var agg=salesAggregate(rows);
-      salesRender(agg);
+      if(!rows.length) throw new Error('Nuk u gjet\u00ebn t\u00eb dh\u00ebna t\u00eb vlefshme (kontrolloni GID dhe kolonat)');
+      salesRender(salesAggregate(rows));
       salesSetTimestamp('Google Sheets ('+rows.length+' rez.)');
       if(fi) fi.textContent='';
-      if(btn){btn.textContent='🔄 Refresh Google Sheets';btn.disabled=false;}
+      if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
     })
     .catch(function(err){
-      if(fi) fi.textContent='Gabim: '+err.message;
-      if(btn){btn.textContent='🔄 Refresh Google Sheets';btn.disabled=false;}
-      alert('Gabim gjatë leximit të Google Sheets: '+err.message);
+      var msg='Gabim: '+err.message;
+      if(fi) fi.textContent=msg;
+      if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
+      alert(msg);
     });
 }
 
@@ -1297,38 +1299,19 @@ function salesUpload(input){
   var reader=new FileReader();
   reader.onload=function(e){
     try{
-      var xmlStr=e.target.result;
-      var rows=salesParseXML(xmlStr);
-      if(!rows.length){alert('Nuk u gjet asnjë rezervim i vlefshëm.');return;}
-      var agg=salesAggregate(rows);
-      salesRender(agg);
+      var rows=salesParseXML(e.target.result);
+      if(!rows.length){alert('Nuk u gjet asnj\u00eb rezervim i vlefsh\u00ebm.');return;}
+      salesRender(salesAggregate(rows));
       salesSetTimestamp('Excel: '+file.name+' ('+rows.length+' rez.)');
       if(fi) fi.textContent='';
     }catch(err){
-      alert('Gabim gjatë leximit: '+err.message);
+      alert('Gabim: '+err.message);
       if(fi) fi.textContent='Gabim: '+err.message;
     }
     input.value='';
   };
   reader.readAsText(file,'UTF-8');
 }
-
-// Update monthly table header to include Flower/Garden column
-(function addFGHeader(){
-  var tbl=document.getElementById('salesMonthTable');
-  if(!tbl) return;
-  var headers=tbl.querySelectorAll('thead th');
-  // Check if we need to update - if ADR header is followed by Occupancy
-  if(headers.length===8) return; // already updated
-  if(headers.length===7){
-    // Add Flower/Garden column header before Burimi
-    var lastTh=headers[headers.length-1];
-    var newTh=document.createElement('th');
-    newTh.style.cssText='color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;';
-    newTh.textContent='Flower / Garden';
-    lastTh.parentNode.insertBefore(newTh, lastTh);
-  }
-})();
 
 window.salesUpload=salesUpload;
 window.salesLoadSheets=salesLoadSheets;

@@ -430,7 +430,8 @@ app.get('/hk', (req,res) => res.sendFile(require('path').join(__dirname,'hk.html
 
 // ─── GOOGLE SHEETS PROXY ──────────────────────────────────────────────────────
 const https_mod = require('https');
-const SALES_SHEET_ID = '1ISvsIcPB4XJIMWt-jwW6KITGqrZv3hkc1ZeewC3htcE';
+const SALES_SHEET_ID = '1bctULGpMDqW9tUjgXvNDcXicv-AmZTnA';
+const SALES_GID = '302537026';
 function fetchUrl(url, redirectCount, resolve, reject) {
   if(redirectCount > 8) return reject(new Error('Too many redirects'));
   https_mod.get(url, {headers: {'User-Agent': 'Mozilla/5.0'}}, function(res) {
@@ -444,7 +445,7 @@ function fetchUrl(url, redirectCount, resolve, reject) {
   }).on('error', reject);
 }
 app.get('/api/sheets-csv', function(req, res) {
-  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/export?format=csv&usp=sharing';
+  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/export?format=csv&gid='+SALES_GID+'&usp=sharing';
   new Promise(function(resolve, reject){ fetchUrl(url, 0, resolve, reject); })
     .then(function(csv){
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
