@@ -428,6 +428,33 @@ app.post('/api/hms/state', (req,res) => {
 });
 app.get('/hk', (req,res) => res.sendFile(require('path').join(__dirname,'hk.html')));
 
+// ─── GOOGLE SHEETS PROXY ──────────────────────────────────────────────────────
+const https_mod = require('https');
+const SHEET_ID = '1ISvsIcPB4XJIMWt-jwW6KITGqrZv3hkc1ZeewC3htcE';
+function fetchUrl(url, redirectCount, resolve, reject) {
+  if(redirectCount > 8) return reject(new Error('Too many redirects'));
+  https_mod.get(url, {headers: {'User-Agent': 'Mozilla/5.0'}}, function(res) {
+    if(res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 303) {
+      return fetchUrl(res.headers.location, redirectCount+1, resolve, reject);
+    }
+    let data = '';
+    res.on('data', function(c){ data += c; });
+    res.on('end', function(){ resolve(data); });
+    res.on('error', reject);
+  }).on('error', reject);
+}
+app.get('/api/sheets-csv', function(req, res) {
+  const url = 'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&usp=sharing';
+  new Promise(function(resolve, reject){ fetchUrl(url, 0, resolve, reject); })
+    .then(function(csv){
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.send(csv);
+    })
+    .catch(function(e){ res.status(500).json({error: e.message}); });
+});
+
+
 // ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
