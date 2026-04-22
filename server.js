@@ -433,7 +433,7 @@ const https_mod = require('https');
 const SALES_SHEET_ID = '1bctULGpMDqW9tUjgXvNDcXicv-AmZTnA';
 const SALES_GID = '302537026';
 // Apps Script Web App — real-time, no cache, private
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4TzjlAUId946tYpKN32_ZV5XZhDswIAXnR8NVSHVHutUKyNQi27kUkTERYyIQT9Mftw/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbygKdT7y6iTVlese8wG0quIciZQ5p_5TDMljotW3bgvNUzIykC7KZqVP8xgrZ1ZQv/exec';
 const APPS_SCRIPT_TOKEN = 'FlowerHotels2026';
 function fetchUrl(url, redirectCount, resolve, reject) {
   if(redirectCount > 10) return reject(new Error('Too many redirects'));
