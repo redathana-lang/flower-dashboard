@@ -433,12 +433,25 @@ const https_mod = require('https');
 const SALES_SHEET_ID = '1bctULGpMDqW9tUjgXvNDcXicv-AmZTnA';
 const SALES_GID = '302537026';
 function fetchUrl(url, redirectCount, resolve, reject) {
-  if(redirectCount > 8) return reject(new Error('Too many redirects'));
-  https_mod.get(url, {headers: {'User-Agent': 'Mozilla/5.0'}}, function(res) {
-    if(res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 303) {
-      return fetchUrl(res.headers.location, redirectCount+1, resolve, reject);
+  if(redirectCount > 10) return reject(new Error('Too many redirects'));
+  const opts = {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; GoogleBot/2.1)',
+      'Accept': 'text/csv,text/plain,*/*',
+    }
+  };
+  const lib = url.startsWith('https') ? https_mod : require('http');
+  lib.get(url, opts, function(res) {
+    if([301,302,303,307,308].includes(res.statusCode) && res.headers.location) {
+      const loc = res.headers.location;
+      const abs = loc.startsWith('http') ? loc : 'https://docs.google.com' + loc;
+      return fetchUrl(abs, redirectCount+1, resolve, reject);
+    }
+    if(res.statusCode !== 200) {
+      return reject(new Error('HTTP ' + res.statusCode + ' from: ' + url));
     }
     let data = '';
+    res.setEncoding('utf8');
     res.on('data', function(c){ data += c; });
     res.on('end', function(){ resolve(data); });
     res.on('error', reject);
