@@ -460,6 +460,8 @@ function showSec(id){
   document.getElementById('tbSub').textContent=id.toUpperCase()+' · '+fRange()+' VS '+pYRange();
   const db=document.querySelector('.date-bar');
   if(db) db.style.display=id==='housekeeping'?'none':'flex';
+  // Auto-load Sales data when switching to Sales tab
+  if(id==='sales' && typeof salesAutoLoad==='function') salesAutoLoad();
 }
 
 // ─── DATE ─────────────────────────────────────────────────────────────────────
@@ -1229,12 +1231,19 @@ function salesLoadSheets(){
   alert('P\u00ebrdorni butonin "Ngarko Excel Trinisoft" p\u00ebr t\u00eb ngarkuar t\u00eb dh\u00ebnat.');
 }
 
-// Auto-load on tab open
+// Auto-load on page start if sales tab is active
 (function(){
-  var tabBtn=document.getElementById('tab_sales');
-  if(tabBtn){
-    var orig=tabBtn.getAttribute('onclick');
-    tabBtn.setAttribute('onclick',"showSec('sales');salesAutoLoad();");
+  // Called via showSec whenever sales tab is opened
+  // Also try to load on DOMContentLoaded in case sales is the landing tab
+  if(typeof document!=='undefined'){
+    document.addEventListener('DOMContentLoaded', function(){
+      setTimeout(function(){
+        if(document.getElementById('sec_sales') && 
+           document.getElementById('sec_sales').style.display!=='none'){
+          if(typeof salesAutoLoad==='function') salesAutoLoad();
+        }
+      }, 500);
+    });
   }
 })();
 
