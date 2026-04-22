@@ -1302,53 +1302,8 @@ function salesSetTs(label){
   if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+label+' \u00b7 '+ts;
 }
 
-// Google Sheet IDs — direct JSONP fetch (no caching)
-var GSHEET_ID='1bctULGpMDqW9tUjgXvNDcXicv-AmZTnA';
-var GSHEET_GID='302537026';
-
-function salesLoadSheets_DISABLED_JSONP(callback){
-  var cb='__gviz_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
-  var s=document.createElement('script');
-  var done=false;
-  var timer=setTimeout(function(){
-    if(!done){done=true;s.remove();delete window[cb];callback(null,'Timeout 15s');}
-  },15000);
-  window[cb]=function(resp){
-    if(done)return;done=true;clearTimeout(timer);s.remove();delete window[cb];
-    callback(resp,null);
-  };
-  s.onerror=function(){
-    if(!done){done=true;clearTimeout(timer);s.remove();delete window[cb];
-      callback(null,'Script error — kontrolloni Sheet të jetë publik');}
-  };
-  // Unique callback name = Google cannot serve a cached response
-  s.src='https://docs.google.com/spreadsheets/d/'+GSHEET_ID+'/gviz/tq?tqx=out:json&gid='+GSHEET_GID+'&callback='+cb+'&_='+Date.now();
-  document.head.appendChild(s);
-}
-
-function gvizToRows(resp){
-  if(!resp||!resp.table||!resp.table.rows) return [];
-  var cols=resp.table.cols||[];
-  return resp.table.rows.map(function(row){
-    if(!row.c) return [];
-    return row.c.map(function(cell,i){
-      if(!cell) return '';
-      var col=cols[i]||{};
-      // Date cells come as "Date(yyyy,m0,d)" — months 0-indexed
-      if((col.type==='date'||col.type==='datetime')&&cell.v){
-        if(typeof cell.v==='string'&&cell.v.startsWith('Date(')){
-          var p=cell.v.slice(5,-1).split(',').map(Number);
-          // Return as d-m-yyyy for our parseDate
-          return p[2]+'-'+(p[1]+1)+'-'+p[0];
-        }
-        return cell.f||'';
-      }
-      return (cell.v!==null&&cell.v!==undefined)?String(cell.v):'';
-    });
-  });
-}
-
 function salesLoadSheets(){
+
   var btn=document.querySelector('[onclick="salesLoadSheets()"]');
   if(btn){btn.textContent='\u23f3 Duke ngarkuar...';btn.disabled=true;}
   var fi=document.getElementById('salesFileInfo');
