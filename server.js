@@ -432,6 +432,9 @@ app.get('/hk', (req,res) => res.sendFile(require('path').join(__dirname,'hk.html
 const https_mod = require('https');
 const SALES_SHEET_ID = '1bctULGpMDqW9tUjgXvNDcXicv-AmZTnA';
 const SALES_GID = '302537026';
+// Apps Script Web App — real-time, no cache, private
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4TzjlAUId946tYpKN32_ZV5XZhDswIAXnR8NVSHVHutUKyNQi27kUkTERYyIQT9Mftw/exec';
+const APPS_SCRIPT_TOKEN = 'FlowerHotels2026';
 function fetchUrl(url, redirectCount, resolve, reject) {
   if(redirectCount > 10) return reject(new Error('Too many redirects'));
   const opts = {
@@ -460,15 +463,16 @@ function fetchUrl(url, redirectCount, resolve, reject) {
   }).on('error', reject);
 }
 app.get('/api/sheets-csv', function(req, res) {
-  // Add timestamp to bust Google's CDN cache
-  const ts = Date.now();
-  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/export?format=csv&gid='+SALES_GID+'&usp=sharing&cachebust='+ts;
+  // Use Apps Script Web App — real-time, no cache, private sheet
+  const url = APPS_SCRIPT_URL + '?token=' + APPS_SCRIPT_TOKEN + '&t=' + Date.now();
   new Promise(function(resolve, reject){ fetchUrl(url, 0, resolve, reject); })
     .then(function(csv){
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
+      res.setHeader('X-Fetched-At', new Date().toISOString());
+      console.log('[SHEETS] Fetched fresh CSV at', new Date().toISOString(), 'rows:', csv.split('\n').length);
       res.send(csv);
     })
     .catch(function(e){ res.status(500).json({error: e.message}); });
@@ -477,7 +481,7 @@ app.get('/api/sheets-csv', function(req, res) {
 
 // Debug: show first rows of sheets CSV
 app.get('/api/sheets-debug', function(req, res) {
-  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/export?format=csv&gid='+SALES_GID+'&usp=sharing';
+  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/gviz/tq?tqx=out:csv&gid='+SALES_GID+'&v='+Date.now();
   new Promise(function(resolve, reject){ fetchUrl(url, 0, resolve, reject); })
     .then(function(csv){
       var lines = csv.split('\n').slice(0,6);
