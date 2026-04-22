@@ -1195,25 +1195,45 @@ function salesSetTs(label){
 }
 
 // ── Auto-load saved state on page open ───────────────────────────────────────
+var SALES_LS_KEY='flower_sales_v2';
+
 function salesAutoLoad(){
+  // Provojmë localStorage fillimisht (i menjëhershëm, nuk varet nga serveri)
+  try{
+    var raw=localStorage.getItem(SALES_LS_KEY);
+    if(raw){
+      var j=JSON.parse(raw);
+      if(j&&j.rows&&j.rows.length){
+        salesRender(salesAggregate(j.rows));
+        var el=document.getElementById('salesLastUpdate');
+        if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.filename+' \u00b7 '+new Date(j.ts).toLocaleDateString('sq-AL');
+        return;
+      }
+    }
+  }catch(e){}
+  // Fallback: serveri (për pajisje të tjera)
   fetch('/api/sales-state')
     .then(function(r){return r.json();})
     .then(function(j){
-      if(j.ok && j.data && j.data.rows && j.data.rows.length){
+      if(j.ok&&j.data&&j.data.rows&&j.data.rows.length){
         salesRender(salesAggregate(j.data.rows));
         var el=document.getElementById('salesLastUpdate');
         if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
+        try{localStorage.setItem(SALES_LS_KEY,JSON.stringify(j.data));}catch(e){}
       }
     })
     .catch(function(){});
 }
 
-// ── Save rows to server ───────────────────────────────────────────────────────
-function salesSaveState(rows, filename){
+function salesSaveState(rows,filename){
+  var data={rows:rows,filename:filename,ts:new Date().toISOString()};
+  // Ruajmë në localStorage (menjëherë, gjithmonë i disponueshëm)
+  try{localStorage.setItem(SALES_LS_KEY,JSON.stringify(data));}catch(e){}
+  // Edhe në server (backup për pajisje të tjera)
   fetch('/api/sales-state',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({rows:rows, filename:filename})
+    body:JSON.stringify(data)
   }).catch(function(){});
 }
 
