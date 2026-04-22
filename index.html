@@ -1074,8 +1074,22 @@ function salesParseXML(xmlStr){
   var out=[];
   for(var i=1;i<rows.length;i++){
     var cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
-    var v=cells.map(function(c){var d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
-    if(v.length<12) continue;
+    // Build positional array respecting ss:Index (skipped empty cells)
+    var v=[];
+    var colIdx=0;
+    for(var ci=0;ci<cells.length;ci++){
+      var cell=cells[ci];
+      // ss:Index tells us the 1-based column position
+      var idxAttr=cell.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Index')
+                  || cell.getAttribute('ss:Index');
+      if(idxAttr) colIdx=parseInt(idxAttr)-1;
+      var d=cell.getElementsByTagNameNS(SS,'Data')[0];
+      v[colIdx]=(d?(d.textContent||'').trim():'');
+      colIdx++;
+    }
+    // Fill undefined slots with empty string
+    for(var x=0;x<30;x++) if(v[x]===undefined) v[x]='';
+    if(!v[C.DATE_IN]) continue;
     var room=normRoom(v[C.ROOM]);
     if(isExcl(room,v[C.CLIENT])) continue;
     var din=parseDate(v[C.DATE_IN]); if(!din) continue;
