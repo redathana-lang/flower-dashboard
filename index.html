@@ -1028,7 +1028,16 @@ var MDAYS={1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31};
 var MAL={1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',
          7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
 
-// Exclusions — solo per numero dhome dhe emer klienti (sipas specs)
+function normRoom(r){
+  return (r||'').trim()
+    .replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE)$/i,'')
+    .replace(/^(G)\s+(\d)/,'$1$2')
+    .replace(/\s+[A-Z]$/i,'')
+    .trim();
+}
+function isGarden(r){return /^G\d/i.test(r);}
+
+// Exclusions — sipas specs: 313, Vila 1, Vila 2, Jasht Pune, Jashte Pune
 var EX_ROOMS=new Set(['VILA 1','VILA 2','VILA1','VILA2','313']);
 var EX_CLI=['jasht pune','jashte pune','jasht pun\u00eb','jashte pun\u00eb'];
 
@@ -1084,29 +1093,33 @@ function parseCsvLine(line){
 function salesParseCSV(csvStr){
   var lines=csvStr.split('\n').filter(function(l){return l.trim();});
   if(lines.length<2) return [];
-  var out=[];
+  var out=[], skippedDate=0, skippedExcl=0, totalRevAll=0;
   for(var i=1;i<lines.length;i++){
     var v=parseCsvLine(lines[i]);
     if(v.length<12) continue;
-    var room=normRoom(v[C.ROOM]);
-    if(isExcl(room,v[C.CLIENT])) continue;
-    var din=parseDate(v[C.DATE_IN]);
-    if(!din) continue;
-    var dout=parseDate(v[C.DATE_OUT]);
-    // Nights: calculate from dates (reliable) OR fall back to Col K
-    var nights=daysDiff(din,dout);
-    if(!nights) nights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
+    // Revenue of this row (before any exclusion)
     var revRaw=(v[C.REV]||'0').trim();
-    var rev=(function(s){
+    var rowRev=(function(s){
       var ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');
-      if(ld>lc) return parseFloat(s.replace(/,/g,''))||0;          // 1,234.56
-      if(lc>ld) return parseFloat(s.replace(/\./g,'').replace(',','.'))||0; // 1.234,56
+      if(ld>lc) return parseFloat(s.replace(/,/g,''))||0;
+      if(lc>ld) return parseFloat(s.replace(/\./g,'').replace(',','.'))||0;
       return parseFloat(s.replace(',','.'))||0;
     })(revRaw);
+    totalRevAll+=rowRev;
+    var room=normRoom(v[C.ROOM]);
+    if(isExcl(room,v[C.CLIENT])){ skippedExcl++; continue; }
+    var din=parseDate(v[C.DATE_IN]);
+    if(!din){ skippedDate++; continue; }
+    var dout=parseDate(v[C.DATE_OUT]);
+    var nights=daysDiff(din,dout);
+    if(!nights) nights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
     var source=(v[C.SOURCE]||'').trim()||'N/A';
     var nat=(v[C.NAT]||'').trim();
-    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,source:source,nat:nat});
+    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rowRev,room:room,source:source,nat:nat});
   }
+  // Store diagnostics globally for display
+  window._salesDiag={totalRows:lines.length-1,loaded:out.length,
+    skippedDate:skippedDate,skippedExcl:skippedExcl,totalRevAll:totalRevAll};
   return out;
 }
 
@@ -1279,6 +1292,17 @@ function salesLoadSheets(){
       }
       salesRender(salesAggregate(rows));
       salesSetTs('Google Sheets ('+rows.length+' rez.)');
+      if(window._salesDiag){
+        var d=window._salesDiag;
+        var msg='✓ '+d.totalRows+' rreshta total\n'
+          +'✓ '+d.loaded+' të ngarkuara\n'
+          +'⊘ '+d.skippedExcl+' të përjashtuara (Vila/313/JashtPune)\n'
+          +'⊘ '+d.skippedDate+' të kapërcyera (datë e pagjetur)\n'
+          +'Revenue TOTAL (pa filtër): €'+Math.round(d.totalRevAll).toLocaleString('de-DE')+'\n'
+          +'Revenue NË RAPORT: €'+Math.round(rows.reduce(function(a,r){return a+r.rev;},0)).toLocaleString('de-DE');
+        console.log('SALES DIAG:', msg);
+        if(fi) fi.textContent='Diag: '+d.totalRows+' rreshta | '+d.skippedDate+' datë e pa-lexuar | RevTOTAL: €'+Math.round(d.totalRevAll).toLocaleString('de-DE');
+      }
       if(fi) fi.textContent='';
       if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
     })
