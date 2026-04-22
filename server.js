@@ -437,6 +437,8 @@ function fetchUrl(url, redirectCount, resolve, reject) {
   const opts = {
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; GoogleBot/2.1)',
+      'Cache-Control': 'no-cache, no-store',
+      'Pragma': 'no-cache',
       'Accept': 'text/csv,text/plain,*/*',
     }
   };
@@ -458,11 +460,15 @@ function fetchUrl(url, redirectCount, resolve, reject) {
   }).on('error', reject);
 }
 app.get('/api/sheets-csv', function(req, res) {
-  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/export?format=csv&gid='+SALES_GID+'&usp=sharing';
+  // Add timestamp to bust Google's CDN cache
+  const ts = Date.now();
+  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/export?format=csv&gid='+SALES_GID+'&usp=sharing&cachebust='+ts;
   new Promise(function(resolve, reject){ fetchUrl(url, 0, resolve, reject); })
     .then(function(csv){
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.send(csv);
     })
     .catch(function(e){ res.status(500).json({error: e.message}); });

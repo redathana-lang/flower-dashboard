@@ -1305,7 +1305,7 @@ function salesLoadSheets(){
   if(btn){btn.textContent='\u23f3 Duke ngarkuar...';btn.disabled=true;}
   var fi=document.getElementById('salesFileInfo');
   if(fi) fi.textContent='Duke lexuar Google Sheets...';
-  fetch('/api/sheets-csv')
+  fetch('/api/sheets-csv?t='+Date.now(),{cache:'no-store'})
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
     .then(function(csv){
       if(csv.trim().startsWith('<'))throw new Error('Sheet nuk \u00ebsht\u00eb publik \u2014 Share \u2192 Anyone with link \u2192 Viewer');
