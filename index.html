@@ -1304,7 +1304,7 @@ function salesSetTs(label){
 var GSHEET_ID='1bctULGpMDqW9tUjgXvNDcXicv-AmZTnA';
 var GSHEET_GID='302537026';
 
-function fetchSheetDirect(callback){
+function salesLoadSheets_DISABLED_JSONP(callback){
   var cb='__gviz_'+Date.now()+'_'+Math.random().toString(36).substr(2,5);
   var s=document.createElement('script');
   var done=false;
@@ -1351,67 +1351,31 @@ function salesLoadSheets(){
   if(btn){btn.textContent='\u23f3 Duke ngarkuar...';btn.disabled=true;}
   var fi=document.getElementById('salesFileInfo');
   if(fi) fi.textContent='Duke lexuar Google Sheets...';
-
-  fetchSheetDirect(function(resp,err){
-    if(err){
-      // Fallback: server proxy
-      if(fi) fi.textContent='JSONP fail ('+err+'), duke provuar serverin...';
-      fetch('/api/sheets-csv?t='+Date.now(),{cache:'no-store'})
-        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
-        .then(function(csv){
-          if(csv.trim().startsWith('<'))throw new Error('Sheet nuk \u00ebsht\u00eb publik');
-          var rows=salesParseCSV(csv);
-          if(!rows.length) throw new Error('0 rreshta valid nga server');
-          salesRender(salesAggregate(rows));
-          salesSetTs('Server proxy ('+rows.length+' rez.)');
-          if(fi) fi.textContent='';
-          if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
-        })
-        .catch(function(e){
-          if(fi) fi.textContent='Gabim: '+e.message;
-          if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
-        });
-      return;
+  fetch('/api/sheets-csv?t='+Date.now(),{
+    cache:'no-store',
+    headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}
+  })
+  .then(function(r){
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.text();
+  })
+  .then(function(csv){
+    if(csv.trim().startsWith('<'))
+      throw new Error('Sheet nuk \u00ebsht\u00eb publik \u2014 Share \u2192 Anyone with link \u2192 Viewer');
+    var rows=salesParseCSV(csv);
+    if(!rows.length){
+      var preview=csv.split('\n').slice(0,3).join(' | ').substring(0,200);
+      throw new Error('0 rreshta valid. Preview: '+preview);
     }
-    var rawRows=gvizToRows(resp);
-    if(!rawRows.length){
-      if(fi) fi.textContent='0 rreshta nga JSONP';
-      if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
-      return;
-    }
-    // rawRows[0] = header, rawRows[1..] = data (same structure as CSV)
-    // Parse starting from row 1 (skip header)
-    var out=[];
-    var diag={total:rawRows.length-1,excl:0,noDate:0,revAll:0};
-    for(var i=1;i<rawRows.length;i++){
-      var v=rawRows[i];
-      if(v.length<12) continue;
-      var revRaw=(v[C.REV]||'0').trim();
-      var rowRev=(function(s){
-        var ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');
-        if(ld>lc) return parseFloat(s.replace(/,/g,''))||0;
-        if(lc>ld) return parseFloat(s.replace(/\./g,'').replace(',','.'))||0;
-        return parseFloat(s.replace(',','.'))||0;
-      })(revRaw);
-      diag.revAll+=rowRev;
-      var room=normRoom(v[C.ROOM]);
-      if(isExcl(room,v[C.CLIENT])){diag.excl++;continue;}
-      var din=parseDate(v[C.DATE_IN]);
-      if(!din){diag.noDate++;continue;}
-      var dout=parseDate(v[C.DATE_OUT]);
-      var nights=daysDiff(din,dout);
-      if(!nights) nights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
-      var source=(v[C.SOURCE]||'').trim()||'N/A';
-      var nat=(v[C.NAT]||'').trim();
-      out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rowRev,room:room,
-                source:source,nat:nat,din:din,dout:dout,totalNights:nights});
-    }
-    salesRender(salesAggregate(out));
-    salesSetTs('Live \u2605 Google Sheets ('+out.length+' rez.)');
+    salesRender(salesAggregate(rows));
+    salesSetTs('Google Sheets ('+rows.length+' rez.)');
     if(fi) fi.textContent='';
-    window._salesDiag=diag;
-    console.log('[SALES] JSONP direct | total:'+diag.total+' excl:'+diag.excl+' noDate:'+diag.noDate+' revAll:\u20ac'+Math.round(diag.revAll));
     if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
+  })
+  .catch(function(err){
+    if(fi) fi.textContent=err.message;
+    if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
+    alert('Gabim: '+err.message);
   });
 }
 

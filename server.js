@@ -453,7 +453,8 @@ function fetchUrl(url, redirectCount, resolve, reject) {
       return fetchUrl(abs, redirectCount+1, resolve, reject);
     }
     if(res.statusCode !== 200) {
-      return reject(new Error('HTTP ' + res.statusCode + ' from: ' + url));
+      let body=''; res.on('data',function(c){body+=c;}); res.on('end',function(){ reject(new Error('HTTP '+res.statusCode+' body:'+body.substring(0,200))); });
+      return;
     }
     let data = '';
     res.setEncoding('utf8');
@@ -481,7 +482,7 @@ app.get('/api/sheets-csv', function(req, res) {
 
 // Debug: show first rows of sheets CSV
 app.get('/api/sheets-debug', function(req, res) {
-  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/gviz/tq?tqx=out:csv&gid='+SALES_GID+'&v='+Date.now();
+  const url = APPS_SCRIPT_URL + '?token=' + APPS_SCRIPT_TOKEN + '&t=' + Date.now();
   new Promise(function(resolve, reject){ fetchUrl(url, 0, resolve, reject); })
     .then(function(csv){
       var lines = csv.split('\n').slice(0,6);
