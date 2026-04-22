@@ -1115,7 +1115,7 @@ function salesParseCSV(csvStr){
     if(!nights) nights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
     var source=(v[C.SOURCE]||'').trim()||'N/A';
     var nat=(v[C.NAT]||'').trim();
-    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rowRev,room:room,source:source,nat:nat});
+    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rowRev,room:room,source:source,nat:nat,din:din,dout:dout,totalNights:nights});
   }
   // Store diagnostics globally for display
   window._salesDiag={totalRows:lines.length-1,loaded:out.length,
@@ -1149,7 +1149,7 @@ function salesParseXML(xmlStr){
     })(revRaw);
     var source=(v[C.SOURCE]||'').trim()||'N/A';
     var nat=(v[C.NAT]||'').trim();
-    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,source:source,nat:nat});
+    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,source:source,nat:nat,din:din,dout:dout,totalNights:nights});
   }
   return out;
 }
@@ -1157,20 +1157,44 @@ function salesParseXML(xmlStr){
 function salesAggregate(rows){
   var mo={},src={},nat={};
   var tN=0,tR=0,tRes=0,fN=0,fR=0,gN=0,gR=0;
-  rows.forEach(function(r){
-    var k=r.yr+'-'+String(r.mo).padStart(2,'0');
-    if(!mo[k]) mo[k]={yr:r.yr,mo:r.mo,nights:0,rev:0,res:0,src:{},fN:0,fR:0,gN:0,gR:0};
+
+  function addToMonth(yr,mo_n,nights,rev,room,srcStr,natStr,countRes){
+    var k=yr+'-'+String(mo_n).padStart(2,'0');
+    if(!mo[k]) mo[k]={yr:yr,mo:mo_n,nights:0,rev:0,res:0,src:{},fN:0,fR:0,gN:0,gR:0};
     var m=mo[k];
-    m.nights+=r.nights; m.rev+=r.rev; m.res++;
-    var s=r.source||'N/A';
+    m.nights+=nights; m.rev+=rev;
+    if(countRes) m.res++;
+    var s=srcStr||'N/A';
     if(!m.src[s]) m.src[s]={rev:0,cnt:0};
-    m.src[s].rev+=r.rev; m.src[s].cnt++;
+    m.src[s].rev+=rev; if(countRes) m.src[s].cnt++;
     if(!src[s]) src[s]={rev:0,cnt:0};
-    src[s].rev+=r.rev; src[s].cnt++;
-    if(r.nat){nat[r.nat]=(nat[r.nat]||0)+1;}
-    if(isGarden(r.room)){gN+=r.nights;gR+=r.rev;m.gN+=r.nights;m.gR+=r.rev;}
-    else{fN+=r.nights;fR+=r.rev;m.fN+=r.nights;m.fR+=r.rev;}
-    tN+=r.nights; tR+=r.rev; tRes++;
+    src[s].rev+=rev; if(countRes) src[s].cnt++;
+    if(isGarden(room)){gN+=nights;gR+=rev;m.gN+=nights;m.gR+=rev;}
+    else{fN+=nights;fR+=rev;m.fN+=nights;m.fR+=rev;}
+    tN+=nights; tR+=rev;
+  }
+
+  rows.forEach(function(r){
+    tRes++;
+    if(r.nat) nat[r.nat]=(nat[r.nat]||0)+1;
+    // Split nights/revenue across months they actually occur
+    if(r.din && r.dout && r.totalNights>0){
+      var cur=new Date(r.din.yr,r.din.mo-1,r.din.day);
+      var end=new Date(r.dout.yr,r.dout.mo-1,r.dout.day);
+      var first=true;
+      while(cur<end){
+        var moEnd=new Date(cur.getFullYear(),cur.getMonth()+1,1);
+        if(moEnd>end) moEnd=end;
+        var n=Math.round((moEnd-cur)/864e5);
+        var revShare=r.rev*(n/r.totalNights);
+        addToMonth(cur.getFullYear(),cur.getMonth()+1,n,revShare,r.room,r.source,r.nat,first);
+        first=false;
+        cur=moEnd;
+      }
+    } else {
+      // fallback: assign everything to check-in month
+      addToMonth(r.yr,r.mo,r.nights,r.rev,r.room,r.source,r.nat,true);
+    }
   });
   return {mo:mo,src:src,nat:nat,tN:tN,tR:tR,tRes:tRes,fN:fN,fR:fR,gN:gN,gR:gR};
 }
