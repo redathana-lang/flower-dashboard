@@ -267,7 +267,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div id="salesFileInfo" style="font-size:11px;color:var(--muted);font-style:italic"></div>
-          <button onclick="salesLoadSheets()" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid #3b82f6;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">🔄 Refresh Google Sheets</button>
+          <button onclick="salesLoadSheets()" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid #3b82f6;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">📋 Shiko të dhënat e ngarkuara</button>
           <label style="background:linear-gradient(135deg,#c9a84c,#e8c96d);color:#0a1628;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
             ⬆ Ngarko Excel Trinisoft
             <input type="file" accept=".xls,.xlsx" style="display:none" onchange="salesUpload(this)" />
@@ -1017,16 +1017,12 @@ hmsPull().then(function(){hmsRenderFO();});
 <script>
 (function(){
 // ─── SALES REPORT ──────────────────────────────────────────────────────────────
-// Google Sheets / Trinosoft column indices (0-based):
-// A=0 Nr.Pren | B=1 LlojiDhomes | C=2 NrDhomes | D=3 DataFillimit | E=4 DataMbarimit
-// F=5 Klienti | G=6 Kodi | H=7 Kompania | I=8 Personeli | J=9 Cmimi
-// K=10 DitetQendrimit | L=11 Totali | ... | V=21 BurimiInfo | W=22 Nacionaliteti
 var C={ROOM:2,DATE_IN:3,DATE_OUT:4,CLIENT:5,TYPE:1,NIGHTS:10,REV:11,SOURCE:21,NAT:22};
-
 var ROOMS=110;
 var MDAYS={1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31};
-var MAL={1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',
-         7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
+var MAL={1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
+var EX_ROOMS=new Set(['VILA 1','VILA 2','VILA1','VILA2','313']);
+var EX_CLI=['jasht pune','jashte pune','jasht pun\u00eb','jashte pun\u00eb'];
 
 function normRoom(r){
   return (r||'').trim()
@@ -1036,93 +1032,36 @@ function normRoom(r){
     .trim();
 }
 function isGarden(r){return /^G\d/i.test(r);}
-
-// Exclusions — sipas specs: 313, Vila 1, Vila 2, Jasht Pune, Jashte Pune
-var EX_ROOMS=new Set(['VILA 1','VILA 2','VILA1','VILA2','313']);
-var EX_CLI=['jasht pune','jashte pune','jasht pun\u00eb','jashte pun\u00eb'];
-
 function isExcl(room,cli){
-  if(EX_ROOMS.has(room)) return true;
-  // Also exclude if room starts with "VILA" (e.g. "VILA 1", "VILA1")
-  if(/^VILA/i.test(room)) return true;
+  if(EX_ROOMS.has(room)||/^VILA/i.test(room)) return true;
   var c=(cli||'').toLowerCase().replace(/\s+/g,' ').trim();
-  if(EX_CLI.some(function(x){return c===x||c.startsWith(x);})) return true;
-  return false;
+  return EX_CLI.some(function(x){return c===x||c.startsWith(x);});
 }
-
 function parseDate(s){
   if(!s) return null;
-  s=s.trim();
-  var m;
-  // ISO: 2026-04-01
+  s=s.trim(); var m;
   m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return {yr:+m[1],mo:+m[2],day:+m[3]};
-  // d-m-yy or d-m-yyyy: 1-4-26
   m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})/); if(m){var y=+m[3];if(y<100)y+=2000;return{yr:y,mo:+m[2],day:+m[1]};}
-  // d/m/yyyy or m/d/yyyy — if first num > 12 it must be day
   m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){var a=+m[1],b=+m[2];return a>12?{yr:+m[3],mo:b,day:a}:{yr:+m[3],mo:a,day:b};}
-  // d.m.yyyy
   m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if(m) return {yr:+m[3],mo:+m[2],day:+m[1]};
-  // Apps Script full date: "Tue Jan 06 2026 09:00:00 GMT+0100..."
   var MMAP={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
   m=s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{1,2})\s+(\d{4})/i);
   if(m) return {yr:+m[3],mo:MMAP[m[1].toLowerCase().slice(0,3)],day:+m[2]};
-  // Fallback: try JS Date parsing
   var d=new Date(s); if(!isNaN(d.getTime())) return {yr:d.getFullYear(),mo:d.getMonth()+1,day:d.getDate()};
   return null;
 }
-
 function daysDiff(din,dout){
-  // Calculate actual nights from check-in to check-out
   if(!din||!dout) return 0;
-  var a=new Date(din.yr,din.mo-1,din.day);
-  var b=new Date(dout.yr,dout.mo-1,dout.day);
-  var diff=Math.round((b-a)/(864e5));
+  var a=new Date(din.yr,din.mo-1,din.day), b=new Date(dout.yr,dout.mo-1,dout.day);
+  var diff=Math.round((b-a)/864e5);
   return diff>0&&diff<366?diff:0;
 }
-
-function parseCsvLine(line){
-  var res=[],cur='',inQ=false;
-  for(var i=0;i<line.length;i++){
-    var ch=line[i];
-    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-    else if(ch===','&&!inQ){res.push(cur.trim());cur='';}
-    else cur+=ch;
-  }
-  res.push(cur.trim());
-  return res;
-}
-
-function salesParseCSV(csvStr){
-  var lines=csvStr.split('\n').filter(function(l){return l.trim();});
-  if(lines.length<2) return [];
-  var out=[], skippedDate=0, skippedExcl=0, totalRevAll=0;
-  for(var i=1;i<lines.length;i++){
-    var v=parseCsvLine(lines[i]);
-    if(v.length<12) continue;
-    // Revenue of this row (before any exclusion)
-    var revRaw=(v[C.REV]||'0').trim();
-    var rowRev=(function(s){
-      var ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');
-      if(ld>lc) return parseFloat(s.replace(/,/g,''))||0;
-      if(lc>ld) return parseFloat(s.replace(/\./g,'').replace(',','.'))||0;
-      return parseFloat(s.replace(',','.'))||0;
-    })(revRaw);
-    totalRevAll+=rowRev;
-    var room=normRoom(v[C.ROOM]);
-    if(isExcl(room,v[C.CLIENT])){ skippedExcl++; continue; }
-    var din=parseDate(v[C.DATE_IN]);
-    if(!din){ skippedDate++; continue; }
-    var dout=parseDate(v[C.DATE_OUT]);
-    var nights=daysDiff(din,dout);
-    if(!nights) nights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
-    var source=(v[C.SOURCE]||'').trim()||'N/A';
-    var nat=(v[C.NAT]||'').trim();
-    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rowRev,room:room,source:source,nat:nat,din:din,dout:dout,totalNights:nights});
-  }
-  // Store diagnostics globally for display
-  window._salesDiag={totalRows:lines.length-1,loaded:out.length,
-    skippedDate:skippedDate,skippedExcl:skippedExcl,totalRevAll:totalRevAll};
-  return out;
+function parseRevNum(s){
+  s=(s||'0').trim();
+  var ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');
+  if(ld>lc) return parseFloat(s.replace(/,/g,''))||0;
+  if(lc>ld) return parseFloat(s.replace(/\./g,'').replace(',','.'))||0;
+  return parseFloat(s.replace(',','.'))||0;
 }
 
 function salesParseXML(xmlStr){
@@ -1137,21 +1076,13 @@ function salesParseXML(xmlStr){
     if(v.length<12) continue;
     var room=normRoom(v[C.ROOM]);
     if(isExcl(room,v[C.CLIENT])) continue;
-    var din=parseDate(v[C.DATE_IN]);
-    if(!din) continue;
+    var din=parseDate(v[C.DATE_IN]); if(!din) continue;
     var dout=parseDate(v[C.DATE_OUT]);
-    var nights=daysDiff(din,dout);
-    if(!nights) nights=parseInt(v[C.NIGHTS])||0;
-    var revRaw=(v[C.REV]||'0').trim();
-    var rev=(function(s){
-      var ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');
-      if(ld>lc) return parseFloat(s.replace(/,/g,''))||0;          // 1,234.56
-      if(lc>ld) return parseFloat(s.replace(/\./g,'').replace(',','.'))||0; // 1.234,56
-      return parseFloat(s.replace(',','.'))||0;
-    })(revRaw);
-    var source=(v[C.SOURCE]||'').trim()||'N/A';
-    var nat=(v[C.NAT]||'').trim();
-    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,source:source,nat:nat,din:din,dout:dout,totalNights:nights});
+    var nights=daysDiff(din,dout)||parseInt(v[C.NIGHTS])||0;
+    var rev=parseRevNum(v[C.REV]);
+    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,
+              source:(v[C.SOURCE]||'').trim()||'N/A',nat:(v[C.NAT]||'').trim(),
+              din:din,dout:dout,totalNights:nights});
   }
   return out;
 }
@@ -1159,28 +1090,21 @@ function salesParseXML(xmlStr){
 function salesAggregate(rows){
   var mo={},src={},nat={};
   var tN=0,tR=0,tRes=0,fN=0,fR=0,gN=0,gR=0;
-
-  function addToMonth(yr,mo_n,nights,rev,room,srcStr,natStr,countRes){
-    var k=yr+'-'+String(mo_n).padStart(2,'0');
-    if(!mo[k]) mo[k]={yr:yr,mo:mo_n,nights:0,rev:0,res:0,src:{},fN:0,fR:0,gN:0,gR:0};
-    var m=mo[k];
-    m.nights+=nights; m.rev+=rev;
-    if(countRes) m.res++;
+  function addMo(yr,mon,nights,rev,room,srcStr,isFirst){
+    var k=yr+'-'+String(mon).padStart(2,'0');
+    if(!mo[k]) mo[k]={yr:yr,mo:mon,nights:0,rev:0,res:0,src:{},fN:0,fR:0,gN:0,gR:0};
+    var m=mo[k]; m.nights+=nights; m.rev+=rev; if(isFirst) m.res++;
     var s=srcStr||'N/A';
-    if(!m.src[s]) m.src[s]={rev:0,cnt:0};
-    m.src[s].rev+=rev; if(countRes) m.src[s].cnt++;
-    if(!src[s]) src[s]={rev:0,cnt:0};
-    src[s].rev+=rev; if(countRes) src[s].cnt++;
+    if(!m.src[s]) m.src[s]={rev:0,cnt:0}; m.src[s].rev+=rev; if(isFirst) m.src[s].cnt++;
+    if(!src[s]) src[s]={rev:0,cnt:0}; src[s].rev+=rev; if(isFirst) src[s].cnt++;
     if(isGarden(room)){gN+=nights;gR+=rev;m.gN+=nights;m.gR+=rev;}
     else{fN+=nights;fR+=rev;m.fN+=nights;m.fR+=rev;}
     tN+=nights; tR+=rev;
   }
-
   rows.forEach(function(r){
     tRes++;
     if(r.nat) nat[r.nat]=(nat[r.nat]||0)+1;
-    // Split nights/revenue across months they actually occur
-    if(r.din && r.dout && r.totalNights>0){
+    if(r.din&&r.dout&&r.totalNights>0){
       var cur=new Date(r.din.yr,r.din.mo-1,r.din.day);
       var end=new Date(r.dout.yr,r.dout.mo-1,r.dout.day);
       var first=true;
@@ -1188,14 +1112,11 @@ function salesAggregate(rows){
         var moEnd=new Date(cur.getFullYear(),cur.getMonth()+1,1);
         if(moEnd>end) moEnd=end;
         var n=Math.round((moEnd-cur)/864e5);
-        var revShare=r.rev*(n/r.totalNights);
-        addToMonth(cur.getFullYear(),cur.getMonth()+1,n,revShare,r.room,r.source,r.nat,first);
-        first=false;
-        cur=moEnd;
+        addMo(cur.getFullYear(),cur.getMonth()+1,n,r.rev*(n/r.totalNights),r.room,r.source,first);
+        first=false; cur=moEnd;
       }
     } else {
-      // fallback: assign everything to check-in month
-      addToMonth(r.yr,r.mo,r.nights,r.rev,r.room,r.source,r.nat,true);
+      addMo(r.yr,r.mo,r.nights,r.rev,r.room,r.source,true);
     }
   });
   return {mo:mo,src:src,nat:nat,tN:tN,tR:tR,tRes:tRes,fN:fN,fR:fR,gN:gN,gR:gR};
@@ -1206,92 +1127,47 @@ function euro(v){return '\u20ac'+Math.round(v).toLocaleString('de-DE');}
 function pct(v){return (v*100).toFixed(1)+'%';}
 
 function salesRender(agg){
-  var mo=agg.mo,tN=agg.tN,tR=agg.tR,tRes=agg.tRes;
-  var tAv=0;
-  Object.values(mo).forEach(function(m){tAv+=avail(m.yr,m.mo);});
-  var occ=tAv>0?tN/tAv:0;
-  var adr=tN>0?tR/tN:0;
-
-  // KPIs
+  var tN=agg.tN,tR=agg.tR,tRes=agg.tRes;
+  var tAv=0; Object.values(agg.mo).forEach(function(m){tAv+=avail(m.yr,m.mo);});
+  var occ=tAv>0?tN/tAv:0, adr=tN>0?tR/tN:0;
   document.getElementById('sv_occ').textContent=pct(occ);
-  document.getElementById('sv_occ_sub').textContent=tN.toLocaleString()+' netë / '+tAv.toLocaleString()+' disponueshme';
+  document.getElementById('sv_occ_sub').textContent=tN.toLocaleString()+' net\u00eb / '+tAv.toLocaleString()+' disponueshme';
   document.getElementById('sv_nights').textContent=tN.toLocaleString();
   document.getElementById('sv_nights_sub').textContent='ADR: '+euro(adr);
   document.getElementById('sv_rev').textContent=euro(tR);
-  document.getElementById('sv_rev_sub').textContent='ADR: '+euro(adr)+' / netë';
+  document.getElementById('sv_rev_sub').textContent='ADR: '+euro(adr)+' / net\u00eb';
   document.getElementById('sv_res').textContent=tRes.toLocaleString();
-  document.getElementById('sv_res_sub').textContent='Mesatare: '+(tN/Math.max(tRes,1)).toFixed(1)+' netë/rez.';
-
-  // Flower / Garden
+  document.getElementById('sv_res_sub').textContent='Mesatare: '+(tN/Math.max(tRes,1)).toFixed(1)+' net\u00eb/rez.';
   document.getElementById('sf_rev').textContent=euro(agg.fR);
-  document.getElementById('sf_sub').textContent=agg.fN.toLocaleString()+' netë \u00b7 ADR '+euro(agg.fN>0?agg.fR/agg.fN:0);
+  document.getElementById('sf_sub').textContent=agg.fN.toLocaleString()+' net\u00eb \u00b7 ADR '+euro(agg.fN>0?agg.fR/agg.fN:0);
   document.getElementById('sg_rev').textContent=euro(agg.gR);
-  document.getElementById('sg_sub').textContent=agg.gN.toLocaleString()+' netë \u00b7 ADR '+euro(agg.gN>0?agg.gR/agg.gN:0);
-
-  // Charts
-  var keys=Object.keys(mo).sort();
-  var labels=keys.map(function(k){var m=mo[k];return (MAL[m.mo]||k).substring(0,3)+' '+m.yr;});
-  var nData=keys.map(function(k){return mo[k].nights;});
-  var rData=keys.map(function(k){return Math.round(mo[k].rev);});
+  document.getElementById('sg_sub').textContent=agg.gN.toLocaleString()+' net\u00eb \u00b7 ADR '+euro(agg.gN>0?agg.gR/agg.gN:0);
+  var keys=Object.keys(agg.mo).sort();
+  var labels=keys.map(function(k){var m=agg.mo[k];return (MAL[m.mo]||k).substring(0,3)+' '+m.yr;});
   var ca=document.getElementById('salesChartArea');
-  ca.innerHTML='<div style="position:relative;width:100%;height:200px;"><canvas id="scBar"></canvas></div>'
-    +'<div style="position:relative;width:100%;height:150px;margin-top:10px;"><canvas id="scRev"></canvas></div>';
+  ca.innerHTML='<div style="position:relative;width:100%;height:200px;"><canvas id="scBar"></canvas></div><div style="position:relative;width:100%;height:150px;margin-top:10px;"><canvas id="scRev"></canvas></div>';
   var tc='#a0aec0',gc='rgba(255,255,255,0.06)';
-  new Chart(document.getElementById('scBar'),{type:'bar',data:{labels:labels,datasets:[{data:nData,backgroundColor:'#c9a84c',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(x){return 'Netë: '+x.raw.toLocaleString();}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{color:gc}}}}});
-  new Chart(document.getElementById('scRev'),{type:'bar',data:{labels:labels,datasets:[{data:rData,backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(x){return '\u20ac'+x.raw.toLocaleString('de-DE');}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10},callback:function(v){return '\u20ac'+(v/1000).toFixed(0)+'K';}},grid:{color:gc}}}}});
-
-  // Sources by revenue
+  new Chart(document.getElementById('scBar'),{type:'bar',data:{labels:labels,datasets:[{data:keys.map(function(k){return agg.mo[k].nights;}),backgroundColor:'#c9a84c',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(x){return 'Net\u00eb: '+x.raw.toLocaleString();}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{color:gc}}}}});
+  new Chart(document.getElementById('scRev'),{type:'bar',data:{labels:labels,datasets:[{data:keys.map(function(k){return Math.round(agg.mo[k].rev);}),backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(x){return '\u20ac'+x.raw.toLocaleString('de-DE');}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10},callback:function(v){return '\u20ac'+(v/1000).toFixed(0)+'K';}},grid:{color:gc}}}}});
   var ss=Object.entries(agg.src).sort(function(a,b){return b[1].rev-a[1].rev;}).slice(0,10);
   var sm=ss[0]?ss[0][1].rev:1;
   document.getElementById('salesSourceList').innerHTML=ss.map(function(e){
     var s=e[0],d=e[1],isNA=(s==='N/A');
-    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
-      +'<div style="font-size:11px;color:var(--text);width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:'+(isNA?'italic':'normal')+'">'+(isNA?'N/A (pa burim)':s)+'</div>'
-      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:'+(isNA?'#6b7fa3':'#c9a84c')+';width:'+Math.round(d.rev/sm*100)+'%"></div></div>'
-      +'<div style="font-size:11px;color:var(--gold);font-weight:700;width:60px;text-align:right;">'+euro(d.rev)+'</div></div>';
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><div style="font-size:11px;color:var(--text);width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:'+(isNA?'italic':'normal')+'">'+(isNA?'N/A (pa burim)':s)+'</div><div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:'+(isNA?'#6b7fa3':'#c9a84c')+';width:'+Math.round(d.rev/sm*100)+'%"></div></div><div style="font-size:11px;color:var(--gold);font-weight:700;width:60px;text-align:right;">'+euro(d.rev)+'</div></div>';
   }).join('');
-
-  // Nationalities
   var ns=Object.entries(agg.nat).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   var nm=ns[0]?ns[0][1]:1;
   document.getElementById('salesNatList').innerHTML=ns.map(function(e){
-    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
-      +'<div style="font-size:11px;color:var(--text);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e[0]+'</div>'
-      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:#8b5cf6;width:'+Math.round(e[1]/nm*100)+'%"></div></div>'
-      +'<div style="font-size:11px;color:#8b5cf6;font-weight:700;width:28px;text-align:right;">'+e[1]+'</div></div>';
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><div style="font-size:11px;color:var(--text);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e[0]+'</div><div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:#8b5cf6;width:'+Math.round(e[1]/nm*100)+'%"></div></div><div style="font-size:11px;color:#8b5cf6;font-weight:700;width:28px;text-align:right;">'+e[1]+'</div></div>';
   }).join('');
-
-  // Monthly table
-  var tbody=document.getElementById('salesMonthBody');
-  var html='';
+  var tbody=document.getElementById('salesMonthBody'), html='';
   keys.forEach(function(k){
-    var m=mo[k];
-    var mAv=avail(m.yr,m.mo);
-    var mOcc=mAv>0?m.nights/mAv:0;
-    var mAdr=m.nights>0?m.rev/m.nights:0;
+    var m=agg.mo[k],mAv=avail(m.yr,m.mo),mOcc=mAv>0?m.nights/mAv:0,mAdr=m.nights>0?m.rev/m.nights:0;
     var top=Object.entries(m.src).sort(function(a,b){return b[1].rev-a[1].rev;})[0];
-    var srcLbl=top?('<span style="padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold)">'+top[0]+'</span>'):'—';
-    html+='<tr style="border-bottom:1px solid var(--border);">'
-      +'<td style="padding:9px 12px;color:var(--gold);font-weight:700;">'+(MAL[m.mo]||k)+' '+m.yr+'</td>'
-      +'<td style="padding:9px 12px;text-align:center;">'+m.res+'</td>'
-      +'<td style="padding:9px 12px;text-align:center;color:var(--muted);">'+m.nights.toLocaleString()+'</td>'
-      +'<td style="padding:9px 12px;text-align:center;color:var(--gold);font-weight:700;">'+euro(m.rev)+'</td>'
-      +'<td style="padding:9px 12px;text-align:center;">'+euro(mAdr)+'</td>'
-      +'<td style="padding:9px 12px;text-align:center;">'+pct(mOcc)+'</td>'
-      +'<td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+euro(m.fR)+' / '+euro(m.gR)+'</td>'
-      +'<td style="padding:9px 12px;">'+srcLbl+'</td>'
-      +'</tr>';
+    var srcL=top?('<span style="padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold)">'+top[0]+'</span>'):'—';
+    html+='<tr style="border-bottom:1px solid var(--border);"><td style="padding:9px 12px;color:var(--gold);font-weight:700;">'+(MAL[m.mo]||k)+' '+m.yr+'</td><td style="padding:9px 12px;text-align:center;">'+m.res+'</td><td style="padding:9px 12px;text-align:center;color:var(--muted);">'+m.nights.toLocaleString()+'</td><td style="padding:9px 12px;text-align:center;color:var(--gold);font-weight:700;">'+euro(m.rev)+'</td><td style="padding:9px 12px;text-align:center;">'+euro(mAdr)+'</td><td style="padding:9px 12px;text-align:center;">'+pct(mOcc)+'</td><td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+euro(m.fR)+' / '+euro(m.gR)+'</td><td style="padding:9px 12px;">'+srcL+'</td></tr>';
   });
-  html+='<tr style="background:rgba(201,168,76,.06);font-weight:700;">'
-    +'<td style="padding:9px 12px;color:var(--gold);">TOTAL</td>'
-    +'<td style="padding:9px 12px;text-align:center;">'+tRes.toLocaleString()+'</td>'
-    +'<td style="padding:9px 12px;text-align:center;color:var(--muted);">'+tN.toLocaleString()+'</td>'
-    +'<td style="padding:9px 12px;text-align:center;color:var(--gold);">'+euro(tR)+'</td>'
-    +'<td style="padding:9px 12px;text-align:center;">'+euro(adr)+'</td>'
-    +'<td style="padding:9px 12px;text-align:center;">'+pct(occ)+'</td>'
-    +'<td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+euro(agg.fR)+' / '+euro(agg.gR)+'</td>'
-    +'<td style="padding:9px 12px;">—</td>'
-    +'</tr>';
+  html+='<tr style="background:rgba(201,168,76,.06);font-weight:700;"><td style="padding:9px 12px;color:var(--gold);">TOTAL</td><td style="padding:9px 12px;text-align:center;">'+tRes+'</td><td style="padding:9px 12px;text-align:center;color:var(--muted);">'+tN.toLocaleString()+'</td><td style="padding:9px 12px;text-align:center;color:var(--gold);">'+euro(tR)+'</td><td style="padding:9px 12px;text-align:center;">'+euro(adr)+'</td><td style="padding:9px 12px;text-align:center;">'+pct(occ)+'</td><td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+euro(agg.fR)+' / '+euro(agg.gR)+'</td><td style="padding:9px 12px;">—</td></tr>';
   tbody.innerHTML=html;
 }
 
@@ -1302,44 +1178,71 @@ function salesSetTs(label){
   if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+label+' \u00b7 '+ts;
 }
 
-function salesLoadSheets(){
-
-  var btn=document.querySelector('[onclick="salesLoadSheets()"]');
-  if(btn){btn.textContent='\u23f3 Duke ngarkuar...';btn.disabled=true;}
-  var fi=document.getElementById('salesFileInfo');
-  if(fi) fi.textContent='Duke lexuar Google Sheets...';
-  fetch('/api/sheets-csv?t='+Date.now(),{
-    cache:'no-store',
-    headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}
-  })
-  .then(function(r){
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    return r.text();
-  })
-  .then(function(csv){
-    if(csv.trim().startsWith('<'))
-      throw new Error('Sheet nuk \u00ebsht\u00eb publik \u2014 Share \u2192 Anyone with link \u2192 Viewer');
-    var rows=salesParseCSV(csv);
-    if(!rows.length){
-      var preview=csv.split('\n').slice(0,3).join(' | ').substring(0,200);
-      throw new Error('0 rreshta valid. Preview: '+preview);
-    }
-    salesRender(salesAggregate(rows));
-    salesSetTs('Google Sheets ('+rows.length+' rez.)');
-    if(fi) fi.textContent='';
-    if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
-  })
-  .catch(function(err){
-    if(fi) fi.textContent=err.message;
-    if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
-    alert('Gabim: '+err.message);
-  });
+// ── Auto-load saved state on page open ───────────────────────────────────────
+function salesAutoLoad(){
+  fetch('/api/sales-state')
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j.ok && j.data && j.data.rows && j.data.rows.length){
+        salesRender(salesAggregate(j.data.rows));
+        var el=document.getElementById('salesLastUpdate');
+        if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
+      }
+    })
+    .catch(function(){});
 }
+
+// ── Save rows to server ───────────────────────────────────────────────────────
+function salesSaveState(rows, filename){
+  fetch('/api/sales-state',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({rows:rows, filename:filename})
+  }).catch(function(){});
+}
+
+// ── Upload Excel ──────────────────────────────────────────────────────────────
+function salesUpload(input){
+  var file=input.files[0]; if(!file) return;
+  var fi=document.getElementById('salesFileInfo');
+  if(fi) fi.textContent='Duke ngarkuar '+file.name+'...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var rows=salesParseXML(e.target.result);
+      if(!rows.length){alert('Nuk u gjet asnj\u00eb rezervim i vlefsh\u00ebm.');return;}
+      salesRender(salesAggregate(rows));
+      salesSetTs('Excel: '+file.name+' ('+rows.length+' rez.)');
+      salesSaveState(rows, file.name+' ('+rows.length+' rez.)');
+      if(fi) fi.textContent='\u2713 '+file.name+' \u2014 '+rows.length+' rezervime t\u00eb ngarkuara';
+    }catch(err){
+      alert('Gabim: '+err.message);
+      if(fi) fi.textContent='Gabim: '+err.message;
+    }
+    input.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+// ── Remove Google Sheets button functionality (kept as placeholder) ───────────
+function salesLoadSheets(){
+  alert('P\u00ebrdorni butonin "Ngarko Excel Trinisoft" p\u00ebr t\u00eb ngarkuar t\u00eb dh\u00ebnat.');
+}
+
+// Auto-load on tab open
+(function(){
+  var tabBtn=document.getElementById('tab_sales');
+  if(tabBtn){
+    var orig=tabBtn.getAttribute('onclick');
+    tabBtn.setAttribute('onclick',"showSec('sales');salesAutoLoad();");
+  }
+})();
 
 window.salesUpload=salesUpload;
 window.salesLoadSheets=salesLoadSheets;
 })();
 </script>
+
 
 
 </body>

@@ -433,7 +433,7 @@ const https_mod = require('https');
 const SALES_SHEET_ID = '1bctULGpMDqW9tUjgXvNDcXicv-AmZTnA';
 const SALES_GID = '302537026';
 // Apps Script Web App — real-time, no cache, private
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbygKdT7y6iTVlese8wG0quIciZQ5p_5TDMljotW3bgvNUzIykC7KZqVP8xgrZ1ZQv/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya90QFNbKoHiem6w07zZASh4TtTDkBgfALxdxojCmWHT6hRl5O9c2vqggxiC7F64CaOQ/exec';
 const APPS_SCRIPT_TOKEN = 'FlowerHotels2026';
 function fetchUrl(url, redirectCount, resolve, reject) {
   if(redirectCount > 10) return reject(new Error('Too many redirects'));
@@ -493,6 +493,42 @@ app.get('/api/sheets-debug', function(req, res) {
       });
     })
     .catch(function(e){ res.status(500).json({error: e.message}); });
+});
+
+
+// ─── SALES STATE PERSISTENCE ─────────────────────────────────────────────────
+const fs_sales = require('fs');
+const SALES_FILE = require('path').join(__dirname, 'sales_state.json');
+let salesState = null; // {rows: [...], ts: '...', filename: '...'}
+
+(function loadSales(){
+  try {
+    if(fs_sales.existsSync(SALES_FILE)){
+      salesState = JSON.parse(fs_sales.readFileSync(SALES_FILE,'utf8'));
+      console.log('[SALES] Loaded', salesState.rows ? salesState.rows.length : 0, 'rows from', SALES_FILE);
+    }
+  } catch(e){ console.warn('[SALES] Load error:', e.message); }
+})();
+
+function saveSales(){ 
+  try { fs_sales.writeFileSync(SALES_FILE, JSON.stringify(salesState), 'utf8'); } 
+  catch(e){ console.warn('[SALES] Save error:', e.message); }
+}
+
+// GET saved sales state
+app.get('/api/sales-state', function(req, res){
+  if(salesState) res.json({ok:true, data:salesState});
+  else res.json({ok:false, data:null});
+});
+
+// POST new sales data (parsed rows from client)
+app.post('/api/sales-state', function(req, res){
+  try {
+    salesState = req.body;
+    salesState.ts = new Date().toISOString();
+    saveSales();
+    res.json({ok:true});
+  } catch(e){ res.status(400).json({error:e.message}); }
 });
 
 
