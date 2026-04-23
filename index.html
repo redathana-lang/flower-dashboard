@@ -1264,7 +1264,16 @@ function salesAutoLoad(){
   fetch('/api/sales-state',{cache:'no-store'})
     .then(function(r){return r.json();})
     .then(function(j){
-      if(j.ok&&j.data&&j.data.agg){
+      if(!j.ok||!j.data) return;
+      if(j.type==='csv'&&j.data.csv){
+        var rows=salesParseCSV(j.data.csv);
+        if(!rows.length) return;
+        var agg=salesAggregate(rows);
+        _SALES_AGG=agg;
+        salesRender(agg);
+        var el=document.getElementById('salesLastUpdate');
+        if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
+      } else if(j.data.agg){
         _SALES_AGG=j.data.agg;
         try{sessionStorage.setItem('fh_sales',JSON.stringify(j.data));}catch(e){}
         salesRender(j.data.agg);

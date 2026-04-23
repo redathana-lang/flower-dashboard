@@ -509,10 +509,34 @@ let salesState = null;
     if(fs_sales.existsSync(SALES_FILE)){
       const raw = fs_sales.readFileSync(SALES_FILE,'utf8');
       salesState = JSON.parse(raw);
-      console.log('[SALES] Loaded', salesState.rows ? salesState.rows.length : 0, 'rows, ts:', salesState.ts);
+      console.log('[SALES] Loaded from file, ts:', salesState.ts);
     }
   } catch(e){ console.warn('[SALES] Load error:', e.message); }
 })();
+
+// Auto-fetch from Google Sheets on server start (so all users see fresh data)
+function autoFetchSales(){
+  const url = 'https://docs.google.com/spreadsheets/d/'+SALES_SHEET_ID+'/export?format=csv&gid='+SALES_GID+'&t='+Date.now();
+  new Promise(function(resolve,reject){ fetchUrl(url,0,resolve,reject); })
+    .then(function(csv){
+      if(!csv||csv.trim().startsWith('<')){
+        console.log('[SALES] Auto-fetch: sheet not public or empty, keeping existing state');
+        return;
+      }
+      // Parse CSV rows
+      const lines = csv.split('\n').filter(function(l){return l.trim();});
+      console.log('[SALES] Auto-fetch: got '+lines.length+' lines from Google Sheets');
+      // Store raw CSV for client to parse
+      salesState = {
+        csv: csv,
+        ts: new Date().toISOString(),
+        filename: 'Google Sheets (auto)'
+      };
+      saveSales();
+      console.log('[SALES] Auto-fetch saved at', salesState.ts);
+    })
+    .catch(function(e){ console.warn('[SALES] Auto-fetch error:', e.message); });
+}
 
 function saveSales(){
   try { fs_sales.writeFileSync(SALES_FILE, JSON.stringify(salesState), 'utf8'); }
@@ -523,7 +547,9 @@ function saveSales(){
 app.get('/api/sales-state', function(req, res){
   res.setHeader('Cache-Control','no-store');
   if(salesState && salesState.agg)
-    res.json({ok:true, data:salesState});
+    res.json({ok:true, data:salesState, type:'agg'});
+  else if(salesState && salesState.csv)
+    res.json({ok:true, data:{csv:salesState.csv, ts:salesState.ts, filename:salesState.filename}, type:'csv'});
   else
     res.json({ok:false, data:null});
 });
@@ -558,4 +584,8 @@ app.listen(PORT, () => {
   console.log(`[FLOW] Server on port ${PORT}`);
   refreshCache();
   setInterval(refreshCache, CACHE_TTL);
+  // Auto-fetch sales data on start
+  setTimeout(autoFetchSales, 5000);
+  // Re-fetch every 6 hours
+  setInterval(autoFetchSales, 6*60*60*1000);
 });
