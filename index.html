@@ -1231,8 +1231,8 @@ function salesAutoLoad(){
   fetch('/api/sales-state',{cache:'no-store'})
     .then(function(r){return r.json();})
     .then(function(j){
-      if(j.ok&&j.data&&j.data.rows&&j.data.rows.length){
-        salesRender(salesAggregate(j.data.rows));
+      if(j.ok&&j.data&&j.data.agg){
+        salesRender(j.data.agg);
         var el=document.getElementById('salesLastUpdate');
         if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
       }
@@ -1240,13 +1240,17 @@ function salesAutoLoad(){
     .catch(function(){});
 }
 
-function salesSaveState(rows,filename){
-  var data={rows:rows,filename:filename,ts:new Date().toISOString()};
+function salesSaveState(agg,filename){
+  // Save aggregated data (small) not raw rows (large)
+  var data={agg:agg, filename:filename, ts:new Date().toISOString()};
   fetch('/api/sales-state',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify(data)
-  }).catch(function(){});
+  })
+  .then(function(r){return r.json();})
+  .then(function(j){console.log('[SALES] Saved:', j);})
+  .catch(function(e){console.error('[SALES] Save error:',e);});
 }
 
 // ── Upload Excel ──────────────────────────────────────────────────────────────
@@ -1257,11 +1261,36 @@ function salesUpload(input){
   var reader=new FileReader();
   reader.onload=function(e){
     try{
+      // Debug: log first 5 rows raw values to see column positions
+      var SS='urn:schemas-microsoft-com:office:spreadsheet';
+      var parser=new DOMParser();
+      var doc=parser.parseFromString(e.target.result.replace(/<\?mso-application[^?]*\?>/,''),'application/xml');
+      var testRows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
+      if(testRows.length>1){
+        var cells=Array.from(testRows[1].getElementsByTagNameNS(SS,'Cell'));
+        var v=[];
+        var ci2=0;
+        for(var ci=0;ci<cells.length;ci++){
+          var cell=cells[ci];
+          var idxAttr=cell.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Index')||cell.getAttribute('ss:Index');
+          if(idxAttr) ci2=parseInt(idxAttr)-1;
+          var d=cell.getElementsByTagNameNS(SS,'Data')[0];
+          v[ci2]=(d?(d.textContent||'').trim():'');
+          ci2++;
+        }
+        console.log('[SALES DEBUG] Row 1 values:');
+        for(var x=0;x<30;x++) console.log('  Col['+x+']='+JSON.stringify(v[x]||''));
+      }
       var rows=salesParseXML(e.target.result);
       if(!rows.length){alert('Nuk u gjet asnj\u00eb rezervim i vlefsh\u00ebm.');return;}
-      salesRender(salesAggregate(rows));
+      // Log source samples
+      var srcSample={};
+      rows.slice(0,50).forEach(function(r){srcSample[r.source]=(srcSample[r.source]||0)+1;});
+      console.log('[SALES] Source sample (first 50 rows):', JSON.stringify(srcSample));
+      var agg=salesAggregate(rows);
+      salesRender(agg);
       salesSetTs('Excel: '+file.name+' ('+rows.length+' rez.)');
-      salesSaveState(rows, file.name+' ('+rows.length+' rez.)');
+      salesSaveState(agg, file.name+' ('+rows.length+' rez.)');
       if(fi) fi.textContent='\u2713 '+file.name+' \u2014 '+rows.length+' rezervime t\u00eb ngarkuara';
     }catch(err){
       alert('Gabim: '+err.message);

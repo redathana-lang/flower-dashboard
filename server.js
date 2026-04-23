@@ -3,7 +3,8 @@ const path = require('path');
 const webpush = require('web-push');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({limit:'50mb'}));
+app.use(express.urlencoded({limit:'50mb', extended:true}));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
@@ -521,20 +522,20 @@ function saveSales(){
 // GET saved sales state — all users fetch from here
 app.get('/api/sales-state', function(req, res){
   res.setHeader('Cache-Control','no-store');
-  if(salesState && salesState.rows && salesState.rows.length)
+  if(salesState && salesState.agg)
     res.json({ok:true, data:salesState});
   else
     res.json({ok:false, data:null});
 });
 
 // POST new sales data — admin uploads Excel, all users see the update
-app.post('/api/sales-state', express.json({limit:'50mb'}), function(req, res){
+app.post('/api/sales-state', function(req, res){
   try {
     salesState = req.body;
     if(!salesState.ts) salesState.ts = new Date().toISOString();
     saveSales();
-    console.log('[SALES] Saved', salesState.rows ? salesState.rows.length : 0, 'rows at', salesState.ts);
-    res.json({ok:true, rows: salesState.rows ? salesState.rows.length : 0});
+    console.log('[SALES] Saved agg at', salesState.ts, 'file:', salesState.filename);
+    res.json({ok:true});
   } catch(e){
     console.error('[SALES] Save error:', e.message);
     res.status(400).json({error:e.message});
