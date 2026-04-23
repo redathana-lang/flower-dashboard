@@ -1352,22 +1352,37 @@ function parseCsvLine(line){
 function salesParseCSV(csvStr){
   var lines=csvStr.split('\n').filter(function(l){return l.trim();});
   if(lines.length<2) return [];
-  // Col indices same as XML: C=2,D=3,E=4,F=5,B=1,K=10,L=11,V=21,W=22
+  // Log first data row raw to check column positions
+  var firstRow=parseCsvLine(lines[1]);
+  console.log('[CSV DIAG] Total lines:'+lines.length);
+  console.log('[CSV DIAG] Col[2]='+JSON.stringify(firstRow[2])
+    +' Col[3]='+JSON.stringify(firstRow[3])
+    +' Col[4]='+JSON.stringify(firstRow[4])
+    +' Col[11]='+JSON.stringify(firstRow[11])
+    +' Col[21]='+JSON.stringify(firstRow[21]));
   var out=[];
+  var diag={total:0,excl:0,noDate:0,revTotal:0,skippedRev:0};
   for(var i=1;i<lines.length;i++){
     var v=parseCsvLine(lines[i]);
     if(v.length<12) continue;
-    var room=normRoom(v[2]||'');
-    if(isExcl(room,v[5]||'')) continue;
-    var din=parseDate(v[3]); if(!din) continue;
-    var dout=parseDate(v[4]);
-    var nights=daysDiff(din,dout)||parseFloat((v[10]||'0').replace(',','.'))||0;
-    var rev=parseRevNum(v[11]);
-    var source=normSource(v[21]);
-    var nat=(v[22]||'').trim();
+    diag.total++;
+    var rev=parseRevNum(v[C.REV]);
+    var room=normRoom(v[C.ROOM]||'');
+    if(isExcl(room,v[C.CLIENT]||'')){diag.excl++;diag.skippedRev+=rev;continue;}
+    var din=parseDate(v[C.DATE_IN]); 
+    if(!din){diag.noDate++;diag.skippedRev+=rev;continue;}
+    var dout=parseDate(v[C.DATE_OUT]);
+    var nights=daysDiff(din,dout)||parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
+    var source=normSource(v[C.SOURCE]);
+    var nat=(v[C.NAT]||'').trim();
+    diag.revTotal+=rev;
     out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,
               source:source,nat:nat,din:din,dout:dout,totalNights:nights});
   }
+  console.log('[CSV DIAG] Loaded:'+out.length
+    +' | Excl:'+diag.excl+' | NoDate:'+diag.noDate
+    +' | Rev loaded:\u20ac'+Math.round(diag.revTotal).toLocaleString()
+    +' | Rev skipped:\u20ac'+Math.round(diag.skippedRev).toLocaleString());
   return out;
 }
 
