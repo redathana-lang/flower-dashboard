@@ -1066,6 +1066,38 @@ function parseRevNum(s){
   return parseFloat(s.replace(',','.'))||0;
 }
 
+// ── Source normalization ──────────────────────────────────────────────────────
+function normSource(s){
+  if(!s||!s.trim()) return 'N/A';
+  var t=s.trim();
+  var lo=t.toLowerCase();
+  if(lo==='n/a'||lo===''||lo==='blank'||lo==='blanks') return 'N/A';
+  if(lo.includes('expedia')&&lo.includes('collect')&&lo.includes('hotel')) return 'Expedia Hotel Collect';
+  if(lo.includes('expedia')&&lo.includes('collect')) return 'Expedia Channel Collect';
+  if(lo.includes('expedia')) return 'Expedia Channel Collect';
+  if(lo.includes('website')||lo.includes('booking engine')) return 'Website/Booking Engine';
+  if(lo==='booking.com'||lo==='booking') return 'Booking.com';
+  if(lo.includes('booking.com')) return 'Booking.com';
+  if(lo.includes('booking')) return 'Booking.com';
+  if(lo.includes('hotelbeds')||lo==='hotel beds'||lo.includes('hotel bed')) return 'Hotel Beds';
+  if(lo.includes('webbeds')||lo.includes('web beds')) return 'Webbeds';
+  if(lo.includes('7beds')||lo.includes('7 beds')) return '7Beds';
+  if(lo.includes('itaka')&&lo.includes('hung')) return 'Itaka Hungary';
+  if(lo.includes('itaka')&&lo.includes('pol')) return 'Itaka Poloni';
+  if(lo.includes('itaka')) return 'Itaka Poloni';
+  if(lo==='ots'||lo.includes('open travel')) return 'OTS';
+  if(lo==='w2m'||lo.includes('w2m')) return 'W2M';
+  if(lo.includes('trip.com')||lo.includes('trip com')||lo.includes('ctrip')) return 'Trip.com';
+  if(lo.includes('social media')||lo==='social') return 'Social Media';
+  if(lo.includes('whatsapp')||lo==='wa') return 'Whatsapp';
+  if(lo.includes('viber')) return 'Viber';
+  if(lo.includes('walk in')||lo==='walkin') return 'Walk In';
+  if(lo.includes('agjensi')||lo.includes('agjenci')||lo.includes('agjensi')||lo==='agency') return 'Agjensi';
+  if(lo.includes('call')||lo==='phone') return 'Calls';
+  if(lo.includes('email')||lo==='e-mail') return 'Email';
+  return t; // mbaj origjinalin nëse nuk njihet
+}
+
 function salesParseXML(xmlStr){
   var SS='urn:schemas-microsoft-com:office:spreadsheet';
   var parser=new DOMParser();
@@ -1097,7 +1129,7 @@ function salesParseXML(xmlStr){
     var nights=daysDiff(din,dout)||parseInt(v[C.NIGHTS])||0;
     var rev=parseRevNum(v[C.REV]);
     out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,
-              source:(v[C.SOURCE]||'').trim()||'N/A',nat:(v[C.NAT]||'').trim(),
+              source:normSource(v[C.SOURCE]),nat:(v[C.NAT]||'').trim(),
               din:din,dout:dout,totalNights:nights});
   }
   return out;
