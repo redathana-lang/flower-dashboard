@@ -465,8 +465,8 @@ function fetchUrl(url, redirectCount, resolve, reject) {
   }).on('error', reject);
 }
 app.get('/api/sheets-csv', function(req, res) {
-  // Use Apps Script Web App — real-time, no cache, private sheet
-  const url = APPS_SCRIPT_URL + '?token=' + APPS_SCRIPT_TOKEN + '&t=' + Date.now();
+  // Direct public Google Sheets export — no Apps Script needed
+  const url = 'https://docs.google.com/spreadsheets/d/' + SALES_SHEET_ID + '/export?format=csv&gid=' + SALES_GID + '&t=' + Date.now();
   new Promise(function(resolve, reject){ fetchUrl(url, 0, resolve, reject); })
     .then(function(csv){
       res.setHeader('Content-Type', 'text/csv; charset=utf-8');
@@ -540,6 +540,15 @@ app.post('/api/sales-state', function(req, res){
     console.error('[SALES] Save error:', e.message);
     res.status(400).json({error:e.message});
   }
+});
+
+
+// Clear sales cache
+app.get('/api/sales-clear', function(req, res){
+  salesState = null;
+  try { if(fs_sales.existsSync(SALES_FILE)) fs_sales.unlinkSync(SALES_FILE); } catch(e){}
+  console.log('[SALES] Cache cleared');
+  res.json({ok:true, message:'Sales cache cleared'});
 });
 
 
