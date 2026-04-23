@@ -1019,172 +1019,147 @@ hmsPull().then(function(){hmsRenderFO();});
 <script>
 (function(){
 // ─── SALES REPORT ──────────────────────────────────────────────────────────────
-var C={ROOM:2,DATE_IN:3,DATE_OUT:4,CLIENT:5,TYPE:1,NIGHTS:10,REV:11,SOURCE:21,NAT:22};
 var ROOMS=110;
 var MDAYS={1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31};
-var MAL={1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
+var MAL={1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',
+         7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
 var EX_ROOMS=new Set(['VILA 1','VILA 2','VILA1','VILA2','313']);
-var EX_CLI=['jasht pune','jashte pune','jasht pun\u00eb','jashte pun\u00eb'];
+var EX_CLI=['jasht pune','jashte pune'];
 
 function normRoom(r){
   return (r||'').trim()
     .replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE)$/i,'')
     .replace(/^(G)\s+(\d)/,'$1$2')
-    .replace(/\s+[A-Z]$/i,'')
-    .trim();
+    .replace(/\s+[A-Z]$/i,'').trim();
 }
 function isGarden(r){return /^G\d/i.test(r);}
 function isExcl(room,cli){
   if(EX_ROOMS.has(room)||/^VILA/i.test(room)) return true;
-  var c=(cli||'').toLowerCase().replace(/\s+/g,' ').trim();
+  var c=(cli||'').toLowerCase().trim();
   return EX_CLI.some(function(x){return c===x||c.startsWith(x);});
 }
 function parseDate(s){
-  if(!s) return null;
-  s=s.trim(); var m;
-  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return {yr:+m[1],mo:+m[2],day:+m[3]};
-  m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})/); if(m){var y=+m[3];if(y<100)y+=2000;return{yr:y,mo:+m[2],day:+m[1]};}
-  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){var a=+m[1],b=+m[2];return a>12?{yr:+m[3],mo:b,day:a}:{yr:+m[3],mo:a,day:b};}
-  m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if(m) return {yr:+m[3],mo:+m[2],day:+m[1]};
-  var MMAP={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  if(!s) return null; s=s.trim(); var m;
+  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return {yr:+m[1],mo:+m[2]};
+  m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})/); if(m){var y=+m[3];if(y<100)y+=2000;return{yr:y,mo:+m[2]};}
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){var a=+m[1],b=+m[2];return a>12?{yr:+m[3],mo:b}:{yr:+m[3],mo:a};}
+  m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if(m) return {yr:+m[3],mo:+m[2]};
+  var MM={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
   m=s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{1,2})\s+(\d{4})/i);
-  if(m) return {yr:+m[3],mo:MMAP[m[1].toLowerCase().slice(0,3)],day:+m[2]};
-  var d=new Date(s); if(!isNaN(d.getTime())) return {yr:d.getFullYear(),mo:d.getMonth()+1,day:d.getDate()};
+  if(m) return {yr:+m[3],mo:MM[m[1].toLowerCase().slice(0,3)]};
+  var d=new Date(s); if(!isNaN(d.getTime())) return {yr:d.getFullYear(),mo:d.getMonth()+1};
   return null;
 }
-function daysDiff(din,dout){
-  if(!din||!dout) return 0;
-  var a=new Date(din.yr,din.mo-1,din.day), b=new Date(dout.yr,dout.mo-1,dout.day);
-  var diff=Math.round((b-a)/864e5);
-  return diff>0&&diff<366?diff:0;
-}
-function parseRevNum(s){
-  s=(s||'0').trim();
-  var ld=s.lastIndexOf('.'),lc=s.lastIndexOf(',');
+function parseNum(s){
+  s=(s||'0').toString().trim().replace(/[^\d.,-]/g,'');
+  if(!s) return 0;
+  var ld=s.lastIndexOf('.'), lc=s.lastIndexOf(',');
   if(ld>lc) return parseFloat(s.replace(/,/g,''))||0;
   if(lc>ld) return parseFloat(s.replace(/\./g,'').replace(',','.'))||0;
-  return parseFloat(s.replace(',','.'))||0;
+  return parseFloat(s)||0;
 }
-
-// ── Source normalization ──────────────────────────────────────────────────────
 function normSource(s){
   if(!s||!s.trim()) return 'N/A';
-  var t=s.trim();
-  var lo=t.toLowerCase();
-  if(!lo||lo==='n/a'||lo==='blank'||lo==='blanks'||lo==='(blanks)') return 'N/A';
+  var lo=s.trim().toLowerCase();
+  if(!lo||lo==='n/a'||lo.includes('blank')) return 'N/A';
   if(lo==='7beds'||lo==='7 beds') return '7Beds';
-  if(lo==='agjensi'||lo==='agjenci'||lo==='agency') return 'Agjensi';
-  if(lo==='booking.com') return 'Booking.com';
-  if(lo==='booking') return 'Booking.com';
-  if(lo==='calls'||lo==='call') return 'Calls';
+  if(lo==='agjensi'||lo==='agjenci') return 'Agjensi';
+  if(lo==='booking.com'||lo==='booking') return 'Booking.com';
+  if(lo==='calls') return 'Calls';
   if(lo==='email') return 'Email';
-  if(lo==='expedia channel collect') return 'Expedia Channel Collect';
-  if(lo==='expedia hotel collect') return 'Expedia Hotel Collect';
   if(lo.includes('expedia')&&lo.includes('hotel')) return 'Expedia Hotel Collect';
   if(lo.includes('expedia')) return 'Expedia Channel Collect';
   if(lo==='hotel beds'||lo==='hotelbeds') return 'Hotel Beds';
   if(lo==='itaka hungary') return 'Itaka Hungary';
   if(lo==='itaka poloni') return 'Itaka Poloni';
-  if(lo.includes('itaka')&&lo.includes('hung')) return 'Itaka Hungary';
-  if(lo.includes('itaka')) return 'Itaka Poloni';
   if(lo==='ots') return 'OTS';
   if(lo==='social media') return 'Social Media';
   if(lo==='trip.com') return 'Trip.com';
   if(lo==='viber') return 'Viber';
   if(lo==='w2m') return 'W2M';
-  if(lo==='walk in'||lo==='walkin') return 'Walk In';
-  if(lo==='webbeds'||lo==='web beds') return 'Webbeds';
-  if(lo==='website/booking engine'||lo.includes('booking engine')) return 'Website/Booking Engine';
+  if(lo==='walk in') return 'Walk In';
+  if(lo==='webbeds') return 'Webbeds';
+  if(lo.includes('website')||lo.includes('booking engine')) return 'Website/Booking Engine';
   if(lo==='whatsapp') return 'Whatsapp';
-  return t;
+  return s.trim();
 }
 
-function salesParseXML(xmlStr){
-  var SS='urn:schemas-microsoft-com:office:spreadsheet';
-  var parser=new DOMParser();
-  var doc=parser.parseFromString(xmlStr.replace(/<\?mso-application[^?]*\?>/,''),'application/xml');
-  var rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
-  var out=[];
-  var diag={total:0,excl:0,noDate:0,zeroRev:0,revTotal:0,skippedRev:0};
-  for(var i=1;i<rows.length;i++){
-    var cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
-    var v=[];
-    var colIdx=0;
-    for(var ci=0;ci<cells.length;ci++){
-      var cell=cells[ci];
-      var idxAttr=cell.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Index')
-                  || cell.getAttribute('ss:Index');
-      if(idxAttr) colIdx=parseInt(idxAttr)-1;
-      var d=cell.getElementsByTagNameNS(SS,'Data')[0];
-      v[colIdx]=(d?(d.textContent||'').trim():'');
-      colIdx++;
-    }
-    for(var x=0;x<35;x++) if(v[x]===undefined) v[x]='';
-    diag.total++;
-    var rev=parseRevNum(v[C.REV]);
-    // Check exclusion BEFORE date parse — still count revenue for diag
-    var room=normRoom(v[C.ROOM]);
-    if(isExcl(room,v[C.CLIENT])){diag.excl++;diag.skippedRev+=rev;continue;}
-    // Date parse
-    if(!v[C.DATE_IN]){diag.noDate++;diag.skippedRev+=rev;continue;}
-    var din=parseDate(v[C.DATE_IN]);
-    if(!din){diag.noDate++;diag.skippedRev+=rev;continue;}
-    var dout=parseDate(v[C.DATE_OUT]);
-    var colKNights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
-    var nights=daysDiff(din,dout);
-    if(!nights||nights>180){nights=colKNights;}
-    else if(nights>180&&colKNights>0&&colKNights<nights){nights=colKNights;}
-    var source=normSource(v[C.SOURCE]);
-    var nat=(v[C.NAT]||'').trim();
-    diag.revTotal+=rev;
-    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,
-              source:source,nat:nat,din:din,dout:dout,totalNights:nights});
+// ── CSV parse ────────────────────────────────────────────────────────────────
+function csvLine(line){
+  var res=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
+    if(c==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(c===','&&!inQ){res.push(cur.trim());cur='';}
+    else cur+=c;
   }
-  console.log('[SALES DIAG] Total rows:'+diag.total
-    +' | Loaded:'+out.length
-    +' | Excl(Vila/313/Jasht):'+diag.excl
-    +' | NoDate:'+diag.noDate
-    +' | Rev loaded:\u20ac'+Math.round(diag.revTotal).toLocaleString()
-    +' | Rev skipped:\u20ac'+Math.round(diag.skippedRev).toLocaleString());
+  res.push(cur.trim()); return res;
+}
+function salesParseCSV(csv){
+  var lines=csv.split('\n').filter(function(l){return l.trim();});
+  var out=[];
+  for(var i=1;i<lines.length;i++){
+    var v=csvLine(lines[i]);
+    if(v.length<12) continue;
+    var room=normRoom(v[2]||'');
+    if(isExcl(room,v[5]||'')) continue;
+    var d=parseDate(v[3]); if(!d) continue;
+    var nights=parseNum(v[10]); if(nights<=0) nights=1;
+    var rev=parseNum(v[11]);
+    out.push({yr:d.yr,mo:d.mo,nights:nights,rev:rev,room:room,
+              source:normSource(v[21]),nat:(v[22]||'').trim()});
+  }
   return out;
 }
 
-function salesAggregate(rows){
-  var mo={},src={},nat={};
-  var tN=0,tR=0,tRes=0,fN=0,fR=0,gN=0,gR=0;
-  function addMo(yr,mon,nights,rev,room,srcStr,isFirst){
-    var k=yr+'-'+String(mon).padStart(2,'0');
-    if(!mo[k]) mo[k]={yr:yr,mo:mon,nights:0,rev:0,res:0,src:{},fN:0,fR:0,gN:0,gR:0};
-    var m=mo[k]; m.nights+=nights; m.rev+=rev; if(isFirst) m.res++;
-    var s=srcStr||'N/A';
-    if(!m.src[s]) m.src[s]={rev:0,cnt:0}; m.src[s].rev+=rev; if(isFirst) m.src[s].cnt++;
-    if(!src[s]) src[s]={rev:0,cnt:0}; src[s].rev+=rev; if(isFirst) src[s].cnt++;
-    if(isGarden(room)){gN+=nights;gR+=rev;m.gN+=nights;m.gR+=rev;}
-    else{fN+=nights;fR+=rev;m.fN+=nights;m.fR+=rev;}
-    tN+=nights; tR+=rev;
-  }
-  rows.forEach(function(r){
-    tRes++;
-    if(r.nat) nat[r.nat]=(nat[r.nat]||0)+1;
-    if(r.din&&r.dout&&r.totalNights>0){
-      var cur=new Date(r.din.yr,r.din.mo-1,r.din.day);
-      var end=new Date(r.dout.yr,r.dout.mo-1,r.dout.day);
-      var first=true;
-      while(cur<end){
-        var moEnd=new Date(cur.getFullYear(),cur.getMonth()+1,1);
-        if(moEnd>end) moEnd=end;
-        var n=Math.round((moEnd-cur)/864e5);
-        addMo(cur.getFullYear(),cur.getMonth()+1,n,r.rev*(n/r.totalNights),r.room,r.source,first);
-        first=false; cur=moEnd;
-      }
-    } else {
-      addMo(r.yr,r.mo,r.nights,r.rev,r.room,r.source,true);
+// ── XML parse (Trinosoft) ────────────────────────────────────────────────────
+function salesParseXML(xmlStr){
+  var SS='urn:schemas-microsoft-com:office:spreadsheet';
+  var doc=new DOMParser().parseFromString(xmlStr.replace(/<\?mso-application[^?]*\?>/,''),'application/xml');
+  var rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
+  var out=[];
+  for(var i=1;i<rows.length;i++){
+    var cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
+    var v=[]; var ci=0;
+    for(var k=0;k<cells.length;k++){
+      var cell=cells[k];
+      var idx=cell.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Index')||cell.getAttribute('ss:Index');
+      if(idx) ci=parseInt(idx)-1;
+      var dt=cell.getElementsByTagNameNS(SS,'Data')[0];
+      v[ci]=dt?dt.textContent.trim():''; ci++;
     }
+    for(var x=0;x<35;x++) if(!v[x]) v[x]='';
+    var room=normRoom(v[2]||'');
+    if(isExcl(room,v[5]||'')) continue;
+    var d=parseDate(v[3]); if(!d) continue;
+    var nights=parseNum(v[10]); if(nights<=0) nights=1;
+    var rev=parseNum(v[11]);
+    out.push({yr:d.yr,mo:d.mo,nights:nights,rev:rev,room:room,
+              source:normSource(v[21]),nat:(v[22]||'').trim()});
+  }
+  return out;
+}
+
+// ── Aggregate ────────────────────────────────────────────────────────────────
+function salesAggregate(rows){
+  var mo={},src={},nat={},tN=0,tR=0,tRes=0,fN=0,fR=0,gN=0,gR=0;
+  rows.forEach(function(r){
+    var k=r.yr+'-'+String(r.mo).padStart(2,'0');
+    if(!mo[k]) mo[k]={yr:r.yr,mo:r.mo,nights:0,rev:0,res:0,src:{},fN:0,fR:0,gN:0,gR:0};
+    var m=mo[k]; m.nights+=r.nights; m.rev+=r.rev; m.res++;
+    var s=r.source||'N/A';
+    if(!m.src[s]) m.src[s]={rev:0,cnt:0}; m.src[s].rev+=r.rev; m.src[s].cnt++;
+    if(!src[s]) src[s]={rev:0,cnt:0}; src[s].rev+=r.rev; src[s].cnt++;
+    if(r.nat) nat[r.nat]=(nat[r.nat]||0)+1;
+    if(isGarden(r.room)){gN+=r.nights;gR+=r.rev;m.gN+=r.nights;m.gR+=r.rev;}
+    else{fN+=r.nights;fR+=r.rev;m.fN+=r.nights;m.fR+=r.rev;}
+    tN+=r.nights; tR+=r.rev; tRes++;
   });
   return {mo:mo,src:src,nat:nat,tN:tN,tR:tR,tRes:tRes,fN:fN,fR:fR,gN:gN,gR:gR};
 }
 
-function avail(yr,mo){return ROOMS*(MDAYS[mo]||(mo===2&&yr%4===0?29:28));}
+// ── Render ───────────────────────────────────────────────────────────────────
+function avail(yr,mo){return ROOMS*(MDAYS[mo]||30);}
 function euro(v){return '\u20ac'+Math.round(v).toLocaleString('de-DE');}
 function pct(v){return (v*100).toFixed(1)+'%';}
 
@@ -1207,7 +1182,8 @@ function salesRender(agg){
   var keys=Object.keys(agg.mo).sort();
   var labels=keys.map(function(k){var m=agg.mo[k];return (MAL[m.mo]||k).substring(0,3)+' '+m.yr;});
   var ca=document.getElementById('salesChartArea');
-  ca.innerHTML='<div style="position:relative;width:100%;height:200px;"><canvas id="scBar"></canvas></div><div style="position:relative;width:100%;height:150px;margin-top:10px;"><canvas id="scRev"></canvas></div>';
+  ca.innerHTML='<div style="position:relative;width:100%;height:200px;"><canvas id="scBar"></canvas></div>'
+    +'<div style="position:relative;width:100%;height:150px;margin-top:10px;"><canvas id="scRev"></canvas></div>';
   var tc='#a0aec0',gc='rgba(255,255,255,0.06)';
   new Chart(document.getElementById('scBar'),{type:'bar',data:{labels:labels,datasets:[{data:keys.map(function(k){return agg.mo[k].nights;}),backgroundColor:'#c9a84c',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(x){return 'Net\u00eb: '+x.raw.toLocaleString();}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10}},grid:{color:gc}}}}});
   new Chart(document.getElementById('scRev'),{type:'bar',data:{labels:labels,datasets:[{data:keys.map(function(k){return Math.round(agg.mo[k].rev);}),backgroundColor:'#3b82f6',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(x){return '\u20ac'+x.raw.toLocaleString('de-DE');}}}},scales:{x:{ticks:{color:tc,font:{size:10}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:10},callback:function(v){return '\u20ac'+(v/1000).toFixed(0)+'K';}},grid:{color:gc}}}}});
@@ -1215,24 +1191,49 @@ function salesRender(agg){
   var sm=ss[0]?ss[0][1].rev:1;
   document.getElementById('salesSourceList').innerHTML=ss.map(function(e){
     var s=e[0],d=e[1],isNA=(s==='N/A');
-    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><div style="font-size:11px;color:var(--text);width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:'+(isNA?'italic':'normal')+'">'+(isNA?'N/A (pa burim)':s)+'</div><div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:'+(isNA?'#6b7fa3':'#c9a84c')+';width:'+Math.round(d.rev/sm*100)+'%"></div></div><div style="font-size:11px;color:var(--gold);font-weight:700;width:60px;text-align:right;">'+euro(d.rev)+'</div></div>';
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
+      +'<div style="font-size:11px;color:var(--text);width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:'+(isNA?'italic':'normal')+'">'+(isNA?'N/A (pa burim)':s)+'</div>'
+      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:'+(isNA?'#6b7fa3':'#c9a84c')+';width:'+Math.round(d.rev/sm*100)+'%"></div></div>'
+      +'<div style="font-size:11px;color:var(--gold);font-weight:700;width:60px;text-align:right;">'+euro(d.rev)+'</div></div>';
   }).join('');
   var ns=Object.entries(agg.nat).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   var nm=ns[0]?ns[0][1]:1;
   document.getElementById('salesNatList').innerHTML=ns.map(function(e){
-    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;"><div style="font-size:11px;color:var(--text);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e[0]+'</div><div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:#8b5cf6;width:'+Math.round(e[1]/nm*100)+'%"></div></div><div style="font-size:11px;color:#8b5cf6;font-weight:700;width:28px;text-align:right;">'+e[1]+'</div></div>';
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
+      +'<div style="font-size:11px;color:var(--text);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e[0]+'</div>'
+      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:#8b5cf6;width:'+Math.round(e[1]/nm*100)+'%"></div></div>'
+      +'<div style="font-size:11px;color:#8b5cf6;font-weight:700;width:28px;text-align:right;">'+e[1]+'</div></div>';
   }).join('');
   var tbody=document.getElementById('salesMonthBody'), html='';
   keys.forEach(function(k){
     var m=agg.mo[k],mAv=avail(m.yr,m.mo),mOcc=mAv>0?m.nights/mAv:0,mAdr=m.nights>0?m.rev/m.nights:0;
     var top=Object.entries(m.src).sort(function(a,b){return b[1].rev-a[1].rev;})[0];
     var srcL=top?('<span style="padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold)">'+top[0]+'</span>'):'—';
-    html+='<tr style="border-bottom:1px solid var(--border);"><td style="padding:9px 12px;color:var(--gold);font-weight:700;">'+(MAL[m.mo]||k)+' '+m.yr+'</td><td style="padding:9px 12px;text-align:center;">'+m.res+'</td><td style="padding:9px 12px;text-align:center;color:var(--muted);">'+m.nights.toLocaleString()+'</td><td style="padding:9px 12px;text-align:center;color:var(--gold);font-weight:700;">'+euro(m.rev)+'</td><td style="padding:9px 12px;text-align:center;">'+euro(mAdr)+'</td><td style="padding:9px 12px;text-align:center;">'+pct(mOcc)+'</td><td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+euro(m.fR)+' / '+euro(m.gR)+'</td><td style="padding:9px 12px;">'+srcL+'</td></tr>';
+    html+='<tr style="border-bottom:1px solid var(--border);">'
+      +'<td style="padding:9px 12px;color:var(--gold);font-weight:700;">'+(MAL[m.mo]||k)+' '+m.yr+'</td>'
+      +'<td style="padding:9px 12px;text-align:center;">'+m.res+'</td>'
+      +'<td style="padding:9px 12px;text-align:center;color:var(--muted);">'+m.nights.toLocaleString()+'</td>'
+      +'<td style="padding:9px 12px;text-align:center;color:var(--gold);font-weight:700;">'+euro(m.rev)+'</td>'
+      +'<td style="padding:9px 12px;text-align:center;">'+euro(mAdr)+'</td>'
+      +'<td style="padding:9px 12px;text-align:center;">'+pct(mOcc)+'</td>'
+      +'<td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+euro(m.fR)+' / '+euro(m.gR)+'</td>'
+      +'<td style="padding:9px 12px;">'+srcL+'</td>'
+      +'</tr>';
   });
-  html+='<tr style="background:rgba(201,168,76,.06);font-weight:700;"><td style="padding:9px 12px;color:var(--gold);">TOTAL</td><td style="padding:9px 12px;text-align:center;">'+tRes+'</td><td style="padding:9px 12px;text-align:center;color:var(--muted);">'+tN.toLocaleString()+'</td><td style="padding:9px 12px;text-align:center;color:var(--gold);">'+euro(tR)+'</td><td style="padding:9px 12px;text-align:center;">'+euro(adr)+'</td><td style="padding:9px 12px;text-align:center;">'+pct(occ)+'</td><td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+euro(agg.fR)+' / '+euro(agg.gR)+'</td><td style="padding:9px 12px;">—</td></tr>';
+  html+='<tr style="background:rgba(201,168,76,.06);font-weight:700;">'
+    +'<td style="padding:9px 12px;color:var(--gold);">TOTAL</td>'
+    +'<td style="padding:9px 12px;text-align:center;">'+tRes+'</td>'
+    +'<td style="padding:9px 12px;text-align:center;color:var(--muted);">'+tN.toLocaleString()+'</td>'
+    +'<td style="padding:9px 12px;text-align:center;color:var(--gold);">'+euro(tR)+'</td>'
+    +'<td style="padding:9px 12px;text-align:center;">'+euro(adr)+'</td>'
+    +'<td style="padding:9px 12px;text-align:center;">'+pct(occ)+'</td>'
+    +'<td style="padding:9px 12px;text-align:center;font-size:11px;color:var(--muted);">'+euro(agg.fR)+' / '+euro(agg.gR)+'</td>'
+    +'<td style="padding:9px 12px;">—</td>'
+    +'</tr>';
   tbody.innerHTML=html;
 }
 
+// ── Timestamp ────────────────────────────────────────────────────────────────
 function salesSetTs(label){
   var now=new Date();
   var ts=now.toLocaleDateString('sq-AL')+' '+now.toLocaleTimeString('sq-AL',{hour:'2-digit',minute:'2-digit'});
@@ -1240,42 +1241,20 @@ function salesSetTs(label){
   if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+label+' \u00b7 '+ts;
 }
 
-// ── Auto-load saved state on page open ───────────────────────────────────────
-var _SALES_AGG=null; // memory cache
-
+// ── Load from server (called on tab open) ────────────────────────────────────
 function salesAutoLoad(){
-  // 1. Memory cache (instant, same session)
-  if(_SALES_AGG){salesRender(_SALES_AGG);return;}
-  // 2. sessionStorage (survives tab navigation, same browser session)
-  try{
-    var ss=sessionStorage.getItem('fh_sales');
-    if(ss){
-      var d=JSON.parse(ss);
-      if(d&&d.agg){
-        _SALES_AGG=d.agg;
-        salesRender(d.agg);
-        var el=document.getElementById('salesLastUpdate');
-        if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+d.filename+' \u00b7 '+new Date(d.ts).toLocaleDateString('sq-AL');
-        return;
-      }
-    }
-  }catch(e){}
-  // 3. Server (for fresh login or other users)
   fetch('/api/sales-state',{cache:'no-store'})
     .then(function(r){return r.json();})
     .then(function(j){
       if(!j.ok||!j.data) return;
-      if(j.type==='csv'&&j.data.csv){
+      if(j.data.csv){
         var rows=salesParseCSV(j.data.csv);
-        if(!rows.length) return;
-        var agg=salesAggregate(rows);
-        _SALES_AGG=agg;
-        salesRender(agg);
-        var el=document.getElementById('salesLastUpdate');
-        if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
+        if(rows.length){
+          salesRender(salesAggregate(rows));
+          var el=document.getElementById('salesLastUpdate');
+          if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
+        }
       } else if(j.data.agg){
-        _SALES_AGG=j.data.agg;
-        try{sessionStorage.setItem('fh_sales',JSON.stringify(j.data));}catch(e){}
         salesRender(j.data.agg);
         var el=document.getElementById('salesLastUpdate');
         if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
@@ -1284,172 +1263,57 @@ function salesAutoLoad(){
     .catch(function(){});
 }
 
-function salesSaveState(agg,filename){
-  _SALES_AGG=agg;
-  var data={agg:agg,filename:filename,ts:new Date().toISOString()};
-  // Save to sessionStorage immediately (this browser)
-  try{sessionStorage.setItem('fh_sales',JSON.stringify(data));}catch(e){}
-  // Save to server (other users/devices fetch from here)
-  fetch('/api/sales-state',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(data)
-  })
-  .then(function(r){return r.json();})
-  .then(function(j){console.log('[SALES] Saved to server:',j);})
-  .catch(function(e){console.error('[SALES] Server save error:',e);});
+// ── Refresh Google Sheets button ─────────────────────────────────────────────
+function salesLoadSheets(){
+  var btn=document.querySelector('[onclick="salesLoadSheets()"]');
+  if(btn){btn.textContent='\u23f3 Duke ngarkuar...';btn.disabled=true;}
+  fetch('/api/sheets-csv?t='+Date.now(),{cache:'no-store'})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.text();})
+    .then(function(csv){
+      if(csv.trim().startsWith('<')) throw new Error('Sheet nuk \u00ebsht\u00eb publik');
+      var rows=salesParseCSV(csv);
+      if(!rows.length) throw new Error('Nuk u lexua asnj\u00eb rresht i vlefsh\u00ebm');
+      var agg=salesAggregate(rows);
+      salesRender(agg);
+      salesSetTs('Google Sheets ('+rows.length+' rez.)');
+      // Save CSV to server so all users see same data
+      fetch('/api/sales-state',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({csv:csv,filename:'Google Sheets ('+rows.length+' rez.)',ts:new Date().toISOString()})
+      }).catch(function(){});
+      if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
+    })
+    .catch(function(err){
+      alert('Gabim: '+err.message);
+      if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
+    });
 }
 
 // ── Upload Excel ──────────────────────────────────────────────────────────────
 function salesUpload(input){
   var file=input.files[0]; if(!file) return;
-  var fi=document.getElementById('salesFileInfo');
-  if(fi) fi.textContent='Duke ngarkuar '+file.name+'...';
   var reader=new FileReader();
   reader.onload=function(e){
     try{
-      // Debug: log first 5 rows raw values to see column positions
-      var SS='urn:schemas-microsoft-com:office:spreadsheet';
-      var parser=new DOMParser();
-      var doc=parser.parseFromString(e.target.result.replace(/<\?mso-application[^?]*\?>/,''),'application/xml');
-      var testRows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
-      if(testRows.length>1){
-        var cells=Array.from(testRows[1].getElementsByTagNameNS(SS,'Cell'));
-        var v=[];
-        var ci2=0;
-        for(var ci=0;ci<cells.length;ci++){
-          var cell=cells[ci];
-          var idxAttr=cell.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Index')||cell.getAttribute('ss:Index');
-          if(idxAttr) ci2=parseInt(idxAttr)-1;
-          var d=cell.getElementsByTagNameNS(SS,'Data')[0];
-          v[ci2]=(d?(d.textContent||'').trim():'');
-          ci2++;
-        }
-        console.log('[SALES DEBUG] Row 1 values:');
-        for(var x=0;x<30;x++) console.log('  Col['+x+']='+JSON.stringify(v[x]||''));
-      }
       var rows=salesParseXML(e.target.result);
-      if(!rows.length){alert('Nuk u gjet asnj\u00eb rezervim i vlefsh\u00ebm.');return;}
-      // Log source samples
-      var srcSample={};
-      rows.slice(0,50).forEach(function(r){srcSample[r.source]=(srcSample[r.source]||0)+1;});
-      console.log('[SALES] Source sample (first 50 rows):', JSON.stringify(srcSample));
+      if(!rows.length){alert('Nuk u gjet asnj\u00eb rezervim.');return;}
       var agg=salesAggregate(rows);
       salesRender(agg);
       salesSetTs('Excel: '+file.name+' ('+rows.length+' rez.)');
-      salesSaveState(agg, file.name+' ('+rows.length+' rez.)');
-      if(fi) fi.textContent='\u2713 '+file.name+' \u2014 '+rows.length+' rezervime t\u00eb ngarkuara';
-    }catch(err){
-      alert('Gabim: '+err.message);
-      if(fi) fi.textContent='Gabim: '+err.message;
-    }
+      fetch('/api/sales-state',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({agg:agg,filename:file.name+' ('+rows.length+' rez.)',ts:new Date().toISOString()})
+      }).catch(function(){});
+    }catch(err){alert('Gabim: '+err.message);}
     input.value='';
   };
   reader.readAsText(file,'UTF-8');
 }
-
-// ── Remove Google Sheets button functionality (kept as placeholder) ───────────
-function parseCsvLine(line){
-  var res=[],cur='',inQ=false;
-  for(var i=0;i<line.length;i++){
-    var ch=line[i];
-    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
-    else if(ch===','&&!inQ){res.push(cur.trim());cur='';}
-    else cur+=ch;
-  }
-  res.push(cur.trim());
-  return res;
-}
-
-function salesParseCSV(csvStr){
-  var lines=csvStr.split('\n').filter(function(l){return l.trim();});
-  if(lines.length<2) return [];
-  // Log first data row raw to check column positions
-  var firstRow=parseCsvLine(lines[1]);
-  console.log('[CSV DIAG] Total lines:'+lines.length);
-  console.log('[CSV DIAG] Col[2]='+JSON.stringify(firstRow[2])
-    +' Col[3]='+JSON.stringify(firstRow[3])
-    +' Col[4]='+JSON.stringify(firstRow[4])
-    +' Col[11]='+JSON.stringify(firstRow[11])
-    +' Col[21]='+JSON.stringify(firstRow[21]));
-  var out=[];
-  var diag={total:0,excl:0,noDate:0,revTotal:0,skippedRev:0};
-  for(var i=1;i<lines.length;i++){
-    var v=parseCsvLine(lines[i]);
-    if(v.length<12) continue;
-    diag.total++;
-    var rev=parseRevNum(v[C.REV]);
-    var room=normRoom(v[C.ROOM]||'');
-    if(isExcl(room,v[C.CLIENT]||'')){diag.excl++;diag.skippedRev+=rev;continue;}
-    var din=parseDate(v[C.DATE_IN]); 
-    if(!din){diag.noDate++;diag.skippedRev+=rev;continue;}
-    var dout=parseDate(v[C.DATE_OUT]);
-    var colKNights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
-    var nights=daysDiff(din,dout);
-    if(!nights||nights>180){nights=colKNights;}
-    else if(nights>180&&colKNights>0&&colKNights<nights){nights=colKNights;}
-    var source=normSource(v[C.SOURCE]);
-    var nat=(v[C.NAT]||'').trim();
-    diag.revTotal+=rev;
-    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,
-              source:source,nat:nat,din:din,dout:dout,totalNights:nights});
-  }
-  console.log('[CSV DIAG] Loaded:'+out.length
-    +' | Excl:'+diag.excl+' | NoDate:'+diag.noDate
-    +' | Rev loaded:\u20ac'+Math.round(diag.revTotal).toLocaleString()
-    +' | Rev skipped:\u20ac'+Math.round(diag.skippedRev).toLocaleString());
-  return out;
-}
-
-function salesLoadSheets(){
-  var btn=document.querySelector('[onclick="salesLoadSheets()"]');
-  if(btn){btn.textContent='\u23f3 Duke ngarkuar...';btn.disabled=true;}
-  var fi=document.getElementById('salesFileInfo');
-  if(fi) fi.textContent='Duke lexuar Google Sheets...';
-  fetch('/api/sheets-csv?t='+Date.now(),{
-    cache:'no-store',
-    headers:{'Cache-Control':'no-cache'}
-  })
-  .then(function(r){if(!r.ok) throw new Error('HTTP '+r.status); return r.text();})
-  .then(function(csv){
-    if(csv.trim().startsWith('<')) throw new Error('Sheet nuk \u00ebsht\u00eb publik');
-    var rows=salesParseCSV(csv);
-    if(!rows.length) throw new Error('0 rreshta valid nga Google Sheets');
-    var agg=salesAggregate(rows);
-    salesRender(agg);
-    salesSetTs('Google Sheets ('+rows.length+' rez.)');
-    salesSaveState(agg,'Google Sheets ('+rows.length+' rez.)');
-    if(fi) fi.textContent='';
-    if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
-  })
-  .catch(function(err){
-    if(fi) fi.textContent=err.message;
-    if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
-    alert('Gabim: '+err.message);
-  });
-}
-
-// Auto-load on page start if sales tab is active
-(function(){
-  // Called via showSec whenever sales tab is opened
-  // Also try to load on DOMContentLoaded in case sales is the landing tab
-  if(typeof document!=='undefined'){
-    document.addEventListener('DOMContentLoaded', function(){
-      setTimeout(function(){
-        if(document.getElementById('sec_sales') && 
-           document.getElementById('sec_sales').style.display!=='none'){
-          if(typeof salesAutoLoad==='function') salesAutoLoad();
-        }
-      }, 500);
-    });
-  }
-})();
 
 window.salesUpload=salesUpload;
 window.salesLoadSheets=salesLoadSheets;
 window.salesAutoLoad=salesAutoLoad;
 })();
 </script>
+
 
 
 

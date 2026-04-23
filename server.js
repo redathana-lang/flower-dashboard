@@ -546,10 +546,8 @@ function saveSales(){
 // GET saved sales state — all users fetch from here
 app.get('/api/sales-state', function(req, res){
   res.setHeader('Cache-Control','no-store');
-  if(salesState && salesState.agg)
-    res.json({ok:true, data:salesState, type:'agg'});
-  else if(salesState && salesState.csv)
-    res.json({ok:true, data:{csv:salesState.csv, ts:salesState.ts, filename:salesState.filename}, type:'csv'});
+  if(salesState && (salesState.agg || salesState.csv))
+    res.json({ok:true, data:salesState});
   else
     res.json({ok:false, data:null});
 });
