@@ -497,38 +497,48 @@ app.get('/api/sheets-debug', function(req, res) {
 
 
 // ─── SALES STATE PERSISTENCE ─────────────────────────────────────────────────
+// Store in memory + file. File persists within same Render container.
+// On redeploy, admin needs to re-upload Excel (one-time action).
 const fs_sales = require('fs');
 const SALES_FILE = require('path').join(__dirname, 'sales_state.json');
-let salesState = null; // {rows: [...], ts: '...', filename: '...'}
+let salesState = null;
 
 (function loadSales(){
   try {
     if(fs_sales.existsSync(SALES_FILE)){
-      salesState = JSON.parse(fs_sales.readFileSync(SALES_FILE,'utf8'));
-      console.log('[SALES] Loaded', salesState.rows ? salesState.rows.length : 0, 'rows from', SALES_FILE);
+      const raw = fs_sales.readFileSync(SALES_FILE,'utf8');
+      salesState = JSON.parse(raw);
+      console.log('[SALES] Loaded', salesState.rows ? salesState.rows.length : 0, 'rows, ts:', salesState.ts);
     }
   } catch(e){ console.warn('[SALES] Load error:', e.message); }
 })();
 
-function saveSales(){ 
-  try { fs_sales.writeFileSync(SALES_FILE, JSON.stringify(salesState), 'utf8'); } 
+function saveSales(){
+  try { fs_sales.writeFileSync(SALES_FILE, JSON.stringify(salesState), 'utf8'); }
   catch(e){ console.warn('[SALES] Save error:', e.message); }
 }
 
-// GET saved sales state
+// GET saved sales state — all users fetch from here
 app.get('/api/sales-state', function(req, res){
-  if(salesState) res.json({ok:true, data:salesState});
-  else res.json({ok:false, data:null});
+  res.setHeader('Cache-Control','no-store');
+  if(salesState && salesState.rows && salesState.rows.length)
+    res.json({ok:true, data:salesState});
+  else
+    res.json({ok:false, data:null});
 });
 
-// POST new sales data (parsed rows from client)
-app.post('/api/sales-state', function(req, res){
+// POST new sales data — admin uploads Excel, all users see the update
+app.post('/api/sales-state', express.json({limit:'50mb'}), function(req, res){
   try {
     salesState = req.body;
-    salesState.ts = new Date().toISOString();
+    if(!salesState.ts) salesState.ts = new Date().toISOString();
     saveSales();
-    res.json({ok:true});
-  } catch(e){ res.status(400).json({error:e.message}); }
+    console.log('[SALES] Saved', salesState.rows ? salesState.rows.length : 0, 'rows at', salesState.ts);
+    res.json({ok:true, rows: salesState.rows ? salesState.rows.length : 0});
+  } catch(e){
+    console.error('[SALES] Save error:', e.message);
+    res.status(400).json({error:e.message});
+  }
 });
 
 
