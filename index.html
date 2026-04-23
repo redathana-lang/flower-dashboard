@@ -1130,7 +1130,10 @@ function salesParseXML(xmlStr){
     var din=parseDate(v[C.DATE_IN]);
     if(!din){diag.noDate++;diag.skippedRev+=rev;continue;}
     var dout=parseDate(v[C.DATE_OUT]);
-    var nights=daysDiff(din,dout)||parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
+    var colKNights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
+    var nights=daysDiff(din,dout);
+    if(!nights||nights>180){nights=colKNights;}
+    else if(nights>180&&colKNights>0&&colKNights<nights){nights=colKNights;}
     var source=normSource(v[C.SOURCE]);
     var nat=(v[C.NAT]||'').trim();
     diag.revTotal+=rev;
@@ -1372,7 +1375,10 @@ function salesParseCSV(csvStr){
     var din=parseDate(v[C.DATE_IN]); 
     if(!din){diag.noDate++;diag.skippedRev+=rev;continue;}
     var dout=parseDate(v[C.DATE_OUT]);
-    var nights=daysDiff(din,dout)||parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
+    var colKNights=parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
+    var nights=daysDiff(din,dout);
+    if(!nights||nights>180){nights=colKNights;}
+    else if(nights>180&&colKNights>0&&colKNights<nights){nights=colKNights;}
     var source=normSource(v[C.SOURCE]);
     var nat=(v[C.NAT]||'').trim();
     diag.revTotal+=rev;
