@@ -431,8 +431,8 @@ app.get('/hk', (req,res) => res.sendFile(require('path').join(__dirname,'hk.html
 
 // ─── GOOGLE SHEETS PROXY ──────────────────────────────────────────────────────
 const https_mod = require('https');
-const SALES_SHEET_ID = '1bctULGpMDqW9tUjgXvNDcXicv-AmZTnA';
-const SALES_GID = '302537026';
+const SALES_SHEET_ID = '1g5EelHzeScWpdLJJLpKOtRRMfnZCEdfC';
+const SALES_GID = '1091890353';
 // Apps Script Web App — real-time, no cache, private
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbya90QFNbKoHiem6w07zZASh4TtTDkBgfALxdxojCmWHT6hRl5O9c2vqggxiC7F64CaOQ/exec';
 const APPS_SCRIPT_TOKEN = 'FlowerHotels2026';

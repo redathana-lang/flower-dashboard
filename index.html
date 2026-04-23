@@ -267,7 +267,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div id="salesFileInfo" style="font-size:11px;color:var(--muted);font-style:italic"></div>
-          <button onclick="salesLoadSheets()" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid #3b82f6;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">🔄 Rifresko të dhënat</button>
+          <button onclick="salesLoadSheets()" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid #3b82f6;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">🔄 Refresh Google Sheets</button>
           <label style="background:linear-gradient(135deg,#c9a84c,#e8c96d);color:#0a1628;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
             ⬆ Ngarko Excel Trinisoft
             <input type="file" accept=".xls,.xlsx" style="display:none" onchange="salesUpload(this)" />
@@ -1071,31 +1071,32 @@ function normSource(s){
   if(!s||!s.trim()) return 'N/A';
   var t=s.trim();
   var lo=t.toLowerCase();
-  if(lo==='n/a'||lo===''||lo==='blank'||lo==='blanks') return 'N/A';
-  if(lo.includes('expedia')&&lo.includes('collect')&&lo.includes('hotel')) return 'Expedia Hotel Collect';
-  if(lo.includes('expedia')&&lo.includes('collect')) return 'Expedia Channel Collect';
+  if(!lo||lo==='n/a'||lo==='blank'||lo==='blanks'||lo==='(blanks)') return 'N/A';
+  if(lo==='7beds'||lo==='7 beds') return '7Beds';
+  if(lo==='agjensi'||lo==='agjenci'||lo==='agency') return 'Agjensi';
+  if(lo==='booking.com') return 'Booking.com';
+  if(lo==='booking') return 'Booking.com';
+  if(lo==='calls'||lo==='call') return 'Calls';
+  if(lo==='email') return 'Email';
+  if(lo==='expedia channel collect') return 'Expedia Channel Collect';
+  if(lo==='expedia hotel collect') return 'Expedia Hotel Collect';
+  if(lo.includes('expedia')&&lo.includes('hotel')) return 'Expedia Hotel Collect';
   if(lo.includes('expedia')) return 'Expedia Channel Collect';
-  if(lo.includes('website')||lo.includes('booking engine')) return 'Website/Booking Engine';
-  if(lo==='booking.com'||lo==='booking') return 'Booking.com';
-  if(lo.includes('booking.com')) return 'Booking.com';
-  if(lo.includes('booking')) return 'Booking.com';
-  if(lo.includes('hotelbeds')||lo==='hotel beds'||lo.includes('hotel bed')) return 'Hotel Beds';
-  if(lo.includes('webbeds')||lo.includes('web beds')) return 'Webbeds';
-  if(lo.includes('7beds')||lo.includes('7 beds')) return '7Beds';
+  if(lo==='hotel beds'||lo==='hotelbeds') return 'Hotel Beds';
+  if(lo==='itaka hungary') return 'Itaka Hungary';
+  if(lo==='itaka poloni') return 'Itaka Poloni';
   if(lo.includes('itaka')&&lo.includes('hung')) return 'Itaka Hungary';
-  if(lo.includes('itaka')&&lo.includes('pol')) return 'Itaka Poloni';
   if(lo.includes('itaka')) return 'Itaka Poloni';
-  if(lo==='ots'||lo.includes('open travel')) return 'OTS';
-  if(lo==='w2m'||lo.includes('w2m')) return 'W2M';
-  if(lo.includes('trip.com')||lo.includes('trip com')||lo.includes('ctrip')) return 'Trip.com';
-  if(lo.includes('social media')||lo==='social') return 'Social Media';
-  if(lo.includes('whatsapp')||lo==='wa') return 'Whatsapp';
-  if(lo.includes('viber')) return 'Viber';
-  if(lo.includes('walk in')||lo==='walkin') return 'Walk In';
-  if(lo.includes('agjensi')||lo.includes('agjenci')||lo.includes('agjensi')||lo==='agency') return 'Agjensi';
-  if(lo.includes('call')||lo==='phone') return 'Calls';
-  if(lo.includes('email')||lo==='e-mail') return 'Email';
-  return t; // mbaj origjinalin nëse nuk njihet
+  if(lo==='ots') return 'OTS';
+  if(lo==='social media') return 'Social Media';
+  if(lo==='trip.com') return 'Trip.com';
+  if(lo==='viber') return 'Viber';
+  if(lo==='w2m') return 'W2M';
+  if(lo==='walk in'||lo==='walkin') return 'Walk In';
+  if(lo==='webbeds'||lo==='web beds') return 'Webbeds';
+  if(lo==='website/booking engine'||lo.includes('booking engine')) return 'Website/Booking Engine';
+  if(lo==='whatsapp') return 'Whatsapp';
+  return t;
 }
 
 function salesParseXML(xmlStr){
@@ -1227,11 +1228,32 @@ function salesSetTs(label){
 }
 
 // ── Auto-load saved state on page open ───────────────────────────────────────
+var _SALES_AGG=null; // memory cache
+
 function salesAutoLoad(){
+  // 1. Memory cache (instant, same session)
+  if(_SALES_AGG){salesRender(_SALES_AGG);return;}
+  // 2. sessionStorage (survives tab navigation, same browser session)
+  try{
+    var ss=sessionStorage.getItem('fh_sales');
+    if(ss){
+      var d=JSON.parse(ss);
+      if(d&&d.agg){
+        _SALES_AGG=d.agg;
+        salesRender(d.agg);
+        var el=document.getElementById('salesLastUpdate');
+        if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+d.filename+' \u00b7 '+new Date(d.ts).toLocaleDateString('sq-AL');
+        return;
+      }
+    }
+  }catch(e){}
+  // 3. Server (for fresh login or other users)
   fetch('/api/sales-state',{cache:'no-store'})
     .then(function(r){return r.json();})
     .then(function(j){
       if(j.ok&&j.data&&j.data.agg){
+        _SALES_AGG=j.data.agg;
+        try{sessionStorage.setItem('fh_sales',JSON.stringify(j.data));}catch(e){}
         salesRender(j.data.agg);
         var el=document.getElementById('salesLastUpdate');
         if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
@@ -1241,16 +1263,19 @@ function salesAutoLoad(){
 }
 
 function salesSaveState(agg,filename){
-  // Save aggregated data (small) not raw rows (large)
-  var data={agg:agg, filename:filename, ts:new Date().toISOString()};
+  _SALES_AGG=agg;
+  var data={agg:agg,filename:filename,ts:new Date().toISOString()};
+  // Save to sessionStorage immediately (this browser)
+  try{sessionStorage.setItem('fh_sales',JSON.stringify(data));}catch(e){}
+  // Save to server (other users/devices fetch from here)
   fetch('/api/sales-state',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify(data)
   })
   .then(function(r){return r.json();})
-  .then(function(j){console.log('[SALES] Saved:', j);})
-  .catch(function(e){console.error('[SALES] Save error:',e);});
+  .then(function(j){console.log('[SALES] Saved to server:',j);})
+  .catch(function(e){console.error('[SALES] Server save error:',e);});
 }
 
 // ── Upload Excel ──────────────────────────────────────────────────────────────
@@ -1302,8 +1327,66 @@ function salesUpload(input){
 }
 
 // ── Remove Google Sheets button functionality (kept as placeholder) ───────────
+function parseCsvLine(line){
+  var res=[],cur='',inQ=false;
+  for(var i=0;i<line.length;i++){
+    var ch=line[i];
+    if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+    else if(ch===','&&!inQ){res.push(cur.trim());cur='';}
+    else cur+=ch;
+  }
+  res.push(cur.trim());
+  return res;
+}
+
+function salesParseCSV(csvStr){
+  var lines=csvStr.split('\n').filter(function(l){return l.trim();});
+  if(lines.length<2) return [];
+  // Col indices same as XML: C=2,D=3,E=4,F=5,B=1,K=10,L=11,V=21,W=22
+  var out=[];
+  for(var i=1;i<lines.length;i++){
+    var v=parseCsvLine(lines[i]);
+    if(v.length<12) continue;
+    var room=normRoom(v[2]||'');
+    if(isExcl(room,v[5]||'')) continue;
+    var din=parseDate(v[3]); if(!din) continue;
+    var dout=parseDate(v[4]);
+    var nights=daysDiff(din,dout)||parseFloat((v[10]||'0').replace(',','.'))||0;
+    var rev=parseRevNum(v[11]);
+    var source=normSource(v[21]);
+    var nat=(v[22]||'').trim();
+    out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,
+              source:source,nat:nat,din:din,dout:dout,totalNights:nights});
+  }
+  return out;
+}
+
 function salesLoadSheets(){
-  alert('P\u00ebrdorni butonin "Ngarko Excel Trinisoft" p\u00ebr t\u00eb ngarkuar t\u00eb dh\u00ebnat.');
+  var btn=document.querySelector('[onclick="salesLoadSheets()"]');
+  if(btn){btn.textContent='\u23f3 Duke ngarkuar...';btn.disabled=true;}
+  var fi=document.getElementById('salesFileInfo');
+  if(fi) fi.textContent='Duke lexuar Google Sheets...';
+  fetch('/api/sheets-csv?t='+Date.now(),{
+    cache:'no-store',
+    headers:{'Cache-Control':'no-cache'}
+  })
+  .then(function(r){if(!r.ok) throw new Error('HTTP '+r.status); return r.text();})
+  .then(function(csv){
+    if(csv.trim().startsWith('<')) throw new Error('Sheet nuk \u00ebsht\u00eb publik');
+    var rows=salesParseCSV(csv);
+    if(!rows.length) throw new Error('0 rreshta valid nga Google Sheets');
+    var agg=salesAggregate(rows);
+    salesRender(agg);
+    salesSetTs('Google Sheets ('+rows.length+' rez.)');
+    salesSaveState(agg,'Google Sheets ('+rows.length+' rez.)');
+    if(fi) fi.textContent='';
+    if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
+  })
+  .catch(function(err){
+    if(fi) fi.textContent=err.message;
+    if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
+    alert('Gabim: '+err.message);
+  });
 }
 
 // Auto-load on page start if sales tab is active
