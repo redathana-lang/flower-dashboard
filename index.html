@@ -1105,14 +1105,13 @@ function salesParseXML(xmlStr){
   var doc=parser.parseFromString(xmlStr.replace(/<\?mso-application[^?]*\?>/,''),'application/xml');
   var rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
   var out=[];
+  var diag={total:0,excl:0,noDate:0,zeroRev:0,revTotal:0,skippedRev:0};
   for(var i=1;i<rows.length;i++){
     var cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
-    // Build positional array respecting ss:Index (skipped empty cells)
     var v=[];
     var colIdx=0;
     for(var ci=0;ci<cells.length;ci++){
       var cell=cells[ci];
-      // ss:Index tells us the 1-based column position
       var idxAttr=cell.getAttributeNS('urn:schemas-microsoft-com:office:spreadsheet','Index')
                   || cell.getAttribute('ss:Index');
       if(idxAttr) colIdx=parseInt(idxAttr)-1;
@@ -1120,19 +1119,30 @@ function salesParseXML(xmlStr){
       v[colIdx]=(d?(d.textContent||'').trim():'');
       colIdx++;
     }
-    // Fill undefined slots with empty string
-    for(var x=0;x<30;x++) if(v[x]===undefined) v[x]='';
-    if(!v[C.DATE_IN]) continue;
-    var room=normRoom(v[C.ROOM]);
-    if(isExcl(room,v[C.CLIENT])) continue;
-    var din=parseDate(v[C.DATE_IN]); if(!din) continue;
-    var dout=parseDate(v[C.DATE_OUT]);
-    var nights=daysDiff(din,dout)||parseInt(v[C.NIGHTS])||0;
+    for(var x=0;x<35;x++) if(v[x]===undefined) v[x]='';
+    diag.total++;
     var rev=parseRevNum(v[C.REV]);
+    // Check exclusion BEFORE date parse — still count revenue for diag
+    var room=normRoom(v[C.ROOM]);
+    if(isExcl(room,v[C.CLIENT])){diag.excl++;diag.skippedRev+=rev;continue;}
+    // Date parse
+    if(!v[C.DATE_IN]){diag.noDate++;diag.skippedRev+=rev;continue;}
+    var din=parseDate(v[C.DATE_IN]);
+    if(!din){diag.noDate++;diag.skippedRev+=rev;continue;}
+    var dout=parseDate(v[C.DATE_OUT]);
+    var nights=daysDiff(din,dout)||parseFloat((v[C.NIGHTS]||'0').replace(',','.'))||0;
+    var source=normSource(v[C.SOURCE]);
+    var nat=(v[C.NAT]||'').trim();
+    diag.revTotal+=rev;
     out.push({yr:din.yr,mo:din.mo,nights:nights,rev:rev,room:room,
-              source:normSource(v[C.SOURCE]),nat:(v[C.NAT]||'').trim(),
-              din:din,dout:dout,totalNights:nights});
+              source:source,nat:nat,din:din,dout:dout,totalNights:nights});
   }
+  console.log('[SALES DIAG] Total rows:'+diag.total
+    +' | Loaded:'+out.length
+    +' | Excl(Vila/313/Jasht):'+diag.excl
+    +' | NoDate:'+diag.noDate
+    +' | Rev loaded:\u20ac'+Math.round(diag.revTotal).toLocaleString()
+    +' | Rev skipped:\u20ac'+Math.round(diag.skippedRev).toLocaleString());
   return out;
 }
 
