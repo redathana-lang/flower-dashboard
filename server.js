@@ -513,5 +513,3 @@ let salesState = null;
     }
   } catch(e){ console.warn('[SALES] Load error:', e.message); }
 })();
-
-});
