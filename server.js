@@ -508,11 +508,51 @@ let salesState = null;
   try {
     if(fs_sales.existsSync(SALES_FILE)){
       const raw = fs_sales.readFileSync(SALES_FILE,'utf8');
-      salesState = JSON.parse(raw);
-      console.log('[SALES] Loaded from file, ts:', salesState.ts);
+      const parsed = JSON.parse(raw);
+      // Only load if it has agg data (Excel upload), not old csv data
+      if(parsed && parsed.agg){
+        salesState = parsed;
+        console.log('[SALES] Loaded agg from file, ts:', salesState.ts);
+      } else {
+        console.log('[SALES] Ignoring old csv state, waiting for Excel upload');
+        salesState = null;
+      }
     }
   } catch(e){ console.warn('[SALES] Load error:', e.message); }
 })();
+
+// ─── SALES STATE API ─────────────────────────────────────────────────────────
+function saveSales(){
+  try { fs_sales.writeFileSync(SALES_FILE, JSON.stringify(salesState), 'utf8'); }
+  catch(e){ console.warn('[SALES] Save error:', e.message); }
+}
+
+app.get('/api/sales-state', function(req, res){
+  res.setHeader('Cache-Control','no-store');
+  if(salesState && salesState.agg)
+    res.json({ok:true, data:salesState});
+  else
+    res.json({ok:false, data:null});
+});
+
+app.post('/api/sales-state', function(req, res){
+  try {
+    salesState = req.body;
+    if(!salesState.ts) salesState.ts = new Date().toISOString();
+    saveSales();
+    console.log('[SALES] Saved agg at', salesState.ts, 'file:', salesState.filename);
+    res.json({ok:true});
+  } catch(e){
+    res.status(400).json({error:e.message});
+  }
+});
+
+app.get('/api/sales-clear', function(req, res){
+  salesState = null;
+  try { if(fs_sales.existsSync(SALES_FILE)) fs_sales.unlinkSync(SALES_FILE); } catch(e){}
+  res.json({ok:true, message:'Sales cache cleared'});
+});
+
 
 // ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
