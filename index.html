@@ -1049,14 +1049,14 @@ function isExcl(room,cli){
 }
 function parseDate(s){
   if(!s) return null; s=s.trim(); var m;
-  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return {yr:+m[1],mo:+m[2]};
-  m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})/); if(m){var y=+m[3];if(y<100)y+=2000;return{yr:y,mo:+m[2]};}
-  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){var a=+m[1],b=+m[2];return a>12?{yr:+m[3],mo:b}:{yr:+m[3],mo:a};}
+  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return {yr:+m[1],mo:+m[2],day:+m[3]};
+  m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})/); if(m){var y=+m[3];if(y<100)y+=2000;return{yr:y,mo:+m[2],day:+m[1]};}
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){var a=+m[1],b=+m[2];return a>12?{yr:+m[3],mo:b,day:a}:{yr:+m[3],mo:a,day:b};}
   m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if(m) return {yr:+m[3],mo:+m[2]};
   var MM={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
   m=s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{1,2})\s+(\d{4})/i);
   if(m) return {yr:+m[3],mo:MM[m[1].toLowerCase().slice(0,3)]};
-  var d=new Date(s); if(!isNaN(d.getTime())) return {yr:d.getFullYear(),mo:d.getMonth()+1};
+  var d=new Date(s); if(!isNaN(d.getTime())) return {yr:d.getFullYear(),mo:d.getMonth()+1,day:d.getDate()};
   return null;
 }
 function parseNum(s){
@@ -1070,7 +1070,7 @@ function parseNum(s){
 function normSource(s){
   if(!s||!s.trim()) return 'N/A';
   var lo=s.trim().toLowerCase();
-  if(!lo||lo==='n/a'||lo.includes('blank')) return 'N/A';
+  if(!lo||lo==='n/a'||lo.includes('blank')||lo==='0') return 'N/A';
   if(lo==='7beds'||lo==='7 beds') return '7Beds';
   if(lo==='agjensi'||lo==='agjenci') return 'Agjensi';
   if(lo==='booking.com'||lo==='booking') return 'Booking.com';
@@ -1116,7 +1116,7 @@ function salesParseCSV(csv){
     var nights=parseNum(v[10]); if(nights<=0) nights=1;
     var rev=parseNum(v[11]);
     out.push({yr:d.yr,mo:d.mo,nights:nights,rev:rev,room:room,
-              source:normSource(v[21]),nat:(v[22]||'').trim()});
+              source:normSource(v[21]),nat:(v[22]||'').trim(),din:d});
   }
   return out;
 }
@@ -1144,25 +1144,57 @@ function salesParseXML(xmlStr){
     var nights=parseNum(v[10]); if(nights<=0) nights=1;
     var rev=parseNum(v[11]);
     out.push({yr:d.yr,mo:d.mo,nights:nights,rev:rev,room:room,
-              source:normSource(v[21]),nat:(v[22]||'').trim()});
+              source:normSource(v[21]),nat:(v[22]||'').trim(),din:d});
   }
   return out;
 }
 
 // ── Aggregate ────────────────────────────────────────────────────────────────
+function daysInMonth(yr,mo){
+  return new Date(yr,mo,0).getDate();
+}
 function salesAggregate(rows){
   var mo={},src={},nat={},tN=0,tR=0,tRes=0,fN=0,fR=0,gN=0,gR=0;
+
+  function addMo(yr,mon,n,r,room,s,isFirst){
+    var k=yr+'-'+String(mon).padStart(2,'0');
+    if(!mo[k]) mo[k]={yr:yr,mo:mon,nights:0,rev:0,res:0,src:{},fN:0,fR:0,gN:0,gR:0};
+    var m=mo[k]; m.nights+=n; m.rev+=r; if(isFirst) m.res++;
+    if(!m.src[s]) m.src[s]={rev:0,cnt:0}; m.src[s].rev+=r; if(isFirst) m.src[s].cnt++;
+    if(!src[s]) src[s]={rev:0,cnt:0}; src[s].rev+=r; if(isFirst) src[s].cnt++;
+    if(isGarden(room)){gN+=n;gR+=r;m.gN+=n;m.gR+=r;}
+    else{fN+=n;fR+=r;m.fN+=n;m.fR+=r;}
+    tN+=n; tR+=r;
+  }
+
   rows.forEach(function(r){
-    var k=r.yr+'-'+String(r.mo).padStart(2,'0');
-    if(!mo[k]) mo[k]={yr:r.yr,mo:r.mo,nights:0,rev:0,res:0,src:{},fN:0,fR:0,gN:0,gR:0};
-    var m=mo[k]; m.nights+=r.nights; m.rev+=r.rev; m.res++;
-    var s=r.source||'N/A';
-    if(!m.src[s]) m.src[s]={rev:0,cnt:0}; m.src[s].rev+=r.rev; m.src[s].cnt++;
-    if(!src[s]) src[s]={rev:0,cnt:0}; src[s].rev+=r.rev; src[s].cnt++;
+    tRes++;
     if(r.nat) nat[r.nat]=(nat[r.nat]||0)+1;
-    if(isGarden(r.room)){gN+=r.nights;gR+=r.rev;m.gN+=r.nights;m.gR+=r.rev;}
-    else{fN+=r.nights;fR+=r.rev;m.fN+=r.nights;m.fR+=r.rev;}
-    tN+=r.nights; tR+=r.rev; tRes++;
+    var s=r.source||'N/A';
+
+    // Split nights across months if stay > 1 month
+    if(r.nights>1 && r.din){
+      var yr=r.din.yr, mon=r.din.mo, day=r.din.day||1;
+      var remaining=r.nights;
+      var first=true;
+      var safety=0;
+      while(remaining>0 && safety<24){
+        safety++;
+        var dim=daysInMonth(yr,mon);
+        // nights in this month = days from check-in day to end of month
+        var inThisMo=Math.min(remaining, dim-day+1);
+        if(inThisMo<=0) inThisMo=remaining; // safety
+        var revShare=r.rev*(inThisMo/r.nights);
+        addMo(yr,mon,inThisMo,revShare,r.room,s,first);
+        first=false;
+        remaining-=inThisMo;
+        day=1;
+        mon++;
+        if(mon>12){mon=1;yr++;}
+      }
+    } else {
+      addMo(r.yr,r.mo,r.nights,r.rev,r.room,s,true);
+    }
   });
   return {mo:mo,src:src,nat:nat,tN:tN,tR:tR,tRes:tRes,fN:fN,fR:fR,gN:gN,gR:gR};
 }
