@@ -513,3 +513,11 @@ let salesState = null;
     }
   } catch(e){ console.warn('[SALES] Load error:', e.message); }
 })();
+
+// ─── START ────────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`[FLOW] Server on port ${PORT}`);
+  refreshCache();
+  setInterval(refreshCache, CACHE_TTL);
+});
