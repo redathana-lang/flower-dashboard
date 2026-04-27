@@ -720,8 +720,8 @@ function rCF(cf){
   const ark=cf.arketimet||{}, pag=cf.pagesat||{};
   const tArk=n(ark.non_cash_lek)+n(ark.reception_cash_lek)+n(ark.fnb_cash_lek)+n(ark.mice_lek)+
     (n(ark.non_cash_euro)+n(ark.reception_cash_euro)+n(ark.allotment)+n(ark.itaka)+n(ark.mice_euro))*EC;
-  const tPag=n(pag.paga)+n(pag.taxes)+n(pag.loan_lek)+n(pag.house_use)+n(pag.furnitore_cash)+n(pag.furnitore_bank)+n(pag.investime_lek)+
-    (n(pag.loan_euro)+n(pag.investime_euro))*EC;
+  const tPag=n(pag.paga)+n(pag.taxes)+n(pag.loan_lek)+n(pag.house_use)+n(pag.furnitore_cash)+n(pag.furnitore_bank_lek)+n(pag.investime_banke_lek)+n(pag.investime_cash)+
+    (n(pag.loan_euro)+n(pag.furnitore_bank_euro)+n(pag.investime_banke_euro))*EC;
   const row=(l,v,e=false)=>`<tr><td>${l}${e?' <span style="color:var(--muted);font-size:11px">(€)</span>':''}</td><td class="v">${e?fE(v):fL(v)}</td></tr>`;
   el.innerHTML=`
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
@@ -754,9 +754,11 @@ function rCF(cf){
           ${row('Kredi Lek',n(pag.loan_lek))}
           ${row('House Use',n(pag.house_use))}
           ${row('Furnitore Cash',n(pag.furnitore_cash))}
-          ${row('Furnitore BAnke',n(pag.furnitore_bank))}
-          ${row('Investime Euro',n(pag.investime_euro),true)}
-          ${row('Investime Lek',n(pag.investime_lek))}
+          ${row('Furnitore Banke Lek',n(pag.furnitore_bank_lek))}
+          ${row('Furnitore Banke Euro',n(pag.furnitore_bank_euro),true)}
+          ${row('Investime Banke Euro',n(pag.investime_banke_euro),true)}
+          ${row('Investime Banke Lek',n(pag.investime_banke_lek))}
+          ${row('Investime Cash',n(pag.investime_cash))}
           <tr class="tr"><td>TOTAL DALJE (Lek)</td><td class="v g">${fL(tPag)}</td></tr>
         </table>
         <div style="padding:14px 16px;background:rgba(201,168,76,.06);border-top:1px solid var(--border)">
@@ -816,7 +818,7 @@ async function exportCF(){
     ...Object.entries({
       'Paga':n(pag.paga),'Taksa dhe Utilitete':n(pag.taxes),'Kredi Euro':n(pag.loan_euro),
       'Kredi Lek':n(pag.loan_lek),'House Use':n(pag.house_use),'Furnitore Cash':n(pag.furnitore_cash),
-      'Furnitore BAnke':n(pag.furnitore_bank),'Investime Euro':n(pag.investime_euro),'Investime Lek':n(pag.investime_lek)
+      'Furnitore Banke Lek':n(pag.furnitore_bank_lek),'Furnitore Banke Euro':n(pag.furnitore_bank_euro),'Investime Banke Euro':n(pag.investime_banke_euro),'Investime Banke Lek':n(pag.investime_banke_lek),'Investime Cash':n(pag.investime_cash)
     }).map(([k,v])=>[k,v])];
   dlCSV(rows,`cashflow_${fromDate}.csv`);
 }

@@ -47,8 +47,9 @@ const GID2 = {
 //   I[8]=F&B Lek  J[9]=MICE Euro  K[10]=MICE Lek
 //   DALJE (OUT):
 //   L[11]=Paga  M[12]=Taksa dhe Utilitete  N[13]=Kredi Euro  O[14]=Kredi Lek
-//   P[15]=House Use  Q[16]=Furnitore Cash  R[17]=Furnitore BAnke
-//   S[18]=Investime Euro  T[19]=Investime Lek
+//   P[15]=House Use  Q[16]=Furnitore Cash  R[17]=Furnitore Banke Leke
+//   S[18]=Furnitore Banke Euro  T[19]=Investime Banke Euro
+//   U[20]=Investime Banke Leke  V[21]=Investime Cash
 //
 // FINANCE/SHPENZIME (gid=261763722):
 //   A[0]=Date  B[1]=Shpenzime Hoteli  C[2]=All Inclusive F&B
@@ -201,15 +202,17 @@ function parseCashFlow(rows, date) {
       mice_lek:            n(r[10]),  // K: Hyrje MICE Lek
     },
     pagesat: {
-      paga:              n(r[11]),  // L: Dalje Paga
-      taxes:             n(r[12]),  // M: Dalje Taksa dhe Utilitete
-      loan_euro:         n(r[13]),  // N: Dalje Kredi Euro
-      loan_lek:          n(r[14]),  // O: Dalje Kredi Lek
-      house_use:         n(r[15]),  // P: Dalje House Use
-      furnitore_cash:    n(r[16]),  // Q: Dalje Furnitore Cash
-      furnitore_bank:    n(r[17]),  // R: Dalje Furnitore BAnke
-      investime_euro:    n(r[18]),  // S: Dalje Investime Euro
-      investime_lek:     n(r[19]),  // T: Dalje Investime Lek
+      paga:                 n(r[11]),  // L: Dalje Paga
+      taxes:                n(r[12]),  // M: Dalje Taksa dhe Utilitete
+      loan_euro:            n(r[13]),  // N: Dalje Kredi Euro
+      loan_lek:             n(r[14]),  // O: Dalje Kredi Lek
+      house_use:            n(r[15]),  // P: Dalje House Use
+      furnitore_cash:       n(r[16]),  // Q: Dalje Furnitore Cash
+      furnitore_bank_lek:   n(r[17]),  // R: Dalje Furnitore Banke Leke
+      furnitore_bank_euro:  n(r[18]),  // S: Dalje Furnitore Banke Euro (NEW)
+      investime_banke_euro: n(r[19]),  // T: Dalje Investime Banke Euro
+      investime_banke_lek:  n(r[20]),  // U: Dalje Investime Banke Leke (NEW)
+      investime_cash:       n(r[21]),  // V: Dalje Investime Cash (NEW)
     }
   };
 }
