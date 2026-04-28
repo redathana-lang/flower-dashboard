@@ -177,9 +177,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 
 .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));}
 .kpi-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
 .kpi-val{font-size:22px;font-weight:800;color:var(--text);line-height:1;}
 .kpi-sub{font-size:10px;color:var(--muted);margin-top:4px;}
+/* ── SALES REPORT MOBILE ── */
+.sales-chart-sources{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:14px;}
+.sales-chart-col{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.sales-side-col{display:flex;flex-direction:column;gap:14px;}
+.sales-side-panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;flex:1;}
+.sales-panel-hdr{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.sales-month-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.sales-month-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.sales-src-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.sales-src-name{font-size:11px;color:var(--text);flex:0 0 120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sales-src-bar-wrap{flex:1;background:var(--bg);border-radius:3px;height:6px;}
+.sales-src-bar{height:100%;border-radius:3px;}
+.sales-src-val{font-size:11px;font-weight:700;width:58px;text-align:right;flex-shrink:0;}
+@media(max-width:600px){
+  #salesKpiGrid{grid-template-columns:1fr 1fr!important;gap:8px!important;}
+  #salesKpiGrid .kpi-card{padding:11px 12px;}
+  #salesKpiGrid .kpi-val{font-size:18px;}
+  #salesKpiGrid .kpi-sub{font-size:9px;}
+  .sales-chart-sources{grid-template-columns:1fr!important;gap:10px;}
+  .sales-chart-col{padding:12px;}
+  .sales-src-name{flex:0 0 100px;font-size:10px;}
+  .sales-src-val{font-size:10px;width:50px;}
+  #salesMonthTable th,#salesMonthTable td{padding:7px 8px!important;font-size:10px!important;}
+}
 </style>
 </head>
 <body>
@@ -267,7 +292,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div id="salesFileInfo" style="font-size:11px;color:var(--muted);font-style:italic"></div>
-
           <label id="salesUploadBtn" style="background:linear-gradient(135deg,#c9a84c,#e8c96d);color:#0a1628;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;display:none;">
             ⬆ Ngarko Excel Trinisoft
             <input type="file" accept=".xls,.xlsx" style="display:none" onchange="salesUpload(this)" />
@@ -276,7 +300,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
 
       <!-- FLOWER / GARDEN BREAKDOWN -->
-      <div id="salesBldRow" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+      <div id="salesBldRow" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden;">
           <div style="position:absolute;top:0;left:0;right:0;height:2px;background:#c9a84c;"></div>
           <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Flower Hotel</div>
@@ -292,70 +316,72 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
 
       <!-- KPI CARDS: Occupancy | Roomnights | Revenue | Rezervime -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;" id="salesKpiGrid">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;" id="salesKpiGrid">
         <div class="kpi-card" id="skpi_occ">
           <div class="kpi-lbl">Occupancy</div>
           <div class="kpi-val" id="sv_occ">—</div>
           <div class="kpi-sub" id="sv_occ_sub">Nuk ka të dhëna</div>
         </div>
         <div class="kpi-card" id="skpi_nights">
-          <div class="kpi-lbl">Roomnights Sold</div>
+          <div class="kpi-lbl">Roomnights</div>
           <div class="kpi-val" id="sv_nights">—</div>
           <div class="kpi-sub" id="sv_nights_sub">—</div>
         </div>
         <div class="kpi-card" id="skpi_rev">
-          <div class="kpi-lbl">Revenue Total (€)</div>
+          <div class="kpi-lbl">Revenue (€)</div>
           <div class="kpi-val" id="sv_rev">—</div>
           <div class="kpi-sub" id="sv_rev_sub">ADR: —</div>
         </div>
         <div class="kpi-card" id="skpi_res">
-          <div class="kpi-lbl">Total Rezervime</div>
+          <div class="kpi-lbl">Rezervime</div>
           <div class="kpi-val" id="sv_res">—</div>
           <div class="kpi-sub" id="sv_res_sub">—</div>
         </div>
       </div>
 
       <!-- CHARTS + SOURCES -->
-      <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:14px;">
+      <div class="sales-chart-sources">
         <!-- LEFT: charts -->
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;">
-          <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)">Roomnights &amp; Revenue sipas Muajit</div>
+        <div class="sales-chart-col">
+          <div class="sales-panel-hdr">Roomnights &amp; Revenue sipas Muajit</div>
           <div id="salesChartArea">
             <div style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0;">Ngarko Excel për të parë grafikën</div>
           </div>
         </div>
         <!-- RIGHT: sources + nationalities -->
-        <div style="display:flex;flex-direction:column;gap:14px;">
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;flex:1;">
-            <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">Shitjet sipas Burimit</div>
+        <div class="sales-side-col">
+          <div class="sales-side-panel">
+            <div class="sales-panel-hdr">Shitjet sipas Burimit</div>
             <div id="salesSourceList"><div style="color:var(--muted);font-size:12px;">—</div></div>
           </div>
-          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;flex:1;">
-            <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">Nacionalitetet Top 5</div>
+          <div class="sales-side-panel">
+            <div class="sales-panel-hdr">Nacionalitetet Top 5</div>
             <div id="salesNatList"><div style="color:var(--muted);font-size:12px;">—</div></div>
           </div>
         </div>
       </div>
 
       <!-- MONTHLY TABLE -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;" id="salesMonthTable">
-          <thead>
-            <tr style="background:var(--bg);">
-              <th style="color:var(--gold);padding:10px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Muaji</th>
-              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Rezervime</th>
-              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Roomnights</th>
-              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Revenue (€)</th>
-              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">ADR (€)</th>
-              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Occupancy</th>
-              <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Flower / Garden</th>
-              <th style="color:var(--gold);padding:10px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Burimi #1</th>
-            </tr>
-          </thead>
-          <tbody id="salesMonthBody">
-            <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted);">Ngarko Excel për të parë tabelën</td></tr>
-          </tbody>
-        </table>
+      <div class="sales-month-wrap">
+        <div class="sales-month-scroll">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:580px;" id="salesMonthTable">
+            <thead>
+              <tr style="background:var(--bg);">
+                <th style="color:var(--gold);padding:10px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Muaji</th>
+                <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Rez.</th>
+                <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Netë</th>
+                <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Revenue (€)</th>
+                <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">ADR</th>
+                <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Occ%</th>
+                <th style="color:var(--gold);padding:10px 12px;text-align:center;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">F / G</th>
+                <th style="color:var(--gold);padding:10px 12px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;">Burimi #1</th>
+              </tr>
+            </thead>
+            <tbody id="salesMonthBody">
+              <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);">Ngarko Excel për të parë tabelën</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -1245,18 +1271,18 @@ function salesRender(agg){
   var sm=ss[0]?ss[0][1].rev:1;
   document.getElementById('salesSourceList').innerHTML=ss.map(function(e){
     var s=e[0],d=e[1],isNA=(s==='N/A');
-    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
-      +'<div style="font-size:11px;color:var(--text);width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-style:'+(isNA?'italic':'normal')+'">'+(isNA?'N/A (pa burim)':s)+'</div>'
-      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:'+(isNA?'#6b7fa3':'#c9a84c')+';width:'+Math.round(d.rev/sm*100)+'%"></div></div>'
-      +'<div style="font-size:11px;color:var(--gold);font-weight:700;width:60px;text-align:right;">'+euro(d.rev)+'</div></div>';
+    return '<div class="sales-src-row">'
+      +'<div class="sales-src-name" style="font-style:'+(isNA?'italic':'normal')+'">'+(isNA?'N/A (pa burim)':s)+'</div>'
+      +'<div class="sales-src-bar-wrap"><div class="sales-src-bar" style="background:'+(isNA?'#6b7fa3':'#c9a84c')+';width:'+Math.round(d.rev/sm*100)+'%"></div></div>'
+      +'<div class="sales-src-val" style="color:var(--gold);">'+euro(d.rev)+'</div></div>';
   }).join('');
   var ns=Object.entries(agg.nat).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   var nm=ns[0]?ns[0][1]:1;
   document.getElementById('salesNatList').innerHTML=ns.map(function(e){
-    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
-      +'<div style="font-size:11px;color:var(--text);width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+e[0]+'</div>'
-      +'<div style="flex:1;background:var(--bg);border-radius:3px;height:6px;"><div style="height:100%;border-radius:3px;background:#8b5cf6;width:'+Math.round(e[1]/nm*100)+'%"></div></div>'
-      +'<div style="font-size:11px;color:#8b5cf6;font-weight:700;width:28px;text-align:right;">'+e[1]+'</div></div>';
+    return '<div class="sales-src-row">'
+      +'<div class="sales-src-name">'+e[0]+'</div>'
+      +'<div class="sales-src-bar-wrap"><div class="sales-src-bar" style="background:#8b5cf6;width:'+Math.round(e[1]/nm*100)+'%"></div></div>'
+      +'<div class="sales-src-val" style="color:#8b5cf6;">'+e[1]+'</div></div>';
   }).join('');
   var tbody=document.getElementById('salesMonthBody'), html='';
   keys.forEach(function(k){
