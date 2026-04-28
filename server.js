@@ -219,20 +219,30 @@ function parseCashFlow(rows, date) {
 
 function parseFinance(rows, date) {
   // Shpenzime Ditore — expenses by department
+  // A=Date, B=BeachBar, C=FlowerRest, D=PoolBar, E=Brutal, F=PoolBarGarden,
+  // G=OverheadsFnB, H=MagQendrore, I=Operacionale, J=SPA,
+  // K=Mirembajtje, L=Marketing, M=Familja, N=ShpHoteli, O=MagGarden, P=PagaUtil, Q=TOTAL
   const idx = indexByDate(rows, 1);
   const r = idx[date];
   if (!r) return {};
 
   return {
-    hoteli:       n(r[1]),  // B: Shpenzime Hoteli
-    ai_fnb:       n(r[2]),  // C: All Inclusive F&B
-    flower:       n(r[3]),  // D: Flower Restorant
-    pool_bar:     n(r[4]),  // E: Pool Bar
-    brutal:       n(r[5]),  // F: Brutal
-    pool_garden:  n(r[6]),  // G: Pool Bar Garden
-    beach_bar:    n(r[7]),  // H: Beach Bar
-    tjera:        n(r[8]),  // I: Te tjera
-    total:        n(r[9]),  // J: TOTAL
+    beach_bar:       n(r[1]),   // B: Beach Bar
+    flower:          n(r[2]),   // C: Flower Restorant
+    pool_bar:        n(r[3]),   // D: Pool Bar
+    brutal:          n(r[4]),   // E: Brutal
+    pool_garden:     n(r[5]),   // F: Pool Bar Garden
+    overheads_fnb:   n(r[6]),   // G: Overheads F&B
+    mag_qendrore:    n(r[7]),   // H: Magazina Qendrore
+    operacionale:    n(r[8]),   // I: Operacionale Mikse
+    spa:             n(r[9]),   // J: SPA
+    mirembajtje:     n(r[10]),  // K: Mirembajtje dhe Riparime
+    marketing:       n(r[11]),  // L: Marketing
+    familja:         n(r[12]),  // M: FAMILJA
+    hoteli:          n(r[13]),  // N: Shpenzime Hoteli
+    mag_garden:      n(r[14]),  // O: Magazina GARDEN (Investime)
+    paga_util:       n(r[15]),  // P: Paga & Utilitete
+    total:           n(r[16]),  // Q: TOTAL
   };
 }
 

@@ -774,24 +774,31 @@ function rCF(cf){
 // ─── FINANCE / SHPENZIME ──────────────────────────────────────────────────────
 function rFin(fin){
   const el=document.getElementById('c_finance'); if(!el)return;
-  const tot=n(fin.total)||[fin.hoteli,fin.ai_fnb,fin.flower,fin.pool_bar,fin.brutal,fin.pool_garden,fin.beach_bar,fin.tjera].reduce((a,v)=>a+n(v),0);
+  const tot=n(fin.total)||[fin.beach_bar,fin.flower,fin.pool_bar,fin.brutal,fin.pool_garden,fin.overheads_fnb,fin.mag_qendrore,fin.operacionale,fin.spa,fin.mirembajtje,fin.marketing,fin.familja,fin.hoteli,fin.mag_garden,fin.paga_util].reduce((a,v)=>a+n(v),0);
   const row=(l,v)=>`<tr><td>${l}</td><td class="v">${fL(n(v))}</td></tr>`;
   el.innerHTML=`
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
       <button class="btn-xl" onclick="exportFin()">📊 Shkarko Excel</button>
     </div>
     <div class="sec-card">
-      <div class="sec-hdr2">📦 Shpenzime Ditore sipas Departamentit — ${fRange()}</div>
+      <div class="sec-hdr2">📦 Shpenzime Ditore sipas Zërit — ${fRange()}</div>
       <table class="dtable">
-        <tr><th>Departamenti</th><th class="v">Lek</th></tr>
-        ${row('🏨 Shpenzime Hoteli',fin.hoteli)}
-        ${row('⭐ All Inclusive F&B',fin.ai_fnb)}
+        <tr><th>Zëri</th><th class="v">Lek</th></tr>
+        ${row('🏖️ Beach Bar',fin.beach_bar)}
         ${row('🌸 Flower Restorant',fin.flower)}
         ${row('🍹 Pool Bar',fin.pool_bar)}
         ${row('🍖 Brutal',fin.brutal)}
         ${row('🏊 Pool Bar Garden',fin.pool_garden)}
-        ${row('🏖️ Beach Bar',fin.beach_bar)}
-        ${row('📦 Të Tjera',fin.tjera)}
+        ${row('📊 Overheads F&B',fin.overheads_fnb)}
+        ${row('🏪 Magazina Qendrore',fin.mag_qendrore)}
+        ${row('⚙️ Operacionale Mikse',fin.operacionale)}
+        ${row('💆 SPA',fin.spa)}
+        ${row('🔧 Mirëmbajtje & Riparime',fin.mirembajtje)}
+        ${row('📢 Marketing',fin.marketing)}
+        ${row('👨‍👩‍👧 Familja',fin.familja)}
+        ${row('🏨 Shpenzime Hoteli',fin.hoteli)}
+        ${row('🌿 Magazina GARDEN (Investime)',fin.mag_garden)}
+        ${row('💼 Paga & Utilitete',fin.paga_util)}
         <tr class="tr"><td>TOTAL SHPENZIME</td><td class="v g">${fL(tot)}</td></tr>
       </table>
     </div>`;
@@ -827,10 +834,14 @@ async function exportFin(){
     const r=await fetch(url);
   const d=await r.json(); const fin=d.finance||{};
   const rows=[['SHPENZIME DITORE',fromDate],[''],
-    ['Shpenzime Hoteli',n(fin.hoteli)],['All Inclusive F&B',n(fin.ai_fnb)],
-    ['Flower Restorant',n(fin.flower)],['Pool Bar',n(fin.pool_bar)],
-    ['Brutal',n(fin.brutal)],['Pool Bar Garden',n(fin.pool_garden)],
-    ['Beach Bar',n(fin.beach_bar)],['Te Tjera',n(fin.tjera)],['TOTAL',n(fin.total)]];
+    ['Beach Bar',n(fin.beach_bar)],['Flower Restorant',n(fin.flower)],
+    ['Pool Bar',n(fin.pool_bar)],['Brutal',n(fin.brutal)],
+    ['Pool Bar Garden',n(fin.pool_garden)],['Overheads F&B',n(fin.overheads_fnb)],
+    ['Magazina Qendrore',n(fin.mag_qendrore)],['Operacionale Mikse',n(fin.operacionale)],
+    ['SPA',n(fin.spa)],['Mirembajtje & Riparime',n(fin.mirembajtje)],
+    ['Marketing',n(fin.marketing)],['Familja',n(fin.familja)],
+    ['Shpenzime Hoteli',n(fin.hoteli)],['Magazina GARDEN (Investime)',n(fin.mag_garden)],
+    ['Paga & Utilitete',n(fin.paga_util)],['TOTAL',n(fin.total)]];
   dlCSV(rows,`shpenzime_${fromDate}.csv`);
 }
 
