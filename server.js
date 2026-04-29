@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const webpush = require('web-push');
+const { sendDailyReport } = require('./emailService');
 
 const app = express();
 app.use(express.json({limit:'50mb'}));
@@ -566,6 +567,165 @@ app.get('/api/sales-clear', function(req, res){
   res.json({ok:true, message:'Sales cache cleared'});
 });
 
+
+
+// ─── EMAIL REPORT ─────────────────────────────────────────────────────────────
+app.post('/api/send-report', async function(req, res) {
+  // Auth: token must match ADMIN password (set ADMIN_TOKEN env var on Render)
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '112212';
+  const token = req.body && req.body.token;
+  if (token !== ADMIN_TOKEN) {
+    return res.status(403).json({ error: 'Nuk keni leje. Vetëm ADMIN mund të dërgojë raportin.' });
+  }
+
+  const date = (req.body && req.body.date) || new Date().toISOString().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ error: 'Formati i datës duhet të jetë YYYY-MM-DD.' });
+  }
+
+  try {
+    await ensureCache();
+
+    // Build data object from existing parsers
+    const fo      = parseFO(cache.fo, date);
+    const fnb     = parseFNB(cache.fnb, date);
+    const spa     = parseSPA(cache.spa, date);
+    const cf      = parseCashFlow(cache.cashflow, date);
+    const fin     = parseFinance(cache.finance, date);
+    const boards  = parseBoards(cache.boards, date);
+
+    // Same day prev year for YoY
+    const prevDate = (parseInt(date.slice(0,4))-1) + date.slice(4);
+    const fo_yoy  = parseFO(cache.fo,  prevDate);
+    const fnb_yoy = parseFNB(cache.fnb, prevDate);
+
+    // Previous day for DoD
+    const prevDay = new Date(date + 'T00:00:00');
+    prevDay.setDate(prevDay.getDate() - 1);
+    const prevDayStr = prevDay.toISOString().slice(0,10);
+    const fo_prev = parseFO(cache.fo, prevDayStr);
+    const fnb_prev = parseFNB(cache.fnb, prevDayStr);
+
+    const EH = 100; // EUR→LEK hotel rate
+    const EC = 95;  // EUR→LEK cash rate
+    const TR = 110; // total rooms
+
+    // Revenue totals in Lek
+    const hotelLek        = fo.revenue_eur  * EH;
+    const flowerRestLek   = fnb.flower      * EH;
+    const brutalLek       = fnb.brutal      * EH;
+    const poolBarLek      = fnb.pool_bar    * EH;
+    const poolGardenLek   = fnb.pool_garden * EH;
+    const beachBarLek     = fnb.beach_bar   * EH;
+    const houseUseLek     = fnb.house_use   * EH;
+    const spaLek          = (spa.revenues || 0) * EH;
+    const totalRevLek     = hotelLek + flowerRestLek + brutalLek + poolBarLek + poolGardenLek + beachBarLek + houseUseLek + spaLek;
+
+    // LY revenue
+    const lyHotelLek      = (fo_yoy.revenue_eur  || 0) * EH;
+    const lyFlowerLek     = (fnb_yoy.flower      || 0) * EH;
+    const lyBrutalLek     = (fnb_yoy.brutal      || 0) * EH;
+    const lyPoolBarLek    = (fnb_yoy.pool_bar    || 0) * EH;
+    const lyPoolGardenLek = (fnb_yoy.pool_garden || 0) * EH;
+    const lyBeachBarLek   = (fnb_yoy.beach_bar   || 0) * EH;
+    const lyHouseUseLek   = (fnb_yoy.house_use   || 0) * EH;
+    const lyTotalRevLek   = lyHotelLek + lyFlowerLek + lyBrutalLek + lyPoolBarLek + lyPoolGardenLek + lyBeachBarLek + lyHouseUseLek;
+
+    // Previous day revenue for DoD
+    const prevDayRevLek = ((fo_prev.revenue_eur||0)*EH) + ((fnb_prev.flower||0)*EH) + ((fnb_prev.brutal||0)*EH)
+                        + ((fnb_prev.pool_bar||0)*EH) + ((fnb_prev.pool_garden||0)*EH);
+
+    // Cash flow
+    const ark = cf.arketimet || {};
+    const pag = cf.pagesat   || {};
+    const cfInLek  = (ark.non_cash_lek||0) + (ark.reception_cash_lek||0) + (ark.fnb_cash_lek||0) + (ark.mice_lek||0)
+                   + ((ark.non_cash_euro||0)+(ark.reception_cash_euro||0)+(ark.allotment||0)+(ark.itaka||0)+(ark.mice_euro||0))*EC;
+    const cfOutLek = (pag.paga||0) + (pag.taxes||0) + (pag.loan_lek||0) + (pag.house_use||0)
+                   + (pag.furnitore_cash||0) + (pag.furnitore_bank_lek||0)
+                   + ((pag.loan_euro||0)+(pag.furnitore_bank_euro||0))*EC;
+    const cfNetLek = cfInLek - cfOutLek;
+
+    // ADR & RevPAR
+    const occ    = fo.occupancy_pct || 0;
+    const lyOcc  = fo_yoy.occupancy_pct || 0;
+    const rooms  = fo.rooms_occupied || 0;
+    const adr    = rooms > 0 ? Math.round(hotelLek / rooms) : 0;
+    const revpar = Math.round(hotelLek / TR);
+    const lyAdr  = (fo_yoy.rooms_occupied||0) > 0 ? Math.round(lyHotelLek / (fo_yoy.rooms_occupied||1)) : 0;
+    const lyRevpar = Math.round(lyHotelLek / TR);
+
+    // Build data objects for email template
+    const data = {
+      totalRevenueLek: totalRevLek,
+      totalRevenueEur: Math.round(totalRevLek / EH),
+      occupancyPct: occ,
+      roomsOccupied: rooms,
+      totalRooms: TR,
+      prevDayRevenueLek: prevDayRevLek,
+      departments: [
+        { name:'Hotel (€×100)',   revenueLek: hotelLek,      lyLek: lyHotelLek      },
+        { name:'Brutal Garden',   revenueLek: brutalLek,     lyLek: lyBrutalLek     },
+        { name:'Flower Rest.',    revenueLek: flowerRestLek, lyLek: lyFlowerLek     },
+        { name:'Beach Bar',       revenueLek: beachBarLek,   lyLek: lyBeachBarLek   },
+        { name:'Pool Bar',        revenueLek: poolBarLek,    lyLek: lyPoolBarLek    },
+        { name:'Pool Bar Garden', revenueLek: poolGardenLek, lyLek: lyPoolGardenLek },
+        { name:'House Use',       revenueLek: houseUseLek,   lyLek: lyHouseUseLek   },
+        { name:'SPA',             revenueLek: spaLek,        lyLek: 0               },
+      ],
+      fo: { adr, revpar, occ },
+      cashFlow: {
+        totalInLek: cfInLek, totalOutLek: cfOutLek, netLek: cfNetLek,
+        inItems: [
+          { label:'Non Cash Lek',          lek: ark.non_cash_lek||0 },
+          { label:'Reception Cash Lek',    lek: ark.reception_cash_lek||0 },
+          { label:'F&B Cash Lek',          lek: ark.fnb_cash_lek||0 },
+          { label:'Reception Cash Euro×'+EC, lek: Math.round((ark.reception_cash_euro||0)*EC) },
+          { label:'Allotments Euro×'+EC,   lek: Math.round((ark.allotment||0)*EC) },
+          { label:'Itaka Euro×'+EC,        lek: Math.round((ark.itaka||0)*EC) },
+        ].filter(i=>i.lek!==0),
+        outItems: [
+          { label:'Paga',              lek: pag.paga||0 },
+          { label:'Taksa & Utilitete', lek: pag.taxes||0 },
+          { label:'Kredi Lek',         lek: pag.loan_lek||0 },
+          { label:'Furnitore Cash',    lek: pag.furnitore_cash||0 },
+          { label:'Furnitore Bankë Lek', lek: pag.furnitore_bank_lek||0 },
+          { label:'Kredi Euro×'+EC,    lek: Math.round((pag.loan_euro||0)*EC) },
+          { label:'Furnitore Bankë Euro×'+EC, lek: Math.round((pag.furnitore_bank_euro||0)*EC) },
+        ].filter(i=>i.lek!==0),
+      },
+      expenses: {
+        totalLek: (fin.total||0)*1,
+        items: [
+          { name:'Shpenzime Hoteli',    lek: fin.hoteli||0 },
+          { name:'Paga & Utilitete',    lek: fin.paga_util||0 },
+          { name:'Operacionale',        lek: fin.operacionale||0 },
+          { name:'Mirëmbajtje',         lek: fin.mirembajtje||0 },
+          { name:'Marketing',           lek: fin.marketing||0 },
+          { name:'All Inclusive F&B',   lek: fin.overheads_fnb||0 },
+          { name:'SPA',                 lek: fin.spa||0 },
+          { name:'Shpenzime të Tjera',  lek: (fin.mag_qendrore||0)+(fin.mag_garden||0)+(fin.familja||0) },
+        ].filter(i=>i.lek!==0),
+      },
+    };
+
+    const prevData = {
+      totalRevenueLek: lyTotalRevLek,
+      occupancyPct: lyOcc,
+      fo: { adr: lyAdr, revpar: lyRevpar, occ: lyOcc },
+    };
+
+    await sendDailyReport(date, data, prevData);
+
+    res.json({
+      success: true,
+      message: 'Raporti u dërgua me sukses për datën ' + date + ' → redathana@gmail.com, ernestcaci@gmail.com'
+    });
+
+  } catch(err) {
+    console.error('[EMAIL] Error:', err.message);
+    res.status(500).json({ error: 'Emaili nuk u dërgua: ' + err.message });
+  }
+});
 
 // ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
