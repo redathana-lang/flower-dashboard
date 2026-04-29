@@ -205,6 +205,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .sales-src-val{font-size:10px;width:50px;}
   #salesMonthTable th,#salesMonthTable td{padding:7px 8px!important;font-size:10px!important;}
 }
+
+/* SEND REPORT BUTTON */
+.btn-send-report{display:none;align-items:center;gap:6px;background:linear-gradient(135deg,#1e3a6e,#2d5aa0);color:#93c5fd;border:1px solid #2d5aa0;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-send-report:hover:not(:disabled){background:linear-gradient(135deg,#2d5aa0,#3b6fd4);color:#bfdbfe;transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.3);}
+.btn-send-report:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+@keyframes sr-spin{to{transform:rotate(360deg)}}
+.sr-spin{animation:sr-spin .8s linear infinite;display:inline-block;}
+#srToast{position:fixed;bottom:24px;right:24px;background:#0f2040;border:1px solid #1e3a5f;border-radius:10px;padding:12px 18px;font-size:13px;color:#93c5fd;z-index:9999;opacity:0;transform:translateY(8px);pointer-events:none;transition:all .25s;max-width:320px;}
+#srToast.show{opacity:1;transform:translateY(0);}
+#srToast.ok{color:#86efac;border-color:#14532d;}
+#srToast.err{color:#fca5a5;border-color:#7f1d1d;}
 </style>
 </head>
 <body>
@@ -233,9 +244,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="tb-right">
       <span id="tbRole" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:#c9a84c;white-space:nowrap;"></span>
       <button class="btn-refresh" id="btnRefresh" onclick="forceRefresh()">↻ Rifresko</button>
+      <button class="btn-send-report" id="btnSendReport" onclick="sendDailyReport()">📧 Dërgo Raportin</button>
       <button class="btn-logout" onclick="doLogout()">Dil</button>
     </div>
   </div>
+<div id="srToast"></div>
 
   <div id="navTabs">
     <button class="nav-tab active" id="tab_overview" onclick="showSec('overview')">📊 Overview</button>
@@ -476,6 +489,9 @@ function applyRoleVisibility(){
   // Show Excel upload and Refresh buttons only for ADMIN
   var uploadBtn=document.getElementById('salesUploadBtn');
   if(uploadBtn) uploadBtn.style.display=currentRole==='admin'?'':'none';
+  // Show Dërgo Raportin button only for ADMIN
+  var srBtn=document.getElementById('btnSendReport');
+  if(srBtn) srBtn.style.display=currentRole==='admin'?'inline-flex':'none';
   showSec(currentRole==='fo'?'housekeeping':'overview');
 }
 function doLogout(){
@@ -1392,6 +1408,44 @@ window.salesUpload=salesUpload;
 window.salesLoadSheets=salesLoadSheets;
 window.salesAutoLoad=salesAutoLoad;
 })();
+
+// ─── SEND DAILY REPORT ───────────────────────────────────────────────────────
+function sendDailyReport(){
+  var date = fromDate || new Date().toISOString().slice(0,10);
+  if(!confirm('Dërgo raportin ditor për datën ' + date + '?\n\nDestinatarë: redathana@gmail.com, ernestcaci@gmail.com')) return;
+
+  var btn   = document.getElementById('btnSendReport');
+  var toast = document.getElementById('srToast');
+  var origHtml = btn.innerHTML;
+
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="sr-spin">⏳</span> Duke dërguar…';
+
+  var toastTimer = null;
+  function showToast(msg, type){
+    toast.className = 'show ' + (type||'');
+    toast.textContent = msg;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.className=''; }, 6000);
+  }
+
+  fetch('/api/send-report', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date: date, token: ADMIN.pass })
+  })
+  .then(function(res){ return res.json().then(function(j){ return {ok:res.ok, j:j}; }); })
+  .then(function(r){
+    if(r.ok){ showToast('✓ ' + (r.j.message||'Raporti u dërgua!'), 'ok'); }
+    else     { showToast('✗ ' + (r.j.error||'Gabim gjatë dërgimit.'), 'err'); }
+  })
+  .catch(function(){ showToast('✗ Gabim rrjeti — provo përsëri.', 'err'); })
+  .finally(function(){
+    btn.disabled  = false;
+    btn.innerHTML = origHtml;
+  });
+}
+
 </script>
 
 
