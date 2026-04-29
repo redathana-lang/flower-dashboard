@@ -14,8 +14,8 @@ const DEFAULT_RECIPIENTS = 'redathana@gmail.com,ernestcaci@gmail.com';
 // ── Logo ─────────────────────────────────────────────────────
 let LOGO_URI = '';
 try {
-  const buf = fs.readFileSync(path.join(__dirname, 'Logo.jpeg'));
-  LOGO_URI  = `data:image/jpeg;base64,${buf.toString('base64')}`;
+  const buf = fs.readFileSync(path.join(__dirname, 'icon-512.png'));
+  LOGO_URI  = `data:image/png;base64,${buf.toString('base64')}`;
 } catch (_) { /* logo file not found — header shows text only */ }
 
 // ── SMTP transport ────────────────────────────────────────────
