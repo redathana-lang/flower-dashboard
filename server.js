@@ -586,66 +586,82 @@ app.post('/api/send-report', async function(req, res) {
   try {
     await ensureCache();
 
-    // Build data object from existing parsers
-    const fo      = parseFO(cache.fo, date);
-    const fnb     = parseFNB(cache.fnb, date);
-    const spa     = parseSPA(cache.spa, date);
-    const cf      = parseCashFlow(cache.cashflow, date);
-    const fin     = parseFinance(cache.finance, date);
-    const boards  = parseBoards(cache.boards, date);
+    // ── Parse data from cached sheets ─────────────────────────────────────────
+    const fo     = parseFO(cache.fo,       date);
+    const fnb    = parseFNB(cache.fnb,     date);
+    const spa    = parseSPA(cache.spa,     date);
+    const cf     = parseCashFlow(cache.cashflow, date);
+    const fin    = parseFinance(cache.finance,   date);
+    const boards = parseBoards(cache.boards,     date);
 
-    // Same day prev year for YoY
+    // Same day previous year (YoY)
     const prevDate = (parseInt(date.slice(0,4))-1) + date.slice(4);
-    const fo_yoy  = parseFO(cache.fo,  prevDate);
+    const fo_yoy  = parseFO(cache.fo,   prevDate);
     const fnb_yoy = parseFNB(cache.fnb, prevDate);
+    const spa_yoy = parseSPA(cache.spa, prevDate);
 
-    // Previous day for DoD
-    const prevDay = new Date(date + 'T00:00:00');
-    prevDay.setDate(prevDay.getDate() - 1);
-    const prevDayStr = prevDay.toISOString().slice(0,10);
-    const fo_prev = parseFO(cache.fo, prevDayStr);
+    // Previous day (DoD)
+    const prevDayObj = new Date(date + 'T00:00:00');
+    prevDayObj.setDate(prevDayObj.getDate() - 1);
+    const prevDayStr = prevDayObj.toISOString().slice(0,10);
+    const fo_prev  = parseFO(cache.fo,  prevDayStr);
     const fnb_prev = parseFNB(cache.fnb, prevDayStr);
 
-    const EH = 100; // EUR→LEK hotel rate
-    const EC = 95;  // EUR→LEK cash rate
-    const TR = 110; // total rooms
+    const EH = 100;  // hotel EUR→LEK rate
+    const EC = 95;   // cash flow EUR→LEK rate
+    const TR = 110;  // total rooms
 
-    // Revenue totals in Lek
-    const hotelLek        = fo.revenue_eur  * EH;
-    const flowerRestLek   = fnb.flower      * EH;
-    const brutalLek       = fnb.brutal      * EH;
-    const poolBarLek      = fnb.pool_bar    * EH;
-    const poolGardenLek   = fnb.pool_garden * EH;
-    const beachBarLek     = fnb.beach_bar   * EH;
-    const houseUseLek     = fnb.house_use   * EH;
-    const spaLek          = (spa.revenues || 0) * EH;
-    const totalRevLek     = hotelLek + flowerRestLek + brutalLek + poolBarLek + poolGardenLek + beachBarLek + houseUseLek + spaLek;
+    // ── Revenue totals ─────────────────────────────────────────────────────────
+    // IMPORTANT: fo.revenue_eur is in EUR → multiply by EH
+    // F&B values (fnb.*) are ALREADY in Lek → NO multiplication
+    // spa.revenues is also in Lek → NO multiplication
+    const hotelLek      = (fo.revenue_eur  || 0) * EH;
+    const flowerRestLek = (fnb.flower      || 0);   // already Lek
+    const brutalLek     = (fnb.brutal      || 0);   // already Lek
+    const poolBarLek    = (fnb.pool_bar    || 0);   // already Lek
+    const poolGardenLek = (fnb.pool_garden || 0);   // already Lek
+    const beachBarLek   = (fnb.beach_bar   || 0);   // already Lek
+    const houseUseLek   = (fnb.house_use   || 0);   // already Lek (can be negative)
+    const spaLek        = (spa.revenues    || 0);   // already Lek
+    const totalRevLek   = hotelLek + flowerRestLek + brutalLek + poolBarLek
+                        + poolGardenLek + beachBarLek + houseUseLek + spaLek;
 
     // LY revenue
     const lyHotelLek      = (fo_yoy.revenue_eur  || 0) * EH;
-    const lyFlowerLek     = (fnb_yoy.flower      || 0) * EH;
-    const lyBrutalLek     = (fnb_yoy.brutal      || 0) * EH;
-    const lyPoolBarLek    = (fnb_yoy.pool_bar    || 0) * EH;
-    const lyPoolGardenLek = (fnb_yoy.pool_garden || 0) * EH;
-    const lyBeachBarLek   = (fnb_yoy.beach_bar   || 0) * EH;
-    const lyHouseUseLek   = (fnb_yoy.house_use   || 0) * EH;
-    const lyTotalRevLek   = lyHotelLek + lyFlowerLek + lyBrutalLek + lyPoolBarLek + lyPoolGardenLek + lyBeachBarLek + lyHouseUseLek;
+    const lyFlowerLek     = (fnb_yoy.flower      || 0);
+    const lyBrutalLek     = (fnb_yoy.brutal      || 0);
+    const lyPoolBarLek    = (fnb_yoy.pool_bar    || 0);
+    const lyPoolGardenLek = (fnb_yoy.pool_garden || 0);
+    const lyBeachBarLek   = (fnb_yoy.beach_bar   || 0);
+    const lyHouseUseLek   = (fnb_yoy.house_use   || 0);
+    const lySpaLek        = (spa_yoy.revenues    || 0);
+    const lyTotalRevLek   = lyHotelLek + lyFlowerLek + lyBrutalLek + lyPoolBarLek
+                          + lyPoolGardenLek + lyBeachBarLek + lyHouseUseLek + lySpaLek;
 
-    // Previous day revenue for DoD
-    const prevDayRevLek = ((fo_prev.revenue_eur||0)*EH) + ((fnb_prev.flower||0)*EH) + ((fnb_prev.brutal||0)*EH)
-                        + ((fnb_prev.pool_bar||0)*EH) + ((fnb_prev.pool_garden||0)*EH);
+    // Previous day total
+    const prevDayRevLek = ((fo_prev.revenue_eur||0)*EH)
+                        + (fnb_prev.flower||0) + (fnb_prev.brutal||0)
+                        + (fnb_prev.pool_bar||0) + (fnb_prev.pool_garden||0)
+                        + (fnb_prev.beach_bar||0) + (fnb_prev.house_use||0);
 
-    // Cash flow
+    // ── Cash Flow ──────────────────────────────────────────────────────────────
     const ark = cf.arketimet || {};
     const pag = cf.pagesat   || {};
-    const cfInLek  = (ark.non_cash_lek||0) + (ark.reception_cash_lek||0) + (ark.fnb_cash_lek||0) + (ark.mice_lek||0)
+    const cfInLek  = (ark.non_cash_lek||0)
+                   + (ark.reception_cash_lek||0)
+                   + (ark.fnb_cash_lek||0)
+                   + (ark.mice_lek||0)
                    + ((ark.non_cash_euro||0)+(ark.reception_cash_euro||0)+(ark.allotment||0)+(ark.itaka||0)+(ark.mice_euro||0))*EC;
-    const cfOutLek = (pag.paga||0) + (pag.taxes||0) + (pag.loan_lek||0) + (pag.house_use||0)
-                   + (pag.furnitore_cash||0) + (pag.furnitore_bank_lek||0)
+    const cfOutLek = (pag.paga||0)
+                   + (pag.taxes||0)
+                   + (pag.loan_lek||0)
+                   + (pag.house_use||0)
+                   + (pag.furnitore_cash||0)
+                   + (pag.furnitore_bank_lek||0)
                    + ((pag.loan_euro||0)+(pag.furnitore_bank_euro||0))*EC;
     const cfNetLek = cfInLek - cfOutLek;
 
-    // ADR & RevPAR
+    // ── FO KPIs ────────────────────────────────────────────────────────────────
     const occ    = fo.occupancy_pct || 0;
     const lyOcc  = fo_yoy.occupancy_pct || 0;
     const rooms  = fo.rooms_occupied || 0;
@@ -654,13 +670,100 @@ app.post('/api/send-report', async function(req, res) {
     const lyAdr  = (fo_yoy.rooms_occupied||0) > 0 ? Math.round(lyHotelLek / (fo_yoy.rooms_occupied||1)) : 0;
     const lyRevpar = Math.round(lyHotelLek / TR);
 
-    // Build data objects for email template
+    // ── Expenses (fin.* values are already in Lek) ─────────────────────────────
+    const expItems = [
+      { name:'Shpenzime Hoteli',        lek: fin.hoteli       || 0 },
+      { name:'Paga & Utilitete',         lek: fin.paga_util    || 0 },
+      { name:'Operacionale Mikse',       lek: fin.operacionale || 0 },
+      { name:'Mirëmbajtje & Riparime',   lek: fin.mirembajtje  || 0 },
+      { name:'Marketing',                lek: fin.marketing    || 0 },
+      { name:'Overheads F&B',            lek: fin.overheads_fnb|| 0 },
+      { name:'Magazina Qendrore',        lek: fin.mag_qendrore || 0 },
+      { name:'SPA',                      lek: fin.spa          || 0 },
+      { name:'Familja',                  lek: fin.familja      || 0 },
+      { name:'Mag. Garden (Investime)',   lek: fin.mag_garden   || 0 },
+    ].filter(function(i){ return i.lek !== 0; });
+
+    // Use fin.total directly (already Lek), or sum items if total is missing
+    const expTotal = fin.total || expItems.reduce(function(s,i){ return s+i.lek; }, 0);
+
+    // ── Sales Report (from in-memory salesState — loaded from uploaded Excel) ────
+    var salesSection = null;
+    try {
+      if (salesState && salesState.agg) {
+        const agg = salesState.agg;
+
+        // Filter April–October months only
+        const SEASON_MONTHS = ['04','05','06','07','08','09','10'];
+        const seasonEntries = Object.entries(agg.mo || {})
+          .filter(function(e){ return SEASON_MONTHS.includes(String(e[1].mo).padStart(2,'0')); })
+          .sort(function(a,b){ return a[0].localeCompare(b[0]); });
+
+        // Month rows for email
+        const MAL = {1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',
+                     7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
+
+        function daysInMonth(yr,mo){ return new Date(yr,mo,0).getDate(); }
+
+        const monthRows = seasonEntries.map(function(e){
+          const m = e[1];
+          const avail = daysInMonth(m.yr, m.mo) * TR;
+          const mOcc  = avail > 0 ? (m.nights / avail * 100).toFixed(1) : 0;
+          const mAdr  = m.nights > 0 ? (m.rev / m.nights).toFixed(0) : 0;
+          const topSrc = Object.entries(m.src || {})
+            .sort(function(a,b){ return b[1].rev - a[1].rev; })[0];
+          return {
+            label  : (MAL[m.mo]||e[0]) + ' ' + m.yr,
+            res    : m.res   || 0,
+            nights : m.nights|| 0,
+            rev    : m.rev   || 0,
+            adr    : mAdr,
+            occ    : mOcc,
+            flowerRev : m.fR || 0,
+            gardenRev : m.gR || 0,
+            topSrc : topSrc ? topSrc[0] : '—',
+          };
+        });
+
+        // Top 3 channels by revenue
+        const top3channels = Object.entries(agg.src || {})
+          .sort(function(a,b){ return b[1].rev - a[1].rev; })
+          .slice(0,3)
+          .map(function(e, i){
+            const maxRev = Object.values(agg.src)[0] ? 
+              Object.values(agg.src).sort(function(a,b){return b.rev-a.rev;})[0].rev : 1;
+            return {
+              rank   : i+1,
+              name   : e[0],
+              rev    : e[1].rev,
+              nights : e[1].nights || 0,
+              barPct : Math.round(e[1].rev / Math.max(maxRev,1) * 100),
+            };
+          });
+
+        salesSection = {
+          totalNights : agg.tN || 0,
+          totalRev    : agg.tR || 0,
+          totalRes    : agg.tRes || 0,
+          flowerNights: agg.fN || 0,
+          flowerRev   : agg.fR || 0,
+          gardenNights: agg.gN || 0,
+          gardenRev   : agg.gR || 0,
+          monthRows   : monthRows,
+          top3channels: top3channels,
+          seasonLabel : 'Prill – Tetor ' + new Date(date+'T00:00:00').getFullYear(),
+        };
+    } catch(salesErr) {
+      console.warn('[EMAIL] Sales data unavailable:', salesErr.message);
+    }
+
+    // ── Build objects for email template ───────────────────────────────────────
     const data = {
-      totalRevenueLek: totalRevLek,
-      totalRevenueEur: Math.round(totalRevLek / EH),
-      occupancyPct: occ,
-      roomsOccupied: rooms,
-      totalRooms: TR,
+      totalRevenueLek  : totalRevLek,
+      totalRevenueEur  : Math.round(totalRevLek / EH),
+      occupancyPct     : occ,
+      roomsOccupied    : rooms,
+      totalRooms       : TR,
       prevDayRevenueLek: prevDayRevLek,
       departments: [
         { name:'Hotel (€×100)',   revenueLek: hotelLek,      lyLek: lyHotelLek      },
@@ -670,48 +773,49 @@ app.post('/api/send-report', async function(req, res) {
         { name:'Pool Bar',        revenueLek: poolBarLek,    lyLek: lyPoolBarLek    },
         { name:'Pool Bar Garden', revenueLek: poolGardenLek, lyLek: lyPoolGardenLek },
         { name:'House Use',       revenueLek: houseUseLek,   lyLek: lyHouseUseLek   },
-        { name:'SPA',             revenueLek: spaLek,        lyLek: 0               },
+        { name:'SPA',             revenueLek: spaLek,        lyLek: lySpaLek        },
       ],
       fo: { adr, revpar, occ },
       cashFlow: {
-        totalInLek: cfInLek, totalOutLek: cfOutLek, netLek: cfNetLek,
+        totalInLek : cfInLek,
+        totalOutLek: cfOutLek,
+        netLek     : cfNetLek,
         inItems: [
-          { label:'Non Cash Lek',          lek: ark.non_cash_lek||0 },
-          { label:'Reception Cash Lek',    lek: ark.reception_cash_lek||0 },
-          { label:'F&B Cash Lek',          lek: ark.fnb_cash_lek||0 },
-          { label:'Reception Cash Euro×'+EC, lek: Math.round((ark.reception_cash_euro||0)*EC) },
-          { label:'Allotments Euro×'+EC,   lek: Math.round((ark.allotment||0)*EC) },
-          { label:'Itaka Euro×'+EC,        lek: Math.round((ark.itaka||0)*EC) },
-        ].filter(i=>i.lek!==0),
+          { label:'Non Cash Lek',             lek: ark.non_cash_lek||0 },
+          { label:'Reception Cash Lek',        lek: ark.reception_cash_lek||0 },
+          { label:'F&B Cash Lek',              lek: ark.fnb_cash_lek||0 },
+          { label:'MICE Lek',                  lek: ark.mice_lek||0 },
+          { label:'Reception Cash Euro×'+EC,   lek: Math.round((ark.reception_cash_euro||0)*EC) },
+          { label:'Allotments Euro×'+EC,        lek: Math.round((ark.allotment||0)*EC) },
+          { label:'Itaka Euro×'+EC,             lek: Math.round((ark.itaka||0)*EC) },
+          { label:'Non Cash Euro×'+EC,          lek: Math.round((ark.non_cash_euro||0)*EC) },
+          { label:'MICE Euro×'+EC,              lek: Math.round((ark.mice_euro||0)*EC) },
+        ].filter(function(i){ return i.lek!==0; }),
         outItems: [
-          { label:'Paga',              lek: pag.paga||0 },
-          { label:'Taksa & Utilitete', lek: pag.taxes||0 },
-          { label:'Kredi Lek',         lek: pag.loan_lek||0 },
-          { label:'Furnitore Cash',    lek: pag.furnitore_cash||0 },
-          { label:'Furnitore Bankë Lek', lek: pag.furnitore_bank_lek||0 },
-          { label:'Kredi Euro×'+EC,    lek: Math.round((pag.loan_euro||0)*EC) },
+          { label:'Paga',                  lek: pag.paga||0 },
+          { label:'Taksa & Utilitete',      lek: pag.taxes||0 },
+          { label:'Kredi Lek',              lek: pag.loan_lek||0 },
+          { label:'House Use',              lek: pag.house_use||0 },
+          { label:'Furnitore Cash',         lek: pag.furnitore_cash||0 },
+          { label:'Furnitore Bankë Lek',    lek: pag.furnitore_bank_lek||0 },
+          { label:'Kredi Euro×'+EC,         lek: Math.round((pag.loan_euro||0)*EC) },
           { label:'Furnitore Bankë Euro×'+EC, lek: Math.round((pag.furnitore_bank_euro||0)*EC) },
-        ].filter(i=>i.lek!==0),
+          { label:'Investime Bankë Euro×'+EC, lek: Math.round((pag.investime_banke_euro||0)*EC) },
+          { label:'Investime Bankë Lek',    lek: pag.investime_banke_lek||0 },
+          { label:'Investime Cash',         lek: pag.investime_cash||0 },
+        ].filter(function(i){ return i.lek!==0; }),
       },
       expenses: {
-        totalLek: (fin.total||0)*1,
-        items: [
-          { name:'Shpenzime Hoteli',    lek: fin.hoteli||0 },
-          { name:'Paga & Utilitete',    lek: fin.paga_util||0 },
-          { name:'Operacionale',        lek: fin.operacionale||0 },
-          { name:'Mirëmbajtje',         lek: fin.mirembajtje||0 },
-          { name:'Marketing',           lek: fin.marketing||0 },
-          { name:'All Inclusive F&B',   lek: fin.overheads_fnb||0 },
-          { name:'SPA',                 lek: fin.spa||0 },
-          { name:'Shpenzime të Tjera',  lek: (fin.mag_qendrore||0)+(fin.mag_garden||0)+(fin.familja||0) },
-        ].filter(i=>i.lek!==0),
+        totalLek: expTotal,
+        items   : expItems,
       },
+      salesReport: salesSection,
     };
 
     const prevData = {
       totalRevenueLek: lyTotalRevLek,
-      occupancyPct: lyOcc,
-      fo: { adr: lyAdr, revpar: lyRevpar, occ: lyOcc },
+      occupancyPct   : lyOcc,
+      fo             : { adr: lyAdr, revpar: lyRevpar, occ: lyOcc },
     };
 
     await sendDailyReport(date, data, prevData);
