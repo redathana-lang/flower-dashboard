@@ -753,6 +753,7 @@ app.post('/api/send-report', async function(req, res) {
           top3channels: top3channels,
           seasonLabel : 'Prill – Tetor ' + new Date(date+'T00:00:00').getFullYear(),
         };
+      } // end if(salesState)
     } catch(salesErr) {
       console.warn('[EMAIL] Sales data unavailable:', salesErr.message);
     }
