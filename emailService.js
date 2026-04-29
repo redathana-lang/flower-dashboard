@@ -226,39 +226,6 @@ function buildEmailHTML(date, d, p) {
   var dodArrow   = dodDiff >= 0 ? '▲' : '▼';
   var dodSign    = dodDiff >= 0 ? '+' : '';
 
-  // Season months
-  var seasonTotal = d.seasonCumulativeEur || 0;
-  var MONTHS = [
-    { lbl:'Prill',   val: d.aprRevEur || 0,  done:true,  current:false },
-    { lbl:'Maj',     val: d.mayRevEur || 0,  done:false, current:true  },
-    { lbl:'Qershor', val:0, done:false, current:false },
-    { lbl:'Korrik',  val:0, done:false, current:false },
-    { lbl:'Gusht',   val:0, done:false, current:false },
-    { lbl:'Shtator', val:0, done:false, current:false },
-    { lbl:'Tetor',   val:0, done:false, current:false },
-  ];
-  var maxMVal = 1;
-  MONTHS.forEach(function(m) { if ((m.done||m.current) && m.val > maxMVal) maxMVal = m.val; });
-
-  var monthBarsHtml = MONTHS.map(function(m) {
-    var barH = m.done ? Math.round((m.val/maxMVal)*55) : (m.current ? 24 : 18);
-    var bg   = m.current
-      ? 'background:#38bdf8;border:1px solid #67e8f9;border-bottom:none;border-radius:3px 3px 0 0;'
-      : m.done
-        ? 'background:#1e3a5f;border-radius:3px 3px 0 0;'
-        : 'background:#0d1e30;border:1px dashed #1e3a5f;border-bottom:none;border-radius:3px 3px 0 0;';
-    var lc   = m.current ? '#38bdf8' : '#3d5070';
-    var vt   = (m.done||m.current) && m.val > 0
-      ? '€' + (m.val/1000).toFixed(1) + 'K'
-      : (m.current ? 'aktual' : '—');
-    return '<td style="text-align:center;padding:0 2px;">'
-      + '<div style="height:55px;display:flex;align-items:flex-end;justify-content:center;">'
-      + '<div style="width:20px;height:' + barH + 'px;' + bg + '"></div></div>'
-      + '<div style="font-size:9px;color:' + lc + ';margin-top:4px;">' + m.lbl + '</div>'
-      + '<div style="font-size:9px;color:' + lc + ';margin-top:1px;">' + vt + '</div>'
-      + '</td>';
-  }).join('');
-
   // Managerial note
   var topCh    = channels.length > 0 ? channels[0].name : 'Booking.com';
   var topChPct = channels.length > 0 ? (((channels[0].revenueLek||0) / Math.max(totalLek,1)) * 100).toFixed(1) : '—';
@@ -279,6 +246,101 @@ function buildEmailHTML(date, d, p) {
     : '';
 
   // ── Build HTML string ────────────────────────────────────────
+
+  // ── Sales Report (from in-memory salesState) ──────────────────────────────
+  var sr = d.salesReport || null;
+  var salesHtml = '';
+  if (!sr) {
+    salesHtml = '<tr><td style="background:#0f2040;padding:22px 30px;border-left:1px solid #1e3a5f;border-right:1px solid #1e3a5f;">'
+      + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:0.14em;font-weight:700;margin-bottom:10px;">05 \u2014 Sales Report</div>'
+      + '<div style="background:#0D1B3E;border-radius:8px;padding:14px;border:1px solid #1e3a5f;font-size:12px;color:#475569;text-align:center;">'
+      + 'Nuk ka t\u00eb dh\u00ebna Sales \u2014 ngarko Excel-in n\u00eb dashboard.'
+      + '</div></td></tr>\n';
+  } else {
+    var euroFmt = function(v){ return '\u20ac' + Math.round(v).toLocaleString('de-DE'); };
+    var adrTotal  = sr.totalNights  > 0 ? Math.round(sr.totalRev    / sr.totalNights)  : 0;
+    var adrFlower = sr.flowerNights > 0 ? Math.round(sr.flowerRev   / sr.flowerNights) : 0;
+    var adrGarden = sr.gardenNights > 0 ? Math.round(sr.gardenRev   / sr.gardenNights) : 0;
+    var MAL = {1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',
+               7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'N\u00ebntor',12:'Dhjetor'};
+
+    var mBodyHtml = (sr.monthRows||[]).map(function(m){
+      var occ = parseFloat(m.occ);
+      var occC = occ>=70?'#22c55e':occ>=50?'#f59e0b':'#ef4444';
+      return '<tr style="border-bottom:1px solid #131e30;">'
+        + '<td style="padding:6px 10px;font-size:11px;color:#c9a84c;font-weight:700;white-space:nowrap;">' + m.label + '</td>'
+        + '<td style="padding:6px 8px;font-size:11px;color:#8496aa;text-align:center;">' + m.res + '</td>'
+        + '<td style="padding:6px 8px;font-size:11px;color:#8496aa;text-align:center;">' + (m.nights||0).toLocaleString('en-US') + '</td>'
+        + '<td style="padding:6px 8px;font-size:12px;color:#c9a84c;font-weight:700;text-align:center;">' + euroFmt(m.rev) + '</td>'
+        + '<td style="padding:6px 8px;font-size:11px;color:#8496aa;text-align:center;">' + euroFmt(m.adr) + '</td>'
+        + '<td style="padding:6px 8px;font-size:12px;font-weight:700;text-align:center;color:' + occC + ';">' + m.occ + '%</td>'
+        + '<td style="padding:6px 8px;font-size:10px;color:#8496aa;text-align:center;">' + euroFmt(m.flowerRev) + ' / ' + euroFmt(m.gardenRev) + '</td>'
+        + '<td style="padding:6px 8px;font-size:10px;text-align:center;"><span style="background:rgba(201,168,76,.12);color:#c9a84c;border-radius:20px;padding:2px 7px;">' + m.topSrc + '</span></td>'
+        + '</tr>';
+    }).join('');
+
+    var chColors  = ['#f59e0b','#3b82f6','#8b5cf6'];
+    var chMedals  = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+    var ch3Html   = (sr.top3channels||[]).map(function(ch, i){
+      return '<tr>'
+        + '<td style="padding:6px 0;font-size:13px;width:22px;">' + (chMedals[i]||'') + '</td>'
+        + '<td style="padding:6px 8px;font-size:12px;color:#94a3b8;">' + ch.name + '</td>'
+        + '<td style="padding:6px 0;" width="40%"><div style="background:#1e3a5f;border-radius:3px;height:8px;overflow:hidden;"><div style="background:' + chColors[i] + ';height:8px;width:' + ch.barPct + '%;border-radius:3px;"></div></div></td>'
+        + '<td style="padding:6px 0 6px 10px;font-size:11px;color:#c8d5e4;text-align:right;white-space:nowrap;">' + euroFmt(ch.rev) + '</td>'
+        + '<td style="padding:6px 0 6px 6px;font-size:11px;color:#64748b;white-space:nowrap;">' + ch.nights + ' net\u00eb</td>'
+        + '</tr>';
+    }).join('');
+
+    salesHtml = '<tr><td style="background:#0f2040;padding:22px 30px;border-left:1px solid #1e3a5f;border-right:1px solid #1e3a5f;">'
+      + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:0.14em;font-weight:700;margin-bottom:14px;">05 \u2014 Sales Report \u00b7 ' + (sr.seasonLabel||'Sezoni '+year) + '</div>'
+
+      // 4 KPI cards
+      + '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>'
+      + '<td width="25%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#38bdf8;">' + (sr.totalRes||0).toLocaleString('en-US') + '</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Rezervime</div></div></td>'
+      + '<td width="25%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#c9a84c;">' + (sr.totalNights||0).toLocaleString('en-US') + '</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Net\u00eb Total</div></div></td>'
+      + '<td width="25%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#3b82f6;">' + euroFmt(sr.totalRev||0) + '</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Revenue Total</div></div></td>'
+      + '<td width="25%"><div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#a78bfa;">' + euroFmt(adrTotal) + '</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">ADR mesatar</div></div></td>'
+      + '</tr></table>'
+
+      // Flower vs Garden
+      + '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>'
+      + '<td width="50%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:14px;border:1px solid #1e3a5f;">'
+      +   '<div style="font-size:9px;color:#ef4444;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:700;">\uD83C\uDF38 Flower Hotel</div>'
+      +   '<div style="font-size:18px;font-weight:700;color:#e2e8f0;">' + euroFmt(sr.flowerRev||0) + '</div>'
+      +   '<div style="font-size:11px;color:#64748b;margin-top:4px;">' + (sr.flowerNights||0).toLocaleString('en-US') + ' net\u00eb \u00b7 ADR ' + euroFmt(adrFlower) + '</div>'
+      + '</div></td>'
+      + '<td width="50%"><div style="background:#0D1B3E;border-radius:8px;padding:14px;border:1px solid #1e3a5f;">'
+      +   '<div style="font-size:9px;color:#22c55e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:700;">\uD83C\uDF3F Garden Hotel</div>'
+      +   '<div style="font-size:18px;font-weight:700;color:#e2e8f0;">' + euroFmt(sr.gardenRev||0) + '</div>'
+      +   '<div style="font-size:11px;color:#64748b;margin-top:4px;">' + (sr.gardenNights||0).toLocaleString('en-US') + ' net\u00eb \u00b7 ADR ' + euroFmt(adrGarden) + '</div>'
+      + '</div></td></tr></table>'
+
+      // Top 3 channels
+      + '<div style="background:#0D1B3E;border-radius:8px;padding:13px;border:1px solid #1e3a5f;margin-bottom:12px;">'
+      +   '<div style="font-size:9px;color:#c9a84c;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:9px;font-weight:700;">Kanalet Top 3 sipas Shitjeve</div>'
+      +   '<table width="100%" cellpadding="0" cellspacing="0">' + ch3Html + '</table>'
+      + '</div>'
+
+      // Monthly table
+      + '<div style="background:#0D1B3E;border-radius:8px;border:1px solid #1e3a5f;overflow:hidden;">'
+      +   '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">'
+      +   '<tr style="border-bottom:1px solid #1e3a5f;background:#091525;">'
+      +   '<th style="padding:7px 10px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:left;font-weight:600;">Muaji</th>'
+      +   '<th style="padding:7px 8px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:center;font-weight:600;">Rez.</th>'
+      +   '<th style="padding:7px 8px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:center;font-weight:600;">Net\u00eb</th>'
+      +   '<th style="padding:7px 8px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:center;font-weight:600;">Revenue</th>'
+      +   '<th style="padding:7px 8px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:center;font-weight:600;">ADR</th>'
+      +   '<th style="padding:7px 8px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:center;font-weight:600;">Occ%</th>'
+      +   '<th style="padding:7px 8px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:center;font-weight:600;">Flower / Garden</th>'
+      +   '<th style="padding:7px 8px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:left;font-weight:600;">Kanali #1</th>'
+      +   '</tr>'
+      +   mBodyHtml
+      +   '</table></div>'
+      + '</td></tr>\n';
+  }
+
+
+  // ── Build HTML string ─────────────────────────────────────────
   return '<!DOCTYPE html>\n'
 + '<html lang="sq">\n'
 + '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'
@@ -463,37 +525,11 @@ function buildEmailHTML(date, d, p) {
 + '<tr><td style="background:#0f2040;padding:0 30px;border-left:1px solid #1e3a5f;border-right:1px solid #1e3a5f;">'
 + '<div style="height:1px;background:linear-gradient(90deg,transparent,#1e3a5f 20%,#1e3a5f 80%,transparent);"></div></td></tr>\n'
 
-// ── 05 SALES REPORT ──
-+ '<tr><td style="background:#0f2040;padding:22px 30px;border-left:1px solid #1e3a5f;border-right:1px solid #1e3a5f;">'
-+ '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:0.14em;font-weight:700;margin-bottom:14px;">05 \u2014 Sales Report \u00b7 Sezoni Prill \u2013 Tetor ' + year + '</div>'
-
-// Season card
-+ '<div style="background:#0D1B3E;border-radius:8px;padding:13px;border:1px solid #1e3a5f;margin-bottom:10px;">'
-+ '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;"><tr>'
-+ '<td style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.07em;">Shitje kumulative \u2014 sezoni ' + year + '</td>'
-+ '<td style="text-align:right;font-size:13px;font-weight:700;color:#38bdf8;">\u20ac' + fmtN(seasonTotal,0) + ' <span style="font-size:10px;color:#1e6a8a;font-weight:400;">total deri sot</span></td>'
-+ '</tr></table>'
-+ '<table width="100%" cellpadding="0" cellspacing="0"><tr>' + monthBarsHtml + '</tr></table>'
-+ '<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;"><tr>'
-+ '<td style="font-size:9px;color:#2a4060;"><span style="display:inline-block;width:9px;height:7px;background:#1e3a5f;border-radius:2px;margin-right:4px;"></span>I mbyllur</td>'
-+ '<td style="font-size:9px;color:#38bdf8;"><span style="display:inline-block;width:9px;height:7px;background:#38bdf8;border-radius:2px;margin-right:4px;"></span>Aktual</td>'
-+ '<td style="font-size:9px;color:#1e3a5f;"><span style="display:inline-block;width:9px;height:7px;border:1px dashed #1e3a5f;border-radius:2px;margin-right:4px;"></span>Prognoz\u00eb</td>'
-+ '</tr></table></div>'
-
-// DoD
-+ '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:7px;">Ndryshimi dit\u00eb-mbi-dit\u00eb</div>'
-+ '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>'
-+ '<td width="33%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:11px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#38bdf8;">' + fmtN(totalLek) + ' L</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">Sot</div></div></td>'
-+ '<td width="33%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:11px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#475569;">' + fmtN(prevDayLek) + ' L</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">Dje</div></div></td>'
-+ '<td width="34%"><div style="background:#0D1B3E;border-radius:8px;padding:11px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:' + dodColor + ';">' + dodSign + fmtN(dodDiff) + ' L</div><div style="font-size:10px;color:' + dodColor + ';margin-top:3px;">' + dodArrow + ' ' + Math.abs(dodPct).toFixed(1) + '%</div></div></td>'
-+ '</tr></table>'
-
-+ chRankSection
-+ '</td></tr>\n'
-
 // divider
 + '<tr><td style="background:#0f2040;padding:0 30px;border-left:1px solid #1e3a5f;border-right:1px solid #1e3a5f;">'
 + '<div style="height:1px;background:linear-gradient(90deg,transparent,#1e3a5f 20%,#1e3a5f 80%,transparent);"></div></td></tr>\n'
+
++ salesHtml
 
 // ── MANAGERIAL NOTE ──
 + '<tr><td style="background:#0f2040;padding:22px 30px 26px;border-left:1px solid #1e3a5f;border-right:1px solid #1e3a5f;">'
