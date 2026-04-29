@@ -1,14 +1,17 @@
 {
   "name": "flower-dashboard",
   "version": "1.0.0",
-  "description": "FLOW — Flower Hotels Daily Operations",
+  "description": "FLOW — Flower Hotels & Resorts Dashboard",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "cors": "^2.8.5",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "nodemailer": "^6.9.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
