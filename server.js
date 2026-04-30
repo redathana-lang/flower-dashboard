@@ -791,6 +791,7 @@ app.post('/api/send-report', async function(req, res) {
           monthRows   : monthRows,
           top3channels: top3channels,
           seasonLabel   : 'Prill – Tetor ' + new Date(date+'T00:00:00').getFullYear(),
+          uploadTs      : salesState.ts || new Date().toISOString(),
           prevTotalRev  : prevSales.tR != null ? prevSales.tR : null,
           prevTotalNights: prevSales.tN != null ? prevSales.tN : null,
           prevFilename  : prevSales.filename || null,

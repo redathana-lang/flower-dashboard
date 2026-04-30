@@ -281,10 +281,10 @@ function buildEmailHTML(date, d, p) {
     }).join('');
 
     var chColors  = ['#f59e0b','#3b82f6','#8b5cf6'];
-    var chMedals  = ['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+    var chRanks   = ['1.','2.','3.'];
     var ch3Html   = (sr.top3channels||[]).map(function(ch, i){
       return '<tr>'
-        + '<td style="padding:6px 0;font-size:13px;width:22px;">' + (chMedals[i]||'') + '</td>'
+        + '<td style="padding:6px 0;font-size:11px;color:#64748b;font-weight:700;width:22px;">' + (chRanks[i]||'') + '</td>'
         + '<td style="padding:6px 8px;font-size:12px;color:#94a3b8;">' + ch.name + '</td>'
         + '<td style="padding:6px 0;" width="40%"><div style="background:#1e3a5f;border-radius:3px;height:8px;overflow:hidden;"><div style="background:' + chColors[i] + ';height:8px;width:' + ch.barPct + '%;border-radius:3px;"></div></div></td>'
         + '<td style="padding:6px 0 6px 10px;font-size:11px;color:#c8d5e4;text-align:right;white-space:nowrap;">' + euroFmt(ch.rev) + '</td>'
@@ -293,7 +293,8 @@ function buildEmailHTML(date, d, p) {
     }).join('');
 
     salesHtml = '<tr><td style="background:#0f2040;padding:22px 30px;border-left:1px solid #1e3a5f;border-right:1px solid #1e3a5f;">'
-      + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:0.14em;font-weight:700;margin-bottom:14px;">05 \u2014 Sales Report \u00b7 ' + (sr.seasonLabel||'Sezoni '+year) + '</div>'
+      + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:0.14em;font-weight:700;margin-bottom:4px;">05 \u2014 Sales Report \u00b7 ' + (sr.seasonLabel||'Sezoni '+year) + '</div>'
+      + '<div style="font-size:10px;color:#334155;margin-bottom:12px;letter-spacing:0.04em;">Update: ' + (sr.uploadTs ? new Date(sr.uploadTs).toLocaleString('sq-AL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : date) + '</div>'
 
       // 4 KPI cards
       + '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>'
@@ -302,6 +303,42 @@ function buildEmailHTML(date, d, p) {
       + '<td width="25%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#3b82f6;">' + euroFmt(sr.totalRev||0) + '</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Revenue Total</div></div></td>'
       + '<td width="25%"><div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#a78bfa;">' + euroFmt(adrTotal) + '</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">ADR mesatar</div></div></td>'
       + '</tr></table>'
+
+      // DoD comparison row (vs previous Excel upload)
+      + (function(){
+          if (sr.prevTotalRev === null || sr.prevTotalRev === undefined) {
+            return '<div style="background:#0D1B3E;border-radius:8px;padding:11px 14px;border:1px solid #1e3a5f;margin-bottom:12px;font-size:11px;color:#334155;text-align:center;">'
+              + 'Ndryshimi vs Excel i mëparshëm: <em>ngarko Excel-in dy herë radhazi për të aktivizuar krahasimin</em>'
+              + '</div>';
+          }
+          var diff    = (sr.totalRev||0) - sr.prevTotalRev;
+          var diffPct = sr.prevTotalRev > 0 ? ((diff / sr.prevTotalRev) * 100) : 0;
+          var dColor  = diff >= 0 ? '#22c55e' : '#ef4444';
+          var dArrow  = diff >= 0 ? '▲' : '▼';
+          var dSign   = diff >= 0 ? '+' : '';
+          var prevLabel = sr.prevFilename
+            ? sr.prevFilename.replace(/^.*[\\/]/, '').replace(/\.xlsx?$/i,'')
+            : 'Excel i mëparshëm';
+          return '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>'
+            + '<td width="33%" style="padding-right:7px;">'
+            +   '<div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;">'
+            +   '<div style="font-size:15px;font-weight:700;color:#38bdf8;">' + euroFmt(sr.totalRev||0) + '</div>'
+            +   '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Aktual</div>'
+            +   '</div></td>'
+            + '<td width="33%" style="padding-right:7px;">'
+            +   '<div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;">'
+            +   '<div style="font-size:15px;font-weight:700;color:#475569;">' + euroFmt(sr.prevTotalRev) + '</div>'
+            +   '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Excel i mëparshëm</div>'
+            +   '<div style="font-size:9px;color:#334155;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + prevLabel + '">' + prevLabel.substring(0,22) + (prevLabel.length>22?'…':'') + '</div>'
+            +   '</div></td>'
+            + '<td width="34%">'
+            +   '<div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;">'
+            +   '<div style="font-size:15px;font-weight:700;color:' + dColor + ';">' + dSign + euroFmt(diff) + '</div>'
+            +   '<div style="font-size:12px;color:' + dColor + ';margin-top:3px;">' + dArrow + ' ' + Math.abs(diffPct).toFixed(1) + '%</div>'
+            +   '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:3px;">Ndryshimi</div>'
+            +   '</div></td>'
+            + '</tr></table>';
+        })()
 
       // Flower vs Garden
       + '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>'
