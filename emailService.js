@@ -5,18 +5,15 @@
 // ================================================================
 
 const nodemailer = require('nodemailer');
-const fs         = require('fs');
-const path       = require('path');
 
 // ── Fixed recipients ─────────────────────────────────────────
 const DEFAULT_RECIPIENTS = 'redathana@gmail.com,ernestcaci@gmail.com';
 
-// ── Logo ─────────────────────────────────────────────────────
-let LOGO_URI = '';
-try {
-  const buf = fs.readFileSync(path.join(__dirname, 'icon-512.png'));
-  LOGO_URI  = `data:image/png;base64,${buf.toString('base64')}`;
-} catch (_) { /* logo file not found — header shows text only */ }
+// ── Logo — served via URL (avoids Gmail 102KB clipping) ─────
+// Render serves static files from root, so icon-192.png is accessible via URL
+const LOGO_URI = process.env.SELF_URL
+  ? (process.env.SELF_URL.replace(/\/$/, '') + '/icon-192.png')
+  : '';  // falls back to text-only header if SELF_URL not set
 
 // ── SMTP transport ────────────────────────────────────────────
 function createTransport() {
