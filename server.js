@@ -514,33 +514,53 @@ app.get('/api/sheets-debug', function(req, res) {
 // ─── SALES STATE PERSISTENCE ─────────────────────────────────────────────────
 // Store in memory + file. File persists within same Render container.
 // On redeploy, admin needs to re-upload Excel (one-time action).
-const fs_sales = require('fs');
-const SALES_FILE = require('path').join(__dirname, 'sales_state.json');
+const fs_sales   = require('fs');
+const path_sales  = require('path');
+const SALES_FILE  = path_sales.join(__dirname, 'sales_state.json');
+const PREV_FILE   = path_sales.join(__dirname, 'sales_prev.json'); // persists prev revenue across restarts
+
 let salesState = null;
 
+// prevSales stores only what we need for DoD: tR, tN, filename, ts
+let prevSales  = { tR: null, tN: null, filename: null, ts: null };
+
+// ── Load current sales state from disk ───────────────────────────────────────
 (function loadSales(){
   try {
     if(fs_sales.existsSync(SALES_FILE)){
-      const raw = fs_sales.readFileSync(SALES_FILE,'utf8');
-      const parsed = JSON.parse(raw);
-      // Only load if it has agg data (Excel upload), not old csv data
+      const parsed = JSON.parse(fs_sales.readFileSync(SALES_FILE,'utf8'));
       if(parsed && parsed.agg){
         salesState = parsed;
-        console.log('[SALES] Loaded agg from file, ts:', salesState.ts);
-      } else {
-        console.log('[SALES] Ignoring old csv state, waiting for Excel upload');
-        salesState = null;
+        console.log('[SALES] Loaded from disk, ts:', salesState.ts);
       }
     }
   } catch(e){ console.warn('[SALES] Load error:', e.message); }
 })();
 
-// ─── SALES STATE API ─────────────────────────────────────────────────────────
+// ── Load previous sales snapshot from disk ───────────────────────────────────
+(function loadPrevSales(){
+  try {
+    if(fs_sales.existsSync(PREV_FILE)){
+      const parsed = JSON.parse(fs_sales.readFileSync(PREV_FILE,'utf8'));
+      if(parsed && parsed.tR != null){
+        prevSales = parsed;
+        console.log('[SALES] Loaded prev snapshot, tR:', prevSales.tR, 'ts:', prevSales.ts);
+      }
+    }
+  } catch(e){ console.warn('[SALES] Prev load error:', e.message); }
+})();
+
+// ── Persist helpers ───────────────────────────────────────────────────────────
 function saveSales(){
   try { fs_sales.writeFileSync(SALES_FILE, JSON.stringify(salesState), 'utf8'); }
   catch(e){ console.warn('[SALES] Save error:', e.message); }
 }
+function savePrevSales(){
+  try { fs_sales.writeFileSync(PREV_FILE, JSON.stringify(prevSales), 'utf8'); }
+  catch(e){ console.warn('[SALES] Prev save error:', e.message); }
+}
 
+// ─── SALES STATE API ─────────────────────────────────────────────────────────
 app.get('/api/sales-state', function(req, res){
   res.setHeader('Cache-Control','no-store');
   if(salesState && salesState.agg)
@@ -551,10 +571,22 @@ app.get('/api/sales-state', function(req, res){
 
 app.post('/api/sales-state', function(req, res){
   try {
+    // Before overwriting, snapshot current tR/tN/filename into prevSales and persist
+    if(salesState && salesState.agg){
+      prevSales = {
+        tR      : salesState.agg.tR       || 0,
+        tN      : salesState.agg.tN       || 0,
+        filename: salesState.filename      || null,
+        ts      : salesState.ts            || null,
+      };
+      savePrevSales();
+      console.log('[SALES] Prev snapshot saved, tR:', prevSales.tR);
+    }
+
     salesState = req.body;
     if(!salesState.ts) salesState.ts = new Date().toISOString();
     saveSales();
-    console.log('[SALES] Saved agg at', salesState.ts, 'file:', salesState.filename);
+    console.log('[SALES] New upload saved, tR:', salesState.agg && salesState.agg.tR, 'file:', salesState.filename);
     res.json({ok:true});
   } catch(e){
     res.status(400).json({error:e.message});
@@ -758,7 +790,10 @@ app.post('/api/send-report', async function(req, res) {
           gardenRev   : agg.gR || 0,
           monthRows   : monthRows,
           top3channels: top3channels,
-          seasonLabel : 'Prill – Tetor ' + new Date(date+'T00:00:00').getFullYear(),
+          seasonLabel   : 'Prill – Tetor ' + new Date(date+'T00:00:00').getFullYear(),
+          prevTotalRev  : prevSales.tR != null ? prevSales.tR : null,
+          prevTotalNights: prevSales.tN != null ? prevSales.tN : null,
+          prevFilename  : prevSales.filename || null,
         };
       } // end if(salesState)
     } catch(salesErr) {
