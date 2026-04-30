@@ -32,7 +32,7 @@ function createTransport() {
 function fmtN(n, dec) {
   dec = dec === undefined ? 0 : dec;
   if (n == null || isNaN(n)) return '—';
-  return Number(n).toLocaleString('en-US', {
+  return Number(n).toLocaleString('de-DE', {
     minimumFractionDigits: dec, maximumFractionDigits: dec,
   });
 }
@@ -137,6 +137,7 @@ function buildEmailHTML(date, d, p) {
   // Overview
   var occ        = d.occupancyPct || (d.occupancy && d.occupancy.pct) || 0;
   var lyOcc      = p.occupancyPct || (p.occupancy && p.occupancy.pct) || 0;
+  var lyRooms    = (p.fo && p.fo.roomsOccupied) || 0;
   var rooms      = d.roomsOccupied || (d.occupancy && d.occupancy.occupied) || 0;
   var totalRooms = d.totalRooms || 110;
   var totalLek   = d.totalRevenueLek || (d.revenue && d.revenue.totalLek) || 0;
@@ -305,12 +306,12 @@ function buildEmailHTML(date, d, p) {
       // Flower vs Garden
       + '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>'
       + '<td width="50%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:14px;border:1px solid #1e3a5f;">'
-      +   '<div style="font-size:9px;color:#ef4444;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:700;">\uD83C\uDF38 Flower Hotel</div>'
+      +   '<div style="font-size:9px;color:#ef4444;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:700;">FLOWER HOTEL</div>'
       +   '<div style="font-size:18px;font-weight:700;color:#e2e8f0;">' + euroFmt(sr.flowerRev||0) + '</div>'
       +   '<div style="font-size:11px;color:#64748b;margin-top:4px;">' + (sr.flowerNights||0).toLocaleString('en-US') + ' net\u00eb \u00b7 ADR ' + euroFmt(adrFlower) + '</div>'
       + '</div></td>'
       + '<td width="50%"><div style="background:#0D1B3E;border-radius:8px;padding:14px;border:1px solid #1e3a5f;">'
-      +   '<div style="font-size:9px;color:#22c55e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:700;">\uD83C\uDF3F Garden Hotel</div>'
+      +   '<div style="font-size:9px;color:#22c55e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;font-weight:700;">GARDEN HOTEL</div>'
       +   '<div style="font-size:18px;font-weight:700;color:#e2e8f0;">' + euroFmt(sr.gardenRev||0) + '</div>'
       +   '<div style="font-size:11px;color:#64748b;margin-top:4px;">' + (sr.gardenNights||0).toLocaleString('en-US') + ' net\u00eb \u00b7 ADR ' + euroFmt(adrGarden) + '</div>'
       + '</div></td></tr></table>'
@@ -496,7 +497,7 @@ function buildEmailHTML(date, d, p) {
 + '<table width="100%" cellpadding="0" cellspacing="0"><tr>'
 + '<td style="text-align:center;width:46%;"><div style="font-size:9px;color:#4a6fa5;margin-bottom:3px;">Sot</div><div style="font-size:22px;font-weight:700;color:' + occColor + ';">' + fmtN(occ,1) + '%</div><div style="font-size:10px;color:#334155;margin-top:2px;">' + rooms + '/' + totalRooms + '</div></td>'
 + '<td style="text-align:center;width:8%;"><div style="width:1px;height:42px;background:#1e3a5f;margin:0 auto;"></div></td>'
-+ '<td style="text-align:center;width:46%;"><div style="font-size:9px;color:#334155;margin-bottom:3px;">LY</div><div style="font-size:17px;font-weight:700;color:#475569;">' + fmtN(lyOcc,1) + '%</div><div style="margin-top:3px;">' + chgPP(occ, lyOcc) + '</div></td>'
++ '<td style="text-align:center;width:46%;"><div style="font-size:9px;color:#334155;margin-bottom:3px;">LY</div><div style="font-size:17px;font-weight:700;color:#475569;">' + fmtN(lyOcc,1) + '%</div><div style="font-size:10px;color:#334155;margin-top:2px;">' + (lyRooms||'—') + '/110</div><div style="margin-top:2px;">' + chgPP(occ, lyOcc) + '</div></td>'
 + '</tr></table></div></td>'
 
 // ADR card

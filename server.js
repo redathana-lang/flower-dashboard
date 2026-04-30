@@ -647,18 +647,19 @@ app.post('/api/send-report', async function(req, res) {
     // ── Cash Flow ──────────────────────────────────────────────────────────────
     const ark = cf.arketimet || {};
     const pag = cf.pagesat   || {};
-    const cfInLek  = (ark.non_cash_lek||0)
-                   + (ark.reception_cash_lek||0)
-                   + (ark.fnb_cash_lek||0)
-                   + (ark.mice_lek||0)
-                   + ((ark.non_cash_euro||0)+(ark.reception_cash_euro||0)+(ark.allotment||0)+(ark.itaka||0)+(ark.mice_euro||0))*EC;
-    const cfOutLek = (pag.paga||0)
-                   + (pag.taxes||0)
-                   + (pag.loan_lek||0)
-                   + (pag.house_use||0)
-                   + (pag.furnitore_cash||0)
-                   + (pag.furnitore_bank_lek||0)
-                   + ((pag.loan_euro||0)+(pag.furnitore_bank_euro||0))*EC;
+    // Cash Flow — exact same formula as dashboard (lines 749-750 of index.html)
+    function n(v){ return Number(v)||0; }
+    const cfInLek  = n(ark.non_cash_lek) + n(ark.reception_cash_lek)
+                   + n(ark.fnb_cash_lek) + n(ark.mice_lek)
+                   + (n(ark.non_cash_euro) + n(ark.reception_cash_euro)
+                      + n(ark.allotment)   + n(ark.itaka)
+                      + n(ark.mice_euro)) * EC;
+    const cfOutLek = n(pag.paga) + n(pag.taxes) + n(pag.loan_lek)
+                   + n(pag.house_use) + n(pag.furnitore_cash)
+                   + n(pag.furnitore_bank_lek) + n(pag.investime_banke_lek)
+                   + n(pag.investime_cash)
+                   + (n(pag.loan_euro) + n(pag.furnitore_bank_euro)
+                      + n(pag.investime_banke_euro)) * EC;
     const cfNetLek = cfInLek - cfOutLek;
 
     // ── FO KPIs ────────────────────────────────────────────────────────────────
@@ -671,21 +672,27 @@ app.post('/api/send-report', async function(req, res) {
     const lyRevpar = Math.round(lyHotelLek / TR);
 
     // ── Expenses (fin.* values are already in Lek) ─────────────────────────────
+    // Expenses — exact same fields as dashboard (line 803 of index.html)
     const expItems = [
-      { name:'Shpenzime Hoteli',        lek: fin.hoteli       || 0 },
-      { name:'Paga & Utilitete',         lek: fin.paga_util    || 0 },
-      { name:'Operacionale Mikse',       lek: fin.operacionale || 0 },
-      { name:'Mirëmbajtje & Riparime',   lek: fin.mirembajtje  || 0 },
-      { name:'Marketing',                lek: fin.marketing    || 0 },
-      { name:'Overheads F&B',            lek: fin.overheads_fnb|| 0 },
-      { name:'Magazina Qendrore',        lek: fin.mag_qendrore || 0 },
-      { name:'SPA',                      lek: fin.spa          || 0 },
-      { name:'Familja',                  lek: fin.familja      || 0 },
-      { name:'Mag. Garden (Investime)',   lek: fin.mag_garden   || 0 },
+      { name:'Beach Bar',                 lek: n(fin.beach_bar)     },
+      { name:'Flower Restorant',          lek: n(fin.flower)        },
+      { name:'Pool Bar',                  lek: n(fin.pool_bar)      },
+      { name:'Brutal',                    lek: n(fin.brutal)        },
+      { name:'Pool Bar Garden',           lek: n(fin.pool_garden)   },
+      { name:'Overheads F&B',             lek: n(fin.overheads_fnb) },
+      { name:'Magazina Qendrore',         lek: n(fin.mag_qendrore)  },
+      { name:'Operacionale Mikse',        lek: n(fin.operacionale)  },
+      { name:'SPA',                       lek: n(fin.spa)           },
+      { name:'Mirëmbajtje & Riparime',    lek: n(fin.mirembajtje)   },
+      { name:'Marketing',                 lek: n(fin.marketing)     },
+      { name:'Familja',                   lek: n(fin.familja)       },
+      { name:'Shpenzime Hoteli',          lek: n(fin.hoteli)        },
+      { name:'Magazina GARDEN (Invest.)', lek: n(fin.mag_garden)    },
+      { name:'Paga & Utilitete',          lek: n(fin.paga_util)     },
     ].filter(function(i){ return i.lek !== 0; });
 
-    // Use fin.total directly (already Lek), or sum items if total is missing
-    const expTotal = fin.total || expItems.reduce(function(s,i){ return s+i.lek; }, 0);
+    // Total: use fin.total if present, otherwise sum all items (same as dashboard)
+    const expTotal = n(fin.total) || expItems.reduce(function(s,i){ return s+i.lek; }, 0);
 
     // ── Sales Report (from in-memory salesState — loaded from uploaded Excel) ────
     var salesSection = null;
@@ -782,28 +789,28 @@ app.post('/api/send-report', async function(req, res) {
         totalOutLek: cfOutLek,
         netLek     : cfNetLek,
         inItems: [
-          { label:'Non Cash Lek',             lek: ark.non_cash_lek||0 },
-          { label:'Reception Cash Lek',        lek: ark.reception_cash_lek||0 },
-          { label:'F&B Cash Lek',              lek: ark.fnb_cash_lek||0 },
-          { label:'MICE Lek',                  lek: ark.mice_lek||0 },
-          { label:'Reception Cash Euro×'+EC,   lek: Math.round((ark.reception_cash_euro||0)*EC) },
-          { label:'Allotments Euro×'+EC,        lek: Math.round((ark.allotment||0)*EC) },
-          { label:'Itaka Euro×'+EC,             lek: Math.round((ark.itaka||0)*EC) },
-          { label:'Non Cash Euro×'+EC,          lek: Math.round((ark.non_cash_euro||0)*EC) },
-          { label:'MICE Euro×'+EC,              lek: Math.round((ark.mice_euro||0)*EC) },
+          { label:'Non Cash Lek',             lek: n(ark.non_cash_lek) },
+          { label:'Non Cash Bank Euro×'+EC,   lek: Math.round(n(ark.non_cash_euro)*EC) },
+          { label:'Reception Cash Euro×'+EC,  lek: Math.round(n(ark.reception_cash_euro)*EC) },
+          { label:'Reception Cash Lek',       lek: n(ark.reception_cash_lek) },
+          { label:'Allotments Euro×'+EC,      lek: Math.round(n(ark.allotment)*EC) },
+          { label:'Itaka',                    lek: n(ark.itaka) },
+          { label:'F&B Cash Lek',             lek: n(ark.fnb_cash_lek) },
+          { label:'MICE Euro×'+EC,            lek: Math.round(n(ark.mice_euro)*EC) },
+          { label:'MICE Lek',                 lek: n(ark.mice_lek) },
         ].filter(function(i){ return i.lek!==0; }),
         outItems: [
-          { label:'Paga',                  lek: pag.paga||0 },
-          { label:'Taksa & Utilitete',      lek: pag.taxes||0 },
-          { label:'Kredi Lek',              lek: pag.loan_lek||0 },
-          { label:'House Use',              lek: pag.house_use||0 },
-          { label:'Furnitore Cash',         lek: pag.furnitore_cash||0 },
-          { label:'Furnitore Bankë Lek',    lek: pag.furnitore_bank_lek||0 },
-          { label:'Kredi Euro×'+EC,         lek: Math.round((pag.loan_euro||0)*EC) },
-          { label:'Furnitore Bankë Euro×'+EC, lek: Math.round((pag.furnitore_bank_euro||0)*EC) },
-          { label:'Investime Bankë Euro×'+EC, lek: Math.round((pag.investime_banke_euro||0)*EC) },
-          { label:'Investime Bankë Lek',    lek: pag.investime_banke_lek||0 },
-          { label:'Investime Cash',         lek: pag.investime_cash||0 },
+          { label:'Paga',                       lek: n(pag.paga) },
+          { label:'Taksa & Utilitete',          lek: n(pag.taxes) },
+          { label:'Kredi Euro×'+EC,             lek: Math.round(n(pag.loan_euro)*EC) },
+          { label:'Kredi Lek',                  lek: n(pag.loan_lek) },
+          { label:'House Use',                  lek: n(pag.house_use) },
+          { label:'Furnitore Cash',             lek: n(pag.furnitore_cash) },
+          { label:'Furnitore Bankë Lek',        lek: n(pag.furnitore_bank_lek) },
+          { label:'Furnitore Bankë Euro×'+EC,   lek: Math.round(n(pag.furnitore_bank_euro)*EC) },
+          { label:'Investime Bankë Euro×'+EC,   lek: Math.round(n(pag.investime_banke_euro)*EC) },
+          { label:'Investime Bankë Lek',        lek: n(pag.investime_banke_lek) },
+          { label:'Investime Cash',             lek: n(pag.investime_cash) },
         ].filter(function(i){ return i.lek!==0; }),
       },
       expenses: {
@@ -816,7 +823,12 @@ app.post('/api/send-report', async function(req, res) {
     const prevData = {
       totalRevenueLek: lyTotalRevLek,
       occupancyPct   : lyOcc,
-      fo             : { adr: lyAdr, revpar: lyRevpar, occ: lyOcc },
+      fo             : {
+        adr           : lyAdr,
+        revpar        : lyRevpar,
+        occ           : lyOcc,
+        roomsOccupied : fo_yoy.rooms_occupied || 0,
+      },
     };
 
     await sendDailyReport(date, data, prevData);
