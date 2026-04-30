@@ -320,22 +320,18 @@ function buildEmailHTML(date, d, p) {
             ? sr.prevFilename.replace(/^.*[\\/]/, '').replace(/\.xlsx?$/i,'')
             : 'Excel i mëparshëm';
           return '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>'
-            + '<td width="33%" style="padding-right:7px;">'
+            + '<td width="50%" style="padding-right:7px;">'
             +   '<div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;">'
-            +   '<div style="font-size:15px;font-weight:700;color:#38bdf8;">' + euroFmt(sr.totalRev||0) + '</div>'
-            +   '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Aktual</div>'
+            +   '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;">DoD — Ndryshimi vs Excel i mëparshëm</div>'
+            +   '<div style="font-size:9px;color:#334155;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + prevLabel.substring(0,32) + (prevLabel.length>32?'…':'') + '</div>'
+            +   '<div style="font-size:22px;font-weight:700;color:' + dColor + ';">' + dSign + euroFmt(diff) + '</div>'
+            +   '<div style="font-size:13px;color:' + dColor + ';margin-top:4px;font-weight:600;">' + dArrow + ' ' + Math.abs(diffPct).toFixed(1) + '%</div>'
             +   '</div></td>'
-            + '<td width="33%" style="padding-right:7px;">'
+            + '<td width="50%">'
             +   '<div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;">'
-            +   '<div style="font-size:15px;font-weight:700;color:#475569;">' + euroFmt(sr.prevTotalRev) + '</div>'
-            +   '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Excel i mëparshëm</div>'
-            +   '<div style="font-size:9px;color:#334155;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + prevLabel + '">' + prevLabel.substring(0,22) + (prevLabel.length>22?'…':'') + '</div>'
-            +   '</div></td>'
-            + '<td width="34%">'
-            +   '<div style="background:#0D1B3E;border-radius:8px;padding:12px 10px;border:1px solid #1e3a5f;text-align:center;">'
-            +   '<div style="font-size:15px;font-weight:700;color:' + dColor + ';">' + dSign + euroFmt(diff) + '</div>'
-            +   '<div style="font-size:12px;color:' + dColor + ';margin-top:3px;">' + dArrow + ' ' + Math.abs(diffPct).toFixed(1) + '%</div>'
-            +   '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:3px;">Ndryshimi</div>'
+            +   '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;">Aktual · ' + (sr.seasonLabel||'Sezoni') + '</div>'
+            +   '<div style="font-size:22px;font-weight:700;color:#38bdf8;">' + euroFmt(sr.totalRev||0) + '</div>'
+            +   '<div style="font-size:11px;color:#334155;margin-top:4px;">' + (sr.totalNights||0).toLocaleString('en-US') + ' netë · ADR ' + euroFmt(adrTotal) + '</div>'
             +   '</div></td>'
             + '</tr></table>';
         })()
@@ -360,7 +356,7 @@ function buildEmailHTML(date, d, p) {
       + '</div>'
 
       // Monthly table
-      + '<div style="background:#0D1B3E;border-radius:8px;border:1px solid #1e3a5f;overflow:hidden;">'
+      + '<div style="background:#0D1B3E;border-radius:8px;border:1px solid #1e3a5f;">'
       +   '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">'
       +   '<tr style="border-bottom:1px solid #1e3a5f;background:#091525;">'
       +   '<th style="padding:7px 10px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:left;font-weight:600;">Muaji</th>'
@@ -397,7 +393,7 @@ function buildEmailHTML(date, d, p) {
 + '</div></td></tr></table>\n'
 
 // Email body open
-+ '<table width="660" cellpadding="0" cellspacing="0" style="max-width:660px;width:100%;background:#0a1628;border-radius:14px;overflow:hidden;">\n'
++ '<table width="660" cellpadding="0" cellspacing="0" style="max-width:660px;width:100%;background:#0a1628;border-radius:14px;">\n'
 
 // ── HEADER ──
 + '<tr><td style="background:linear-gradient(135deg,#0D1B3E 0%,#162d5c 100%);padding:24px 30px 18px;border-bottom:2px solid #1e3a6e;">'
@@ -445,7 +441,7 @@ function buildEmailHTML(date, d, p) {
 + '</tr></table>\n'
 
 // Dept table
-+ '<div style="background:#0D1B3E;border-radius:8px;border:1px solid #1e3a5f;margin-top:14px;overflow:hidden;">'
++ '<div style="background:#0D1B3E;border-radius:8px;border:1px solid #1e3a5f;margin-top:14px;">'
 + '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">'
 + '<tr style="border-bottom:1px solid #1a2d45;">'
 + '<td colspan="5" style="padding:9px 12px 6px;font-size:9px;color:#3d5070;text-transform:uppercase;letter-spacing:0.08em;">'
@@ -504,7 +500,7 @@ function buildEmailHTML(date, d, p) {
 + '<table width="100%" cellpadding="0" cellspacing="0"><tr>'
 + '<td width="33%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:13px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#22c55e;">' + fmtN(cfIn) + ' L</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">Hyrje Cash</div></div></td>'
 + '<td width="33%" style="padding-right:7px;"><div style="background:#0D1B3E;border-radius:8px;padding:13px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:#ef4444;">' + fmtN(cfOut) + ' L</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">Dalje Cash</div></div></td>'
-+ '<td width="34%"><div style="background:#0D1B3E;border-radius:8px;padding:13px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:' + cfNetCol + ';">' + fmtN(cfNet) + ' L</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">Balanci</div></div></td>'
++ '<td width="34%"><div style="background:#0D1B3E;border-radius:8px;padding:13px 10px;border:1px solid #1e3a5f;text-align:center;"><div style="font-size:15px;font-weight:700;color:' + cfNetCol + ';">' + fmtN(cfNet) + ' L</div><div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;">Balanca</div></div></td>'
 + '</tr></table>'
 + '<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;"><tr>'
 + '<td width="50%" style="padding-right:7px;vertical-align:top;">'
