@@ -604,7 +604,7 @@ app.get('/api/sales-clear', function(req, res){
 // ─── EMAIL REPORT ─────────────────────────────────────────────────────────────
 app.post('/api/send-report', async function(req, res) {
   // Auth: token must match ADMIN password (set ADMIN_TOKEN env var on Render)
-  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || '112212';
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'Rep26';
   const token = req.body && req.body.token;
   if (token !== ADMIN_TOKEN) {
     return res.status(403).json({ error: 'Nuk keni leje. Vetëm ADMIN mund të dërgojë raportin.' });
