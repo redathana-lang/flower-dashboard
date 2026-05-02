@@ -638,7 +638,7 @@ function rOV(fo,fnb,spa,cf,foY,fnbY,spaY){
       <div class="kpi ${lira<=10?'red':''}">
         <div class="kpi-lbl">Dhoma të Lira</div>
         <div class="kpi-val">${lira}</div>
-        <div class="kpi-sub">Disponibël · ${new Date(fromDate).getFullYear()-1}: <strong>${roomsY?TR-roomsY:'—'}</strong></div>
+        <div class="kpi-sub">Disponibël · ${new Date(fromDate).getFullYear()-1}: <strong>${roomsY?TR-Math.round(roomsY/days):'—'}</strong></div>
       </div>
     </div>
 
@@ -693,7 +693,7 @@ function rFO(fo,foY){
       <tr class="sh"><td colspan="3">Dhoma</td></tr>
       <tr><td>Dhoma të Zëna</td><td class="v">${rooms}</td><td class="v">${n(foY.rooms_occupied)||'—'}</td></tr>
       <tr><td>Dhoma të Lira (mesatare/ditë)</td><td class="v">${TR-Math.round(rooms/days2)}</td><td class="v">${foY.rooms_occupied?TR-Math.round(n(foY.rooms_occupied)/days2):'—'}</td></tr>
-      <tr><td>Ocupanca</td><td class="v g">${occ}%</td><td class="v">${foY.rooms_occupied?(n(foY.rooms_occupied)/TR*100).toFixed(1)+'%':'—'}</td></tr>
+      <tr><td>Ocupanca</td><td class="v g">${occ}%</td><td class="v">${foY.rooms_occupied?(n(foY.rooms_occupied)/(days2*TR)*100).toFixed(1)+'%':'—'}</td></tr>
       <tr class="sh"><td colspan="3">Të Ardhura</td></tr>
       <tr class="tr"><td>Revenue Ditore</td><td class="v g">${fE(fo.revenue_eur||0)}</td><td class="v">${fE(foY.revenue_eur||0)}</td></tr>
       <tr><td>Ekuivalent Lek (×${EH})</td><td class="v">${fL(n(fo.revenue_eur)*EH)}</td><td class="v">${fL(n(foY.revenue_eur)*EH)}</td></tr>
@@ -707,6 +707,7 @@ function rFNB(fnb,fnbY){
   const tot=n(fnb.flower)+n(fnb.pool_bar)+n(fnb.brutal)+n(fnb.pool_garden)+n(fnb.beach_bar)+n(fnb.house_use);
   const neto=tot-n(fnb.house_use);
   const totY=n(fnbY.flower)+n(fnbY.pool_bar)+n(fnbY.brutal)+n(fnbY.pool_garden)+n(fnbY.beach_bar)+n(fnbY.house_use);
+  const netoY=totY-n(fnbY.house_use);
   const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v">${fL(v)}</td><td class="v">${vy!==undefined?fL(vy):'—'}</td></tr>`;
   el.innerHTML=`<div class="sec-card">
     <div class="sec-hdr2">🍽️ F&B Daily Revenues — ${fRange()}</div>
@@ -717,9 +718,9 @@ function rFNB(fnb,fnbY){
       ${row('🍖 Brutal Garden',n(fnb.brutal),n(fnbY.brutal))}
       ${row('🏊 Pool Bar Garden',n(fnb.pool_garden),n(fnbY.pool_garden))}
       ${row('🏖️ Beach Bar',n(fnb.beach_bar),n(fnbY.beach_bar))}
-      ${row('🏠 House Use',n(fnb.house_use),undefined)}
-      <tr><td>Xhiro Neto</td><td class="v g">${fL(neto)}</td><td class="v">—</td></tr>
-      <tr class="tr"><td>Total Xhiro</td><td class="v g">${fL(tot)}</td><td class="v">${fL(totY)}</td></tr>
+      ${row('🏠 House Use',n(fnb.house_use),n(fnbY.house_use))}
+      <tr><td>Xhiro Neto</td><td class="v g">${fL(neto)}</td><td class="v">${totY?fL(netoY):'—'}</td></tr>
+      <tr class="tr"><td>Total Xhiro</td><td class="v g">${fL(tot)}</td><td class="v">${totY?fL(totY):'—'}</td></tr>
     </table>
   </div>`;
 }
