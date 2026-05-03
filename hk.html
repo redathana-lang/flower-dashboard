@@ -58,9 +58,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .room-card:active{transform:scale(.92);}
 .room-card.pas{background:var(--green);}
 .room-card.pis{background:var(--red);}
+.room-card.oot{background:#6b7a8d;}
 .rc-n{font-size:16px;font-weight:700;color:#fff;line-height:1;}
 .rc-l{font-size:9px;color:rgba(255,255,255,.85);margin-top:3px;}
 .rc-t{font-size:9px;color:rgba(255,255,255,.65);margin-top:1px;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-bg.open{display:flex;}
+.modal-box{background:#fff;border-radius:20px;padding:28px 22px 22px;width:100%;max-width:360px;position:relative;}
+.modal-close{position:absolute;top:16px;right:18px;background:none;border:none;font-size:22px;color:#aaa;cursor:pointer;line-height:1;}
+.modal-title{font-size:20px;font-weight:800;color:#111;margin-bottom:2px;}
+.modal-sub{font-size:13px;color:#888;margin-bottom:18px;}
+.modal-btn{width:100%;padding:15px;border-radius:12px;font-size:15px;font-weight:700;border:3px solid transparent;cursor:pointer;margin-bottom:10px;transition:border-color .12s;}
+.modal-btn.green{background:#22c55e;color:#fff;}
+.modal-btn.red{background:#ef4444;color:#fff;}
+.modal-btn.gray{background:#9ca3af;color:#fff;}
+.modal-btn.sel{border-color:#111;}
+.modal-notes{width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:12px;font-size:14px;resize:none;outline:none;margin-bottom:16px;font-family:inherit;color:#111;}
+.modal-notes:focus{border-color:#374151;}
+.modal-actions{display:flex;gap:10px;}
+.modal-anulo{flex:1;padding:14px;border-radius:10px;background:#f3f4f6;color:#374151;border:none;font-size:14px;font-weight:600;cursor:pointer;}
+.modal-ruaj{flex:1;padding:14px;border-radius:10px;background:#111;color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;}
 
 /* LOADING */
 #overlay{position:fixed;inset:0;background:rgba(10,22,40,.85);
@@ -124,6 +143,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 <div class="stats-row" id="stats"></div>
 <div id="cards" style="padding-bottom:60px;"></div>
 
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <button class="modal-btn green" id="mbtn-pas" onclick="selectClean('paster')">E Pastër</button>
+    <button class="modal-btn red" id="mbtn-pis" onclick="selectClean('piseet')">E Pisët</button>
+    <button class="modal-btn gray" id="mbtn-oot" onclick="selectClean('oot')">Out of Order</button>
+    <textarea class="modal-notes" id="modal-notes" rows="3" placeholder="Shënime..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-anulo" onclick="closeModal()">Anulo</button>
+      <button class="modal-ruaj" onclick="saveModal()">Ruaj ✓</button>
+    </div>
+  </div>
+</div>
+
 <div class="bot-bar">
   <span class="bot-date" id="bot-date"></span>
   <button class="bot-refresh" onclick="pullAndRender()">↻ Rifresko</button>
@@ -147,7 +183,7 @@ function initRooms(){
     for(const[fl,nums] of Object.entries(floors))
       for(const num of nums){
         const k=`${b}-${num}`;
-        if(!rooms[k]) rooms[k]={num,bld:b,fl,status:'liree',clean:'piseet',persons:'',checkin:'',checkout:'',ts:null};
+        if(!rooms[k]) rooms[k]={num,bld:b,fl,status:'liree',clean:'piseet',persons:'',checkin:'',checkout:'',notes:'',ts:null};
       }
 }
 
@@ -168,7 +204,8 @@ function computeStats(){
   return{
     total:rs.length,
     paster:rs.filter(r=>r.clean==='paster').length,
-    piseet:rs.filter(r=>r.clean==='piseet').length
+    piseet:rs.filter(r=>r.clean==='piseet').length,
+    oot:rs.filter(r=>r.clean==='oot').length
   };
 }
 
@@ -177,7 +214,8 @@ function render(){
   document.getElementById('stats').innerHTML=`
     <div class="stat"><div class="stat-n" style="color:var(--text)">${s.total}</div><div class="stat-l">Total</div></div>
     <div class="stat"><div class="stat-n" style="color:var(--green)">${s.paster}</div><div class="stat-l">E Pastër</div></div>
-    <div class="stat"><div class="stat-n" style="color:var(--red)">${s.piseet}</div><div class="stat-l">E Pisët</div></div>`;
+    <div class="stat"><div class="stat-n" style="color:var(--red)">${s.piseet}</div><div class="stat-l">E Pisët</div></div>
+    <div class="stat"><div class="stat-n" style="color:#9ca3af">${s.oot}</div><div class="stat-l">Out of Order</div></div>`;
   document.getElementById('bot-date').textContent=dateAlb(new Date());
   const floors=INV[bld];
   let html='';
@@ -185,9 +223,9 @@ function render(){
     html+=`<div class="floor-section"><div class="floor-title">${fl}</div><div class="card-grid">`;
     for(const num of nums){
       const k=`${bld}-${num}`,room=rooms[k];if(!room)continue;
-      const cls=room.clean==='paster'?'pas':'pis';
-      const lbl=room.clean==='paster'?'E Pastër':'E Pisët';
-      html+=`<div class="room-card ${cls}" onclick="toggle('${k}')">
+      const cls=room.clean==='paster'?'pas':room.clean==='oot'?'oot':'pis';
+      const lbl=room.clean==='paster'?'E Pastër':room.clean==='oot'?'Out of Order':'E Pisët';
+      html+=`<div class="room-card ${cls}" onclick="openModal('${k}')">
         <div class="rc-n">${num}</div>
         <div class="rc-l">${lbl}</div>
         <div class="rc-t">${room.ts||'––:––'}</div>
@@ -198,12 +236,45 @@ function render(){
   document.getElementById('cards').innerHTML=html;
 }
 
-async function toggle(k){
-  const room=rooms[k];
-  room.clean=room.clean==='paster'?'piseet':'paster';
+let _modalKey=null, _modalClean=null;
+
+function openModal(k){
+  const room=rooms[k]; if(!room) return;
+  _modalKey=k;
+  _modalClean=room.clean||'piseet';
+  const bldName=room.bld==='flower'?'Flower Hotel':'Garden Hotel';
+  document.getElementById('modal-title').textContent='Dhoma '+room.num;
+  document.getElementById('modal-sub').textContent=bldName;
+  document.getElementById('modal-notes').value=room.notes||'';
+  updateModalBtns();
+  document.getElementById('modal').classList.add('open');
+}
+
+function selectClean(val){
+  _modalClean=val;
+  updateModalBtns();
+}
+
+function updateModalBtns(){
+  document.getElementById('mbtn-pas').className='modal-btn green'+(_modalClean==='paster'?' sel':'');
+  document.getElementById('mbtn-pis').className='modal-btn red'+(_modalClean==='piseet'?' sel':'');
+  document.getElementById('mbtn-oot').className='modal-btn gray'+(_modalClean==='oot'?' sel':'');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  _modalKey=null; _modalClean=null;
+}
+
+async function saveModal(){
+  if(!_modalKey) return;
+  const room=rooms[_modalKey];
+  room.clean=_modalClean;
+  room.notes=document.getElementById('modal-notes').value;
   room.ts=nowHM();
+  closeModal();
   render();
-  await push(true);
+  await push(false);
 }
 
 async function push(silent=false){
