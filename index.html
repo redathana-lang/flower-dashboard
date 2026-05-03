@@ -928,12 +928,22 @@ window.hmsSwitchBld=function(b){
 };
 
 function hmsRenderFO(){
+  const isViewer=(currentRole==='fo');
   const s=hmsSt(hmsBld);
   const statsEl=document.getElementById('hms-stats');
   if(statsEl) statsEl.innerHTML='<div class="hms-stat"><div class="hms-stat-n" style="color:var(--text)">'+s.total+'</div><div class="hms-stat-l">Total</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--gold)">'+s.liree+'</div><div class="hms-stat-l">E Lirë</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--gold)">'+s.totale+'</div><div class="hms-stat-l">Totale</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--blue)">'+s.ditore+'</div><div class="hms-stat-l">Ditore</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--up)">'+s.ardhje+'</div><div class="hms-stat-l">Ardhje</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:#f97316">'+s.ikje+'</div><div class="hms-stat-l">Ikje</div></div>';
   const dateEl=document.getElementById('hms-date');
   if(dateEl) dateEl.textContent='📅 '+hmsDateAlb(new Date());
+  // Hide edit controls for FO (viewer only)
+  var resetBtn=document.querySelector('[onclick="hmsReset()"]');
+  var uploadBtn=document.querySelector('[onclick="document.getElementById(\'hms-file-in\').click()"]');
+  var saveBtn=document.querySelector('[onclick="hmsPush(false)"]');
+  if(resetBtn) resetBtn.style.display=isViewer?'none':'';
+  if(uploadBtn) uploadBtn.style.display=isViewer?'none':'';
+  if(saveBtn) saveBtn.style.display=isViewer?'none':'';
   const floors=HMS_INV[hmsBld];
+  const slLabels={liree:'E lirë',ardhje:'Ardhje / Totale',ikje:'Ikje / Totale',qendrim:'Qëndrim / Ditor'};
+  const slColors={ardhje:'#60a5fa',ikje:'#f97316',qendrim:'#22c55e',liree:'#6b7fa3'};
   let out='';
   for(const fl in floors){
     const nums=floors[fl];
@@ -946,12 +956,21 @@ function hmsRenderFO(){
       const ck=room.checkin?'<span style="color:#60a5fa;font-weight:600">'+room.checkin+'</span>':'<span style="color:#374151">–</span>';
       const co=room.checkout?'<span style="color:#f87171;font-weight:600">'+room.checkout+'</span>':'<span style="color:#374151">–</span>';
       const flags=['vip','rom','dec','wp','bc'];
-      let flagCells='';
-      for(let fi=0;fi<flags.length;fi++){
-        const f=flags[fi];
-        flagCells+='<td style="text-align:center"><input type="checkbox" class="hms-fcb" '+(room.flags[f]?'checked':'')+' onchange="hmsSetFlag(\''+k+'\',\''+f+'\',this.checked)"></td>';
+      if(isViewer){
+        // READ-ONLY for FO
+        const slLbl=slLabels[room.status]||room.status;
+        const slClr=slColors[room.status]||'#6b7fa3';
+        const flagCells=flags.map(function(f){return'<td style="text-align:center">'+(room.flags[f]?'<span style="color:var(--gold)">✓</span>':'<span style="color:#374151">–</span>')+'</td>';}).join('');
+        out+='<tr class="'+rc+'"><td class="hms-td-nr">'+num+'</td><td class="hms-td-ps">'+(room.persons||'–')+'</td><td class="hms-td-dt">'+ck+'</td><td class="hms-td-dt">'+co+'</td><td><span style="font-size:12px;font-weight:600;color:'+slClr+'">'+slLbl+'</span></td><td><span class="hms-badge '+bc+'" style="cursor:default;pointer-events:none">'+bt+'</span></td>'+flagCells+'<td style="font-size:11px;color:var(--muted)">'+(room.notes||'')+'</td></tr>';
+      }else{
+        // EDITABLE for admin/manager — original format
+        let flagCells='';
+        for(let fi=0;fi<flags.length;fi++){
+          const f=flags[fi];
+          flagCells+='<td style="text-align:center"><input type="checkbox" class="hms-fcb" '+(room.flags[f]?'checked':'')+' onchange="hmsSetFlag(\''+k+'\',\''+f+'\',this.checked)"></td>';
+        }
+        out+='<tr class="'+rc+'"><td class="hms-td-nr">'+num+'</td><td class="hms-td-ps">'+(room.persons||'–')+'</td><td class="hms-td-dt">'+ck+'</td><td class="hms-td-dt">'+co+'</td><td><select class="hms-sel" onchange="hmsSetStatus(\''+k+'\',this.value)"><option value="liree"'+(room.status==='liree'?' selected':'')+'>E lirë</option><option value="ardhje"'+(room.status==='ardhje'?' selected':'')+'>Ardhje / Totale</option><option value="ikje"'+(room.status==='ikje'?' selected':'')+'>Ikje / Totale</option><option value="qendrim"'+(room.status==='qendrim'?' selected':'')+'>Qëndrim / Ditor</option></select></td><td><span class="hms-badge '+bc+'" onclick="hmsToggleClean(\''+k+'\')">'+bt+'</span></td>'+flagCells+'<td><input class="hms-ni" value="'+room.notes.replace(/"/g,'&quot;')+'" placeholder="Shënim…" onchange="hmsSetNotes(\''+k+'\',this.value)"></td></tr>';
       }
-      out+='<tr class="'+rc+'"><td class="hms-td-nr">'+num+'</td><td class="hms-td-ps">'+(room.persons||'–')+'</td><td class="hms-td-dt">'+ck+'</td><td class="hms-td-dt">'+co+'</td><td><select class="hms-sel" onchange="hmsSetStatus(\''+k+'\',this.value)"><option value="liree"'+(room.status==='liree'?' selected':'')+'>E lirë</option><option value="ardhje"'+(room.status==='ardhje'?' selected':'')+'>Ardhje / Totale</option><option value="ikje"'+(room.status==='ikje'?' selected':'')+'>Ikje / Totale</option><option value="qendrim"'+(room.status==='qendrim'?' selected':'')+'>Qëndrim / Ditor</option></select></td><td><span class="hms-badge '+bc+'" onclick="hmsToggleClean(\''+k+'\')">'+bt+'</span></td>'+flagCells+'<td><input class="hms-ni" value="'+room.notes.replace(/"/g,'&quot;')+'" placeholder="Shënim…" onchange="hmsSetNotes(\''+k+'\',this.value)"></td></tr>';
     }
     out+='</tbody></table></div></div>';
   }
@@ -959,16 +978,18 @@ function hmsRenderFO(){
   if(contentEl) contentEl.innerHTML=out;
 }
 
-window.hmsSetStatus=function(k,v){if(hmsRooms[k])hmsRooms[k].status=v;hmsRenderFO();};
-window.hmsSetFlag=function(k,f,v){if(hmsRooms[k])hmsRooms[k].flags[f]=v?1:0;};
-window.hmsSetNotes=function(k,v){if(hmsRooms[k])hmsRooms[k].notes=v;};
+window.hmsSetStatus=function(k,v){if(hmsRooms[k])hmsRooms[k].status=v;hmsRenderFO();hmsPush(true);};
+window.hmsSetFlag=function(k,f,v){if(hmsRooms[k])hmsRooms[k].flags[f]=v?1:0;hmsPush(true);};
+window.hmsSetNotes=function(k,v){if(hmsRooms[k])hmsRooms[k].notes=v;hmsPush(true);};
 window.hmsToggleClean=function(k){
   if(!hmsRooms[k])return;
   hmsRooms[k].clean=hmsRooms[k].clean==='paster'?'piseet':'paster';
   hmsRooms[k].ts=hmsNowHM();
   hmsRenderFO();
+  hmsPush(true);
 };
 window.hmsReset=function(){
+  if(currentRole==='fo'){alert('Nuk keni leje për të bërë reset.');return;}
   if(!confirm('Resetohet I GJITHË raporti i ditës. Konfirmoni?'))return;
   Object.values(hmsRooms).forEach(function(r){r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';r.notes='';r.flags={vip:0,rom:0,dec:0,wp:0,bc:0};});
   hmsRenderFO(); hmsPush(true);
@@ -1014,15 +1035,23 @@ function hmsParseXML(xmlText){
 }
 
 function hmsApplyUpload(parsed){
-  Object.values(hmsRooms).forEach(function(r){r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';});
+  // Reset ONLY reservation fields — clean status set by cleaners is preserved
+  Object.values(hmsRooms).forEach(function(r){r.status='liree';r.persons='';r.checkin='';r.checkout='';});
   parsed.forEach(function(d){
     for(let bi=0;bi<['flower','garden'].length;bi++){
       const b=['flower','garden'][bi],k=b+'-'+d.num;
-      if(hmsRooms[k]){Object.assign(hmsRooms[k],{status:d.status,persons:d.persons,checkin:d.checkin,checkout:d.checkout,notes:d.notes||hmsRooms[k].notes});break;}
+      if(hmsRooms[k]){
+        hmsRooms[k].status=d.status;
+        hmsRooms[k].persons=d.persons;
+        hmsRooms[k].checkin=d.checkin;
+        hmsRooms[k].checkout=d.checkout;
+        if(d.notes&&!hmsRooms[k].notes) hmsRooms[k].notes=d.notes;
+        break;
+      }
     }
   });
   hmsRenderFO();
-  setTimeout(function(){hmsPush(true);},400);
+  setTimeout(function(){hmsPush(false);},400);
 }
 
 document.getElementById('hms-file-in').onchange=function(e){
