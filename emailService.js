@@ -210,7 +210,9 @@ function buildEmailHTML(date, d, p) {
   // ═══════════════════════════════════════════════════════════════
   var html = '<!DOCTYPE html><html lang="sq"><head><meta charset="UTF-8">'
     + '<meta name="viewport" content="width=device-width,initial-scale=1.0">'
-    + '<title>FLOW \u2014 Raport Ditor ' + date + '</title></head>'
+    + '<title>FLOW \u2014 Raport Ditor ' + date + '</title>'
+    + '<style>body,table,td{-webkit-text-size-adjust:100%;}</style>'
+    + '</head>'
     + '<body style="margin:0;padding:0;background:#dce3ed;font-family:\'Segoe UI\',Arial,sans-serif;">'
     + '<table width="100%" cellpadding="0" cellspacing="0" style="background:#dce3ed;">'
     + '<tr><td align="center" style="padding:20px 12px;">'
@@ -373,11 +375,11 @@ function buildEmailHTML(date, d, p) {
       var diffP  = sr.prevTotalRev > 0 ? ((diff2/sr.prevTotalRev)*100) : 0;
       var dC2    = diff2 >= 0 ? '#22c55e' : '#ef4444';
       var dSgn   = diff2 >= 0 ? '+' : '';
-      var prevLbl = (sr.prevFilename||'Excel i m\u00ebparsh\u00ebm').replace(/^.*[\\/]/,'').replace(/\.xlsx?$/i,'');
+      var prevLbl = (sr.prevFilename||'Excel i mëparshëm').replace(/^.*[\\/]/,'').replace(/\.xlsx?$/i,'');
       html += '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>'
         + '<td width="50%" style="padding-right:5px;"><div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px 10px;text-align:center;">'
         + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">\u0394 Revenue \u2014 Ndryshimi i Shitjeve</div>'
-        + '<div style="font-size:9px;color:#334155;margin-bottom:6px;">' + prevLbl.substring(0,28) + (prevLbl.length>28?'\u2026':'') + '</div>'
+        + '<div style="font-size:9px;color:#334155;margin-bottom:6px;">' + prevLbl + '</div>'
         + '<div style="font-size:22px;font-weight:700;color:' + dC2 + ';">' + dSgn + fE(diff2) + '</div>'
         + '<div style="font-size:13px;color:' + dC2 + ';margin-top:3px;font-weight:600;">' + (diff2>=0?'\u25b2':'\u25bc') + ' ' + Math.abs(diffP).toFixed(1) + '%</div>'
         + '</div></td>'
@@ -473,6 +475,9 @@ async function sendDailyReport(date, data, prevData) {
     to     : process.env.EMAIL_TO || RECIPIENTS,
     subject: '\uD83D\uDCCB FLOW \u2014 Raport Ditor ' + date,
     html   : html,
+    headers: {
+      'X-Entity-Ref-ID': 'flow-report-' + date + '-' + Date.now(),
+    },
   });
   console.log('[EMAIL] Sent for', date, '\u2192', info.messageId);
   return info;
