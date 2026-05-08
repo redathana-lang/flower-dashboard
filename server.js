@@ -692,6 +692,156 @@ app.post('/api/send-report', async function(req, res) {
   }
 });
 
+// ─── HMS CLOSE DAY ───────────────────────────────────────────────────────────
+app.post('/api/hms/close-day', async (req, res) => {
+  try {
+    const now   = new Date();
+    const days  = ['E Diel','E Hënë','E Martë','E Mërkurë','E Enjte','E Premte','E Shtunë'];
+    const mons  = ['Janar','Shkurt','Mars','Prill','Maj','Qershor','Korrik','Gusht','Shtator','Tetor','Nëntor','Dhjetor'];
+    const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()}`;
+    const timeStr = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+    // ── Inventory ─────────────────────────────────────────────────────────────
+    const FLOWER = [
+      {fl:'Kati 1', rooms:['101','102','103','104','105','106','107','108','109','110','111','112','113','114']},
+      {fl:'Kati 2', rooms:['201','202','203','204','205','206','207','208','209','210','211','212','213','214']},
+      {fl:'Kati 3', rooms:['301','302','303','304','305','306','307','308','309','310','311','312','313','314']},
+      {fl:'Kati 4', rooms:['401','402','403','404','405','406','407','408','409','410','411','412','413','414']},
+      {fl:'Kati 5', rooms:['501','502','503','504','505','506','507','508','509','510','511','512','513']},
+      {fl:'Vilat',  rooms:['VILA 1','VILA 2']}
+    ];
+    const GARDEN = [
+      {fl:'Kati 1', rooms:['G101','G102','G103','G104','G105','G106','G107','G108','G109','G110','G111','G112','G114','G115']},
+      {fl:'Kati 2', rooms:['G201','G202','G203','G204','G205','G206','G207','G208','G209','G210','G211','G212','G214','G215']},
+      {fl:'Kati 3', rooms:['G301','G302','G303','G304','G305','G306','G307','G308','G309','G310','G311','G312','G314','G315']}
+    ];
+
+    // ── Stats ─────────────────────────────────────────────────────────────────
+    function buildStats(floors) {
+      let pas=0, pis=0, oot=0;
+      floors.forEach(f => f.rooms.forEach(r => {
+        const bld = floors === FLOWER ? 'flower' : 'garden';
+        const room = hmsRooms[`${bld}-${r}`];
+        const s = room ? room.clean : 'piseet';
+        if(s==='paster') pas++; else if(s==='oot') oot++; else pis++;
+      }));
+      return { pas, pis, oot, tot: pas+pis+oot };
+    }
+
+    const sf = buildStats(FLOWER);
+    const sg = buildStats(GARDEN);
+    const tot = { pas: sf.pas+sg.pas, pis: sf.pis+sg.pis, oot: sf.oot+sg.oot, total: sf.tot+sg.tot };
+
+    // ── HTML per floor ────────────────────────────────────────────────────────
+    function floorHTML(floors, bldKey) {
+      return floors.map(f => {
+        const pills = f.rooms.map(r => {
+          const room = hmsRooms[`${bldKey}-${r}`];
+          const s = room ? room.clean : 'piseet';
+          const bg = s==='paster'?'#22c55e': s==='oot'?'#9ca3af':'#ef4444';
+          return `<span style="display:inline-block;background:${bg};color:#fff;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:600;margin:2px;">${r}</span>`;
+        }).join('');
+        return `<div style="margin-bottom:8px;">
+          <div style="font-size:9px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">${f.fl}</div>
+          <div>${pills}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Email HTML ────────────────────────────────────────────────────────────
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f4f1eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+<div style="max-width:620px;margin:0 auto;padding:16px;">
+<div style="background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e8e4da;">
+
+  <div style="background:#252318;padding:18px 24px;display:flex;align-items:center;gap:14px;">
+    <div style="background:#c9a84c;color:#1a1400;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:4px;">FLOWER</div>
+    <div>
+      <div style="font-size:15px;font-weight:500;color:#f0ead0;">Flower Hotels &amp; Resorts</div>
+      <div style="font-size:10px;color:#9a9070;margin-top:2px;">Raport Final i Pastrimit — Mbyllja e Ditës</div>
+    </div>
+  </div>
+
+  <div style="padding:11px 24px;background:#faf9f5;border-bottom:1px solid #f0efe8;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <div style="font-size:13px;font-weight:500;color:#1a1a1a;">${dateStr}</div>
+      <div style="font-size:10px;color:#888;margin-top:1px;">Dërguar: ${timeStr} · Mbyllja e ditës nga stafi i pastrimit</div>
+    </div>
+    <div style="background:#252318;color:#c9a84c;font-size:10px;padding:3px 14px;border-radius:4px;font-weight:500;letter-spacing:.5px;">${tot.total} DHOMA TOTALE</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid #f0efe8;">
+    <div style="padding:12px 8px;text-align:center;border-right:1px solid #f0efe8;">
+      <div style="font-size:22px;font-weight:500;color:#1a1a1a;">${tot.total}</div>
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Total</div>
+    </div>
+    <div style="padding:12px 8px;text-align:center;border-right:1px solid #f0efe8;">
+      <div style="font-size:22px;font-weight:500;color:#22c55e;">${tot.pas}</div>
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">E Pastër</div>
+    </div>
+    <div style="padding:12px 8px;text-align:center;border-right:1px solid #f0efe8;">
+      <div style="font-size:22px;font-weight:500;color:#ef4444;">${tot.pis}</div>
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">E Pisët</div>
+    </div>
+    <div style="padding:12px 8px;text-align:center;">
+      <div style="font-size:22px;font-weight:500;color:#9ca3af;">${tot.oot}</div>
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Out of Order</div>
+    </div>
+  </div>
+
+  <div style="padding:10px 24px 4px;border-bottom:1px solid #f0efe8;display:flex;align-items:center;gap:8px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
+    <div style="font-size:10px;font-weight:500;color:#1a1a1a;text-transform:uppercase;letter-spacing:.7px;flex:1;">Flower Hotel</div>
+    <div style="font-size:10px;padding:2px 10px;border-radius:20px;background:#fef2f2;color:#991b1b;font-weight:500;">${sf.tot} dhoma · ${sf.pas} pastër · ${sf.pis} pisët${sf.oot?' · '+sf.oot+' OOT':''}</div>
+  </div>
+  <div style="padding:8px 24px 12px;">${floorHTML(FLOWER,'flower')}</div>
+
+  <div style="height:1px;background:#f0efe8;"></div>
+
+  <div style="padding:10px 24px 4px;display:flex;align-items:center;gap:8px;">
+    <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div>
+    <div style="font-size:10px;font-weight:500;color:#1a1a1a;text-transform:uppercase;letter-spacing:.7px;flex:1;">Garden Hotel</div>
+    <div style="font-size:10px;padding:2px 10px;border-radius:20px;background:#f0fdf4;color:#166534;font-weight:500;">${sg.tot} dhoma · ${sg.pas} pastër · ${sg.pis} pisët${sg.oot?' · '+sg.oot+' OOT':''}</div>
+  </div>
+  <div style="padding:8px 24px 12px;">${floorHTML(GARDEN,'garden')}</div>
+
+  <div style="padding:8px 24px 10px;display:flex;gap:14px;align-items:center;border-top:1px solid #f0efe8;flex-wrap:wrap;">
+    <span style="font-size:10px;color:#888;">Legjenda:</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#555;"><span style="width:9px;height:9px;border-radius:2px;background:#22c55e;display:inline-block;"></span> E Pastër</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#555;"><span style="width:9px;height:9px;border-radius:2px;background:#ef4444;display:inline-block;"></span> E Pisët</span>
+    <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#555;"><span style="width:9px;height:9px;border-radius:2px;background:#9ca3af;display:inline-block;"></span> Out of Order</span>
+  </div>
+
+  <div style="padding:12px 24px;background:#faf9f5;border-top:1px solid #f0efe8;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;">
+    <div style="font-size:10px;color:#aaa;">Gjeneruar automatikisht nga FLOW Dashboard</div>
+    <div style="font-size:10px;color:#c9a84c;font-weight:500;">FLOWER HOTELS &amp; RESORTS · Golem, Shqipëri</div>
+  </div>
+
+</div>
+</div>
+</body></html>`;
+
+    // ── Dërgo email ───────────────────────────────────────────────────────────
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
+    });
+
+    await transporter.sendMail({
+      from: `"Flower Hotels — Pastrimi" <${process.env.GMAIL_USER}>`,
+      to: 'receptionflower@gmail.com, reception@hotel-flower.com, dervishi.erinda1@gmail.com',
+      subject: `FLOWER HOTELS — Raport Pastrimi Final · ${dateStr} · ora ${timeStr}`,
+      html
+    });
+
+    console.log('[HMS] Close-day email dërguar:', timeStr);
+    res.json({ ok: true, message: 'Raporti u dërgua me sukses.' });
+
+  } catch(e) {
+    console.error('[HMS] Close-day error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
 // ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
