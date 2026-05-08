@@ -347,7 +347,7 @@ function buildEmailHTML(date, d, p) {
 
   // ── 05 SALES REPORT ──────────────────────────────────────────
   html += '<tr><td style="' + SEC + '">'
-    + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:3px;">05 \u2014 Sales Report \u00b7 Prill \u2013 Tetor ' + year + '</div>';
+    + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:3px;">05 \u2014 Daily Pick Up \u00b7 Prill \u2013 Tetor ' + year + '</div>';
 
   if (!sr) {
     html += '<div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px;font-size:11px;color:#475569;text-align:center;margin-top:8px;">Nuk ka t\u00eb dh\u00ebna Sales \u2014 ngarko Excel-in n\u00eb dashboard.</div>';
@@ -378,7 +378,7 @@ function buildEmailHTML(date, d, p) {
       var prevLbl = (sr.prevFilename||'Excel i mëparshëm').replace(/^.*[\\/]/,'').replace(/\.xlsx?$/i,'');
       html += '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>'
         + '<td width="50%" style="padding-right:5px;"><div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px 10px;text-align:center;">'
-        + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">\u0394 Revenue \u2014 Ndryshimi i Shitjeve</div>'
+        + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">\u0394 Daily Pick Up \u2014 vs Raporti i M\u00ebparsh\u00ebm</div>'
         + '<div style="font-size:9px;color:#334155;margin-bottom:6px;">' + prevLbl + '</div>'
         + '<div style="font-size:22px;font-weight:700;color:' + dC2 + ';">' + dSgn + fE(diff2) + '</div>'
         + '<div style="font-size:13px;color:' + dC2 + ';margin-top:3px;font-weight:600;">' + (diff2>=0?'\u25b2':'\u25bc') + ' ' + Math.abs(diffP).toFixed(1) + '%</div>'
@@ -390,7 +390,7 @@ function buildEmailHTML(date, d, p) {
         + '</div></td></tr></table>';
     } else {
       html += '<div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:10px;font-size:10px;color:#334155;text-align:center;margin-bottom:10px;">'
-        + '\u0394 Revenue: ngarko Excel-in dy her\u00eb radhazi p\u00ebr t\u00eb aktivizuar krahasimin'
+        + '\u0394 Daily Pick Up: ngarko Excel-in dy her\u00eb radhazi p\u00ebr t\u00eb par\u00ebr ndryshimin'
         + '</div>';
     }
 
