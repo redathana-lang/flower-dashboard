@@ -357,9 +357,9 @@ app.post('/api/push/notify', async (req, res) => {
 });
 
 // ─── HMS HOUSEKEEPING STATE ───────────────────────────────────────────────────
-// Disku i përhershëm Render → /data (nuk fshihet as me redeploy as me restart)
+// HMS state persistence
 const fs_hms  = require('fs');
-const HMS_FILE = '/data/hms_state.json';
+const HMS_FILE = require('fs').existsSync('/data') ? '/data/hms_state.json' : require('path').join(__dirname, 'hms_state.json');
 let hmsRooms = {}, hmsLastSaved = null;
 
 (function(){
