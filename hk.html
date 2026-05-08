@@ -122,4 +122,210 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 </div>
 <div id="toast"></div>
 
-<div class=
+<div class="hdr">
+  <div class="hdr-logo">
+    <img src="/logo.png" alt="Flower Hotel" onerror="this.style.display='none'">
+  </div>
+  <div>
+    <div class="hdr-title">FLOWER HOTEL</div>
+    <div class="hdr-sub">Sistemi i Pastrimit</div>
+  </div>
+</div>
+
+<div class="bld-tabs">
+  <button class="bld-tab active" id="tf" onclick="switchBld('flower')">
+    <span class="dot" style="background:#ef4444"></span>Flower Hotel
+  </button>
+  <button class="bld-tab" id="tg" onclick="switchBld('garden')">
+    <span class="dot" style="background:#22c55e"></span>Garden Hotel
+  </button>
+</div>
+
+<div class="stats-row" id="stats"></div>
+<div id="cards" style="padding-bottom:70px;"></div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <button class="modal-btn green" id="mbtn-pas" onclick="selectClean('paster')">E Pastër</button>
+    <button class="modal-btn red" id="mbtn-pis" onclick="selectClean('piseet')">E Pisët</button>
+    <button class="modal-btn gray" id="mbtn-oot" onclick="selectClean('oot')">Out of Order</button>
+    <textarea class="modal-notes" id="modal-notes" rows="3" placeholder="Shënime..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-anulo" onclick="closeModal()">Anulo</button>
+      <button class="modal-ruaj" onclick="saveModal()">Ruaj ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="bot-bar">
+  <span class="bot-date" id="bot-date"></span>
+  <button class="bot-close" onclick="closeDayConfirm()">Mbyll Ditën ✓</button>
+</div>
+
+<script>
+'use strict';
+
+const INV={
+  flower:{
+    'Kati 1':['101','102','103','104','105','106','107','108','109','110','111','112','113','114'],
+    'Kati 2':['201','202','203','204','205','206','207','208','209','210','211','212','213','214'],
+    'Kati 3':['301','302','303','304','305','306','307','308','309','310','311','312','313','314'],
+    'Kati 4':['401','402','403','404','405','406','407','408','409','410','411','412','413','414'],
+    'Kati 5':['501','502','503','504','505','506','507','508','509','510','511','512','513'],
+    'Vilat':['VILA 1','VILA 2']
+  },
+  garden:{
+    'Kati 1':['G101','G102','G103','G104','G105','G106','G107','G108','G109','G110','G111','G112','G114','G115'],
+    'Kati 2':['G201','G202','G203','G204','G205','G206','G207','G208','G209','G210','G211','G212','G214','G215'],
+    'Kati 3':['G301','G302','G303','G304','G305','G306','G307','G308','G309','G310','G311','G312','G314','G315']
+  }
+};
+
+let bld='flower', rooms={};
+
+function initRooms(){
+  for(const[b,floors] of Object.entries(INV))
+    for(const[fl,nums] of Object.entries(floors))
+      for(const num of nums){
+        const k=`${b}-${num}`;
+        if(!rooms[k]) rooms[k]={num,bld:b,fl,status:'liree',clean:'piseet',persons:'',checkin:'',checkout:'',notes:'',ts:null};
+      }
+}
+
+const DAYS=['E Diel','E Hënë','E Martë','E Mërkurë','E Enjte','E Premte','E Shtunë'];
+const MONS=['Janar','Shkurt','Mars','Prill','Maj','Qershor','Korrik','Gusht','Shtator','Tetor','Nëntor','Dhjetor'];
+function dateAlb(d){return`${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]} ${d.getFullYear()}`;}
+function nowHM(){const d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
+
+function switchBld(b){
+  bld=b;
+  document.getElementById('tf').className='bld-tab'+(b==='flower'?' active':'');
+  document.getElementById('tg').className='bld-tab'+(b==='garden'?' active':'');
+  render();
+}
+
+function computeStats(){
+  const rs=Object.values(rooms).filter(r=>r.bld===bld);
+  return{
+    total:rs.length,
+    paster:rs.filter(r=>r.clean==='paster').length,
+    piseet:rs.filter(r=>r.clean==='piseet').length,
+    oot:rs.filter(r=>r.clean==='oot').length
+  };
+}
+
+function render(){
+  const s=computeStats();
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-n" style="color:var(--text)">${s.total}</div><div class="stat-l">Total</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--green)">${s.paster}</div><div class="stat-l">E Pastër</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--red)">${s.piseet}</div><div class="stat-l">E Pisët</div></div>
+    <div class="stat"><div class="stat-n" style="color:#9ca3af">${s.oot}</div><div class="stat-l">Out of Order</div></div>`;
+  document.getElementById('bot-date').textContent=dateAlb(new Date());
+  const floors=INV[bld];
+  let html='';
+  for(const[fl,nums] of Object.entries(floors)){
+    html+=`<div class="floor-section"><div class="floor-title">${fl}</div><div class="card-grid">`;
+    for(const num of nums){
+      const k=`${bld}-${num}`,room=rooms[k];if(!room)continue;
+      const cls=room.clean==='paster'?'pas':room.clean==='oot'?'oot':'pis';
+      const lbl=room.clean==='paster'?'E Pastër':room.clean==='oot'?'Out of Order':'E Pisët';
+      html+=`<div class="room-card ${cls}" onclick="openModal('${k}')">
+        <div class="rc-n">${num}</div>
+        <div class="rc-l">${lbl}</div>
+        <div class="rc-t">${room.ts||'––:––'}</div>
+      </div>`;
+    }
+    html+='</div></div>';
+  }
+  document.getElementById('cards').innerHTML=html;
+}
+
+let _modalKey=null,_modalClean=null;
+
+function openModal(k){
+  const room=rooms[k];if(!room)return;
+  _modalKey=k;_modalClean=room.clean||'piseet';
+  document.getElementById('modal-title').textContent='Dhoma '+room.num;
+  document.getElementById('modal-sub').textContent=room.bld==='flower'?'Flower Hotel':'Garden Hotel';
+  document.getElementById('modal-notes').value=room.notes||'';
+  updateModalBtns();
+  document.getElementById('modal').classList.add('open');
+}
+
+function selectClean(val){_modalClean=val;updateModalBtns();}
+
+function updateModalBtns(){
+  document.getElementById('mbtn-pas').className='modal-btn green'+(_modalClean==='paster'?' sel':'');
+  document.getElementById('mbtn-pis').className='modal-btn red'+(_modalClean==='piseet'?' sel':'');
+  document.getElementById('mbtn-oot').className='modal-btn gray'+(_modalClean==='oot'?' sel':'');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  _modalKey=null;_modalClean=null;
+}
+
+async function saveModal(){
+  if(!_modalKey)return;
+  const room=rooms[_modalKey];
+  room.clean=_modalClean;
+  room.notes=document.getElementById('modal-notes').value;
+  room.ts=nowHM();
+  closeModal();render();
+  await push();
+}
+
+async function push(){
+  try{
+    await fetch('/api/hms/state',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({state:rooms})
+    });
+  }catch(e){console.warn('[HK] push:',e.message);}
+}
+
+async function pull(){
+  try{
+    const res=await fetch('/api/hms/state');
+    const data=await res.json();
+    if(data&&data.data&&Object.keys(data.data).length>0)
+      for(const[k,v] of Object.entries(data.data))
+        if(rooms[k])Object.assign(rooms[k],v);
+  }catch(e){console.warn('[HK] pull:',e.message);}
+}
+
+function showToast(msg,duration=3000){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.display='block';
+  setTimeout(()=>{t.style.display='none';},duration);
+}
+
+async function closeDayConfirm(){
+  if(!confirm('Po dërgoni raportin final të pastrimit tek recepsioni.\nKonfirmoni?'))return;
+  showToast('⏳ Duke dërguar...',10000);
+  try{
+    const r=await fetch('/api/hms/close-day',{
+      method:'POST',headers:{'Content-Type':'application/json'}
+    });
+    const d=await r.json();
+    if(d.ok) showToast('✅ Raporti u dërgua me sukses!');
+    else showToast('⚠ '+(d.error||'Gabim në dërgim'));
+  }catch(e){
+    showToast('⚠ Gabim lidhje me serverin');
+  }
+}
+
+// Auto-refresh çdo 60 sekonda
+setInterval(()=>pull().then(render),60000);
+
+// INIT
+initRooms();
+pull().then(()=>{render();document.getElementById('overlay').style.display='none';});
+</script>
+</body>
+</html>
