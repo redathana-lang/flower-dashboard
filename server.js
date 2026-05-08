@@ -824,11 +824,11 @@ app.post('/api/hms/close-day', async (req, res) => {
     const nodemailer = require('nodemailer');
     const transporter = nodemailer.createTransport({
       service: 'gmail',
-      auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
     });
 
     await transporter.sendMail({
-      from: `"Flower Hotels — Pastrimi" <${process.env.GMAIL_USER}>`,
+      from: `"Flower Hotels — Pastrimi" <${process.env.EMAIL_USER}>`,
       to: 'receptionflower@gmail.com, reception@hotel-flower.com, dervishi.erinda1@gmail.com',
       subject: `FLOWER HOTELS — Raport Pastrimi Final · ${dateStr} · ora ${timeStr}`,
       html
