@@ -1261,8 +1261,6 @@ window.hmsReset=function(){
   if(!confirm('Resetohet I GJITHË raporti i ditës. Konfirmoni?'))return;
   Object.values(hmsRooms).forEach(function(r){r.status='liree';r.clean='piseet';r.ts=null;r.persons='';r.checkin='';r.checkout='';r.notes='';r.flags={vip:0,rom:0,dec:0,wp:0,bc:0};});
   hmsRenderFO(); hmsPush(true);
-  var lbl=document.getElementById('hms-sync');
-  if(lbl){lbl.textContent='✓ Reseti u bë!';setTimeout(function(){lbl.textContent='';},2500);}
 };
 
 window.hmsPush=async function(silent){
@@ -1372,7 +1370,6 @@ window.hmsDlExcel=function(){
 // INIT
 hmsInit();
 hmsPull().then(function(){hmsRenderFO();});
-setInterval(function(){hmsPull().then(function(){hmsRenderFO();});},30000);
 
 })(); // end HMS module
 
