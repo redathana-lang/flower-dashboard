@@ -7,6 +7,10 @@ const app = express();
 app.use(express.json({limit:'50mb'}));
 app.use(express.urlencoded({limit:'50mb', extended:true}));
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 app.use(express.static(__dirname));
 
 // ─── GOOGLE SHEETS CONFIG ─────────────────────────────────────────────────────
