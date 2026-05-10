@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sq">
 <head>
 <meta charset="UTF-8"/>
@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icon-192.png"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-:root{--bg:#0a1628;--card:#0f2040;--border:#1a3358;--gold:#c9a84c;--gold2:#e8c96d;--text:#f0f2ff;--muted:#8a9bbf;--up:#22c55e;--down:#ef4444;--teal:#14b8a6;--blue:#3b82f6;}
+:root{--bg:#0a1628;--card:#0f2040;--border:#1a3358;--gold:#c9a84c;--gold2:#e8c96d;--text:#e8eaf6;--muted:#6b7fa3;--up:#22c55e;--down:#ef4444;--teal:#14b8a6;--blue:#3b82f6;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
 /* LOGIN */
@@ -32,8 +32,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tb-logo{width:34px;height:34px;border-radius:8px;background:var(--bg);overflow:hidden;flex-shrink:0;}
 .tb-logo img{width:100%;height:100%;object-fit:contain;}
 .tb-info{flex:1;}
-.tb-info h1{font-size:16px;font-weight:700;color:var(--gold);}
-.tb-info p{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
+.tb-info h1{font-size:14px;font-weight:700;color:var(--gold);}
+.tb-info p{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px;}
 .tb-right{display:flex;align-items:center;gap:8px;}
 .btn-refresh{background:var(--border);border:none;color:var(--muted);font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:5px;}
 .btn-refresh.spinning{color:var(--gold);}
@@ -42,7 +42,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* TABS */
 #navTabs{background:var(--card);border-bottom:1px solid var(--border);padding:0 16px;display:flex;overflow-x:auto;gap:0;}
 #navTabs::-webkit-scrollbar{display:none;}
-.nav-tab{padding:13px 18px;font-size:14px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;}
+.nav-tab{padding:11px 16px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;}
 .nav-tab.active{color:var(--gold);border-bottom-color:var(--gold);}
 
 /* MAIN */
@@ -50,11 +50,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 /* DATE BAR */
 .date-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
-.date-bar label{color:var(--muted);font-size:14px;}
+.date-bar label{color:var(--muted);font-size:13px;}
 .date-bar input[type=date]{background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:9px;font-size:14px;outline:none;}
 .date-bar input[type=date]:focus{border-color:var(--gold);}
-.btn-filtro{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a1628;border:none;padding:10px 24px;border-radius:9px;font-weight:700;font-size:14px;cursor:pointer;}
-.btn-sot{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:9px 16px;border-radius:9px;font-size:13px;cursor:pointer;}
+.btn-filtro{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a1628;border:none;padding:9px 22px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;}
+.btn-sot{background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:9px;font-size:12px;cursor:pointer;}
 
 /* KPI GRID */
 .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
@@ -66,11 +66,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .kpi.blue::before{background:linear-gradient(90deg,var(--blue),#60a5fa);}
 .kpi.red::before{background:linear-gradient(90deg,var(--down),#f87171);}
 .kpi.purple::before{background:linear-gradient(90deg,#8b5cf6,#a78bfa);}
-.kpi-lbl{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
-.kpi-val{font-size:30px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-1px;}
-.kpi-val .u{font-size:16px;font-weight:600;color:var(--muted);margin-left:2px;}
-.kpi-sub{font-size:13px;color:var(--muted);margin-top:5px;}
-.kpi-bdg{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700;margin-top:7px;}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.kpi-val{font-size:26px;font-weight:800;color:var(--text);line-height:1;letter-spacing:-1px;}
+.kpi-val .u{font-size:14px;font-weight:600;color:var(--muted);margin-left:2px;}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px;}
+.kpi-bdg{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;margin-top:7px;}
 .kpi-bdg.up{background:rgba(34,197,94,.12);color:var(--up);}
 .kpi-bdg.down{background:rgba(239,68,68,.12);color:var(--down);}
 
@@ -80,36 +80,36 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 .panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;}
 .panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.panel-title{font-size:15px;font-weight:700;color:var(--text);}
-.panel-tag{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;}
+.panel-title{font-size:13px;font-weight:700;color:var(--text);}
+.panel-tag{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
 
 /* DEPT BARS */
 .dept-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.dept-name{font-size:13px;color:var(--muted);width:120px;flex-shrink:0;text-align:right;}
+.dept-name{font-size:12px;color:var(--muted);width:120px;flex-shrink:0;text-align:right;}
 .dept-bar-wrap{flex:1;height:14px;background:#070f1e;border-radius:3px;overflow:hidden;}
 .dept-bar{height:100%;border-radius:3px;transition:width .6s ease;}
-.dept-val{font-size:13px;font-weight:700;color:var(--text);width:55px;text-align:right;flex-shrink:0;}
+.dept-val{font-size:12px;font-weight:700;color:var(--text);width:55px;text-align:right;flex-shrink:0;}
 .dept-row.tot .dept-name,.dept-row.tot .dept-val{color:var(--gold);font-weight:800;}
 .dept-row.tot .dept-val{font-size:13px;}
 
 /* YOY TABLE */
 .yoy-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);}
 .yoy-row:last-child{border-bottom:none;}
-.yoy-lbl{font-size:14px;color:var(--muted);flex:1;}
-.yoy-curr{font-size:15px;font-weight:700;min-width:70px;text-align:right;}
-.yoy-prev{font-size:13px;color:var(--muted);min-width:55px;text-align:right;}
-.yoy-pct{min-width:50px;text-align:right;font-size:13px;font-weight:700;}
+.yoy-lbl{font-size:13px;color:var(--muted);flex:1;}
+.yoy-curr{font-size:14px;font-weight:700;min-width:70px;text-align:right;}
+.yoy-prev{font-size:12px;color:var(--muted);min-width:55px;text-align:right;}
+.yoy-pct{min-width:50px;text-align:right;font-size:12px;font-weight:700;}
 .yoy-pct.up{color:var(--up);}
 .yoy-pct.down{color:var(--down);}
 .yoy-row.tot .yoy-lbl{color:var(--gold);font-weight:700;}
-.yoy-row.tot .yoy-curr{color:var(--gold);font-size:17px;font-weight:800;}
+.yoy-row.tot .yoy-curr{color:var(--gold);font-size:15px;font-weight:800;}
 
 /* DETAIL CARDS */
 .sec-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
-.sec-hdr2{padding:14px 18px;background:rgba(201,168,76,.04);border-bottom:1px solid var(--border);font-size:15px;font-weight:700;color:var(--gold);}
+.sec-hdr2{padding:12px 18px;background:rgba(201,168,76,.04);border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--gold);}
 .dtable{width:100%;border-collapse:collapse;}
-.dtable th{text-align:left;padding:10px 16px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
-.dtable td{padding:11px 16px;font-size:14px;border-bottom:1px solid rgba(26,51,88,.4);}
+.dtable th{text-align:left;padding:9px 16px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
+.dtable td{padding:10px 16px;font-size:13px;border-bottom:1px solid rgba(26,51,88,.4);}
 .dtable tr:last-child td{border-bottom:none;}
 .dtable .v{text-align:right;font-weight:600;}
 .dtable .g{color:var(--gold);}
@@ -137,8 +137,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hms-stats{display:flex;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .hms-stat{padding:0 16px 0 0;border-right:1px solid var(--border);margin-right:16px;}
 .hms-stat:last-child{border-right:none;}
-.hms-stat-n{font-size:24px;font-weight:800;line-height:1;}
-.hms-stat-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.hms-stat-n{font-size:20px;font-weight:800;line-height:1;}
+.hms-stat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
 .hms-date-bar{background:var(--bg);padding:8px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:1px solid var(--border);}
 .hms-date-txt{color:var(--gold);font-size:12px;font-weight:600;}
 .hms-sync{font-size:10px;color:var(--muted);}
@@ -151,9 +151,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hms-btn-prn{background:var(--border);color:var(--text);border:none;border-radius:5px;padding:4px 9px;font-size:10px;cursor:pointer;font-weight:600;}
 .hms-btn-prn:hover{background:var(--gold);color:var(--bg);}
 .hms-tbl-wrap{overflow-x:auto;}
-.hms-table{width:100%;border-collapse:collapse;font-size:12px;}
+.hms-table{width:100%;border-collapse:collapse;font-size:11px;}
 .hms-table thead tr{background:var(--bg);}
-.hms-table thead th{color:var(--gold);padding:7px 6px;text-align:left;font-weight:600;font-size:11px;white-space:nowrap;border-bottom:1px solid var(--border);}
+.hms-table thead th{color:var(--gold);padding:6px;text-align:left;font-weight:600;font-size:10px;white-space:nowrap;border-bottom:1px solid var(--border);}
 .hms-table tbody tr{border-bottom:1px solid rgba(26,51,88,.5);}
 .hms-table tbody tr:hover{background:rgba(255,255,255,.03);}
 .hms-table tbody tr.hr-arr{background:rgba(59,130,246,.08);}
@@ -178,9 +178,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));}
-.kpi-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
-.kpi-val{font-size:26px;font-weight:800;color:var(--text);line-height:1;}
-.kpi-sub{font-size:12px;color:var(--muted);margin-top:4px;}
+.kpi-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.kpi-val{font-size:22px;font-weight:800;color:var(--text);line-height:1;}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:4px;}
 /* ── DAILY PICK UP & SEASON SNAPSHOT MOBILE ── */
 .sales-chart-sources{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-bottom:14px;}
 .sales-chart-col{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
@@ -206,33 +206,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   #salesMonthTable th,#salesMonthTable td{padding:7px 8px!important;font-size:10px!important;}
 }
 
-/* ── ADMIN PANEL CARDS ── */
-.adm-kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 16px;position:relative;overflow:hidden;}
-.adm-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);}
-.adm-kpi[data-color="green"]::before{background:#4caf7d;}
-.adm-kpi[data-color="red"]::before{background:#e05252;}
-.adm-kpi[data-color="amber"]::before{background:#e8a23a;}
-.adm-kpi-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
-.adm-kpi-val{font-size:26px;font-weight:700;color:var(--text);line-height:1.1;}
-.adm-kpi-sub{font-size:12px;margin-top:6px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
-.adm-delta{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:600;}
-.adm-delta.up{background:rgba(76,175,125,.15);color:#4caf7d;}
-.adm-delta.dn{background:rgba(224,82,82,.15);color:#e05252;}
-.adm-ly{color:var(--muted);font-size:11px;}
-@media(max-width:900px){#sec_admin_panel [style*="grid-template-columns:repeat(6"]{grid-template-columns:repeat(3,1fr)!important;}}
-@media(max-width:600px){#sec_admin_panel [style*="grid-template-columns:repeat(6"]{grid-template-columns:repeat(2,1fr)!important;}}
-/* ── ADMIN INSIGHTS ── */
-.insight-box{border-radius:8px;padding:16px;}
-.insight-box.danger{background:rgba(224,82,82,.08);border:1px solid rgba(224,82,82,.2);}
-.insight-box.warn{background:rgba(232,162,58,.08);border:1px solid rgba(232,162,58,.25);}
-.insight-box.good{background:rgba(76,175,125,.08);border:1px solid rgba(76,175,125,.2);}
-.insight-box.info{background:rgba(91,155,213,.08);border:1px solid rgba(91,155,213,.2);}
-.insight-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
-.insight-title.danger{color:#e05252;}.insight-title.warn{color:#e8a23a;}.insight-title.good{color:#4caf7d;}.insight-title.info{color:#5b9bd5;}
-.insight-item{font-size:12px;color:var(--muted);margin-bottom:7px;padding-left:12px;position:relative;line-height:1.5;}
-.insight-item::before{content:'›';position:absolute;left:0;font-weight:700;}
-.insight-item span{color:var(--text);font-weight:600;}
-
 /* SEND REPORT BUTTON */
 .btn-send-report{display:none;align-items:center;gap:6px;background:linear-gradient(135deg,#1e3a6e,#2d5aa0);color:#93c5fd;border:1px solid #2d5aa0;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
 .btn-send-report:hover:not(:disabled){background:linear-gradient(135deg,#2d5aa0,#3b6fd4);color:#bfdbfe;transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.3);}
@@ -256,7 +229,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <input type="text" id="lgU" placeholder="Username" autocomplete="username"/>
     <input type="password" id="lgP" placeholder="Fjalëkalimi" autocomplete="current-password"/>
     <button class="btn-login" onclick="doLogin()">Hyr →</button>
-    <div class="login-error" id="lgE">Kredenciale gabim</div>
+    <div class="login-error" id="lgE">❌ Kredenciale gabim</div>
   </div>
 </div>
 
@@ -271,23 +244,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="tb-right">
       <span id="tbRole" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:#c9a84c;white-space:nowrap;"></span>
       <button class="btn-refresh" id="btnRefresh" onclick="forceRefresh()">↻ Rifresko</button>
-      <button class="btn-send-report" id="btnSendReport" onclick="sendDailyReport()">Dërgo Raportin</button>
+      <button class="btn-send-report" id="btnSendReport" onclick="sendDailyReport()">📧 Dërgo Raportin</button>
       <button class="btn-logout" onclick="doLogout()">Dil</button>
     </div>
   </div>
 <div id="srToast"></div>
 
   <div id="navTabs">
-    <button class="nav-tab active" id="tab_overview" onclick="showSec('overview')">Overview</button>
-    <button class="nav-tab" id="tab_fo" onclick="showSec('fo')">Front Office</button>
-    <button class="nav-tab" id="tab_fnb" onclick="showSec('fnb')">F&B</button>
-    <button class="nav-tab" id="tab_spa" onclick="showSec('spa')">SPA</button>
-    <button class="nav-tab" id="tab_pax" onclick="showSec('pax')">PAX</button>
-    <button class="nav-tab" id="tab_cashflow" onclick="showSec('cashflow')">Cash Flow</button>
-    <button class="nav-tab" id="tab_finance" onclick="showSec('finance')">Shpenzime</button>
-    <button class="nav-tab" id="tab_housekeeping" onclick="showSec('housekeeping')">Housekeeping</button>
-    <button class="nav-tab" id="tab_sales" onclick="showSec('sales')">Daily Pick Up & Season Snapshot</button>
-    <button class="nav-tab" id="tab_admin_panel" onclick="showSec('admin_panel')" style="color:var(--gold);font-weight:700;display:none">Admin Panel</button>
+    <button class="nav-tab active" id="tab_overview" onclick="showSec('overview')">📊 Overview</button>
+    <button class="nav-tab" id="tab_fo" onclick="showSec('fo')">🏨 Front Office</button>
+    <button class="nav-tab" id="tab_fnb" onclick="showSec('fnb')">🍽️ F&B</button>
+    <button class="nav-tab" id="tab_spa" onclick="showSec('spa')">💆 SPA</button>
+    <button class="nav-tab" id="tab_pax" onclick="showSec('pax')">👥 PAX</button>
+    <button class="nav-tab" id="tab_cashflow" onclick="showSec('cashflow')">💰 Cash Flow</button>
+    <button class="nav-tab" id="tab_finance" onclick="showSec('finance')">📋 Shpenzime</button>
+    <button class="nav-tab" id="tab_housekeeping" onclick="showSec('housekeeping')">🧹 Housekeeping</button>
+    <button class="nav-tab" id="tab_sales" onclick="showSec('sales')">📈 Daily Pick Up & Season Snapshot</button>
   </div>
 
   <div id="mainContent">
@@ -437,7 +409,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
           <span class="hms-sync" id="hms-sync"></span>
           <button class="hms-btn-g" onclick="hmsReset()">↺ Reset Ditës</button>
-          <button class="hms-btn-up" onclick="document.getElementById('hms-file-in').click()">Ngarko Excel Trinosoft</button>
+          <button class="hms-btn-up" onclick="document.getElementById('hms-file-in').click()">📤 Ngarko Excel Trinosoft</button>
         </div>
       </div>
       <div class="hms-note"><strong>Pastrueset</strong> — hyjnë tek: <strong>flower-dashboard.onrender.com/hk</strong></div>
@@ -449,246 +421,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <input id="hms-file-in" type="file" accept=".xls,.xlsx,.xml" style="display:none">
     </div>
   </div>
-
-  <!-- ══════════════════════════════════════════════════════════════
-       ADMIN PANEL SECTION — inside #app, outside #mainContent
-  ══════════════════════════════════════════════════════════════ -->
-  <div id="sec_admin_panel" class="fsec" style="display:none">
-
-  <!-- Filter Bar -->
-  <div id="adm-filter-bar" style="background:#091423;border-bottom:1px solid rgba(201,168,76,.18);padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.4)">
-    <span style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px">Period</span>
-    <div style="display:flex;border:1px solid rgba(201,168,76,.25);border-radius:6px;overflow:hidden">
-      <button id="adm-btn-ytd" onclick="admSetMode('ytd')" style="background:var(--gold);color:#0a1628;border:none;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer">YTD</button>
-      <button id="adm-btn-mtd" onclick="admSetMode('mtd')" style="background:none;border:none;color:var(--muted);padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer">MTD</button>
-    </div>
-    <span style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px">Month</span>
-    <select id="adm-month" onchange="admApplyFilter()" style="background:#0d1f3c;border:1px solid rgba(201,168,76,.25);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer">
-      <option value="all">All Months (YTD Jan–Apr)</option>
-      <option value="jan">January 2026</option>
-      <option value="feb">February 2026</option>
-      <option value="mar">March 2026</option>
-      <option value="apr">April 2026</option>
-      <option value="may" disabled>May 2026 — pending</option>
-    </select>
-    <span style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px">Compare vs</span>
-    <select id="adm-cmp" onchange="admApplyFilter()" style="background:#0d1f3c;border:1px solid rgba(201,168,76,.25);color:var(--text);padding:6px 12px;border-radius:6px;font-size:13px;cursor:pointer">
-      <option value="ly">Last Year (2025)</option>
-      <option value="budget">Budget 2026</option>
-    </select>
-    <span id="adm-filter-lbl" style="margin-left:auto;font-size:12px;color:var(--gold);font-weight:600;background:rgba(201,168,76,.1);padding:5px 12px;border-radius:20px;border:1px solid rgba(201,168,76,.2)">Showing: YTD Jan–Apr 2026</span>
-    <button onclick="admLoadAll()" style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:var(--gold);padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">↻ Refresh Data</button>
-  </div>
-
-  <div style="max-width:1400px;margin:0 auto;padding:20px">
-
-    <!-- ── KPI CARDS ── -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:8px">
-      <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">KPI Overview — YTD 2026</span>
-      <span style="background:rgba(76,175,125,.15);border:1px solid rgba(76,175,125,.3);color:#4caf7d;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Live</span>
-      <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:16px">
-      <div class="adm-kpi" id="adm-k-rev" data-color="green"><div class="adm-kpi-lbl">Revenue YTD</div><div class="adm-kpi-val" id="adm-v-rev">€532k</div><div class="adm-kpi-sub"><span class="adm-delta up" id="adm-d-rev">↑ 44%</span> <span class="adm-ly" id="adm-ly-rev">vs €370k LY</span></div></div>
-      <div class="adm-kpi" id="adm-k-exp" data-color="red"><div class="adm-kpi-lbl">Expenses YTD</div><div class="adm-kpi-val" id="adm-v-exp" style="color:#e05252">€703k</div><div class="adm-kpi-sub"><span class="adm-delta dn" id="adm-d-exp">↑ 34%</span> <span class="adm-ly" id="adm-ly-exp">vs €524k LY</span></div></div>
-      <div class="adm-kpi" id="adm-k-prf" data-color="red"><div class="adm-kpi-lbl">Net Profit</div><div class="adm-kpi-val" id="adm-v-prf" style="color:#e05252">-€171k</div><div class="adm-kpi-sub"><span class="adm-delta dn" id="adm-d-prf">↑ 11% loss</span> <span class="adm-ly" id="adm-ly-prf">vs -€153k LY</span></div></div>
-      <div class="adm-kpi" id="adm-k-occ" data-color="green"><div class="adm-kpi-lbl">Occupancy</div><div class="adm-kpi-val" id="adm-v-occ">41%</div><div class="adm-kpi-sub"><span class="adm-delta up" id="adm-d-occ">↑ 24.5pp</span> <span class="adm-ly" id="adm-ly-occ">vs 16.5% LY</span></div></div>
-      <div class="adm-kpi" id="adm-k-rn" data-color="green"><div class="adm-kpi-lbl">Room Nights</div><div class="adm-kpi-val" id="adm-v-rn">4,107</div><div class="adm-kpi-sub"><span class="adm-delta up" id="adm-d-rn">↑ 156%</span> <span class="adm-ly" id="adm-ly-rn">vs 1,607 LY</span></div></div>
-      <div class="adm-kpi" id="adm-k-adr" data-color="amber"><div class="adm-kpi-lbl">ADR</div><div class="adm-kpi-val" id="adm-v-adr">€99.40</div><div class="adm-kpi-sub"><span class="adm-delta up" id="adm-d-adr">↑ 14%</span> <span class="adm-ly" id="adm-ly-adr">vs €87 LY</span></div></div>
-    </div>
-
-    <!-- ── BUDGET VS ACTUAL + INSIGHTS ── -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px">
-      <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">Revenue, Expenses &amp; Profit vs Target</span>
-      <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Updated End of Month</span>
-      <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
-    </div>
-    <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:20px;margin-bottom:16px">
-      <!-- Metric cards -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
-        <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:16px;border:1px solid rgba(201,168,76,.12)">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⬤ Revenue</div>
-          <div id="adm-bm-rev" style="font-size:26px;font-weight:700;color:#4caf7d">€532k</div>
-          <div id="adm-bm-rev-b" style="font-size:11px;color:var(--muted);margin:4px 0 8px">Budget: €842k (Jan–Apr)</div>
-          <div style="background:rgba(255,255,255,.07);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px"><div id="adm-bar-rev" style="height:100%;border-radius:4px;width:63%;background:#e8a23a;transition:width .6s"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px"><span id="adm-bm-rev-pct" style="color:var(--muted)">63% of budget</span><span id="adm-bm-rev-var" style="color:#e05252;font-weight:700">-€310k</span></div>
-        </div>
-        <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:16px;border:1px solid rgba(201,168,76,.12)">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⬤ Expenses</div>
-          <div id="adm-bm-exp" style="font-size:26px;font-weight:700;color:#e05252">€703k</div>
-          <div id="adm-bm-exp-b" style="font-size:11px;color:var(--muted);margin:4px 0 8px">Budget: €637k (Jan–Apr)</div>
-          <div style="background:rgba(255,255,255,.07);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px"><div id="adm-bar-exp" style="height:100%;border-radius:4px;width:100%;background:#e05252;transition:width .6s"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px"><span id="adm-bm-exp-pct" style="color:#e05252">110% — over budget</span><span id="adm-bm-exp-var" style="color:#e05252;font-weight:700">+€66k</span></div>
-        </div>
-        <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:16px;border:1px solid rgba(201,168,76,.12)">
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⬤ Net Profit</div>
-          <div id="adm-bm-prf" style="font-size:26px;font-weight:700;color:#e05252">-€171k</div>
-          <div id="adm-bm-prf-b" style="font-size:11px;color:var(--muted);margin:4px 0 8px">Budget: +€205k (Jan–Apr)</div>
-          <div style="background:rgba(255,255,255,.07);border-radius:4px;height:8px;overflow:hidden;margin-bottom:6px"><div id="adm-bar-prf" style="height:100%;border-radius:4px;width:100%;background:#e05252;transition:width .6s"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px"><span id="adm-bm-prf-pct" style="color:#e05252">In loss — budget expects profit</span><span id="adm-bm-prf-var" style="color:#e05252;font-weight:700">-€376k</span></div>
-        </div>
-      </div>
-      <!-- Budget charts -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
-        <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:14px">
-          <div style="font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Revenue vs Budget — Monthly (€)</div>
-          <canvas id="adm-c-budrev" height="160"></canvas>
-        </div>
-        <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:14px">
-          <div style="font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Expenses vs Budget — Monthly (€)</div>
-          <canvas id="adm-c-budexp" height="160"></canvas>
-        </div>
-      </div>
-      <!-- Insights -->
-      <div style="font-size:12px;font-weight:700;color:var(--gold2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">◆ Management Insights</div>
-      <div id="adm-insights" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
-    </div>
-
-    <!-- ── USALI + CHANNELS ── -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px">
-      <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">USALI Indicators</span>
-      <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">End of Month</span>
-      <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Room Nights — 2024/2025/2026</div>
-        <canvas id="adm-c-rn" height="180"></canvas>
-      </div>
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Occupancy % by Month</div>
-        <canvas id="adm-c-occ" height="180"></canvas>
-      </div>
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">ADR Trend — 2024/2025/2026 (Lek)</div>
-        <canvas id="adm-c-adr" height="180"></canvas>
-      </div>
-    </div>
-
-    <!-- ── NOP + CHANNEL ── -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px">
-      <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">P&amp;L &amp; Channel Production</span>
-      <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">End of Month</span>
-      <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">NOP / GOP Trend (€)</div>
-        <canvas id="adm-c-nop" height="200"></canvas>
-      </div>
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Channel Mix 2026 YTD</div>
-        <canvas id="adm-c-ch" height="200"></canvas>
-      </div>
-    </div>
-
-    <!-- ── SOURCE + BOARD + REPUTATION ── -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px">
-      <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">Source, Board &amp; Online Reputation</span>
-      <span style="background:rgba(76,175,125,.15);border:1px solid rgba(76,175,125,.3);color:#4caf7d;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Live</span>
-      <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Source by Country (€)</div>
-        <canvas id="adm-c-src" height="220"></canvas>
-      </div>
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Board Mix 2026 (€)</div>
-        <canvas id="adm-c-board" height="220"></canvas>
-      </div>
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Online Reputation</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <div style="background:rgba(255,255,255,.04);border-radius:6px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted)">Google</div><div style="font-size:22px;font-weight:700;color:var(--gold2)">4.6</div><div style="font-size:10px;color:var(--muted)">206 reviews</div></div>
-          <div style="background:rgba(255,255,255,.04);border-radius:6px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted)">Booking</div><div style="font-size:22px;font-weight:700;color:var(--gold2)">9.2</div><div style="font-size:10px;color:var(--muted)">Avg Jan–Apr</div></div>
-          <div style="background:rgba(255,255,255,.04);border-radius:6px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted)">TripAdvisor</div><div style="font-size:22px;font-weight:700;color:var(--gold2)">5.0</div><div style="font-size:10px;color:var(--muted)">March data</div></div>
-          <div style="background:rgba(255,255,255,.04);border-radius:6px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--muted)">Expedia</div><div style="font-size:22px;font-weight:700;color:var(--gold2)">9.2</div><div style="font-size:10px;color:var(--muted)">March data</div></div>
-        </div>
-        <canvas id="adm-c-rep" height="100"></canvas>
-      </div>
-    </div>
-
-    <!-- ── MARKETING ── -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px">
-      <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">Marketing Costs &amp; ROI</span>
-      <span style="background:rgba(76,175,125,.15);border:1px solid rgba(76,175,125,.3);color:#4caf7d;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Live</span>
-      <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:32px">
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Marketing Spend vs Revenue (€)</div>
-        <canvas id="adm-c-mkt" height="180"></canvas>
-      </div>
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">Cost Breakdown — 2026 YTD</div>
-        <table style="width:100%;font-size:12px;border-collapse:collapse">
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:6px 4px;color:var(--muted)">Meta Ads</td><td style="text-align:right;font-weight:600">€10,502</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:6px 4px;color:var(--muted)">Content (ZOE)</td><td style="text-align:right;font-weight:600">€4,000</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:6px 4px;color:var(--muted)">Cloudbeds CRS</td><td style="text-align:right;font-weight:600">€2,760</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:6px 4px;color:var(--muted)">Advertising</td><td style="text-align:right;font-weight:600">€2,000</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:6px 4px;color:var(--muted)">TripAdvisor</td><td style="text-align:right;font-weight:600">€160</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:6px 4px;color:var(--muted)">Google Ads</td><td style="text-align:right;font-weight:600">€213</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:6px 4px;color:var(--muted)">Guestflip</td><td style="text-align:right;font-weight:600">€240</td></tr>
-          <tr style="border-bottom:1px solid rgba(255,255,255,.05)"><td style="padding:6px 4px;color:var(--muted)">Other</td><td style="text-align:right;font-weight:600">€579</td></tr>
-          <tr><td style="padding:8px 4px;color:var(--gold2);font-weight:700">TOTAL</td><td style="text-align:right;color:var(--gold2);font-weight:700">€20,454</td></tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- ── CASH FLOW ── -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px">
-      <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">Cash Flow Analysis — 2025</span>
-      <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">End of Month</span>
-      <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
-    </div>
-
-    <!-- Cash Flow KPIs -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-      <div class="adm-kpi" data-color="green">
-        <div class="adm-kpi-lbl">Total Cash In 2025</div>
-        <div class="adm-kpi-val">€3.95M</div>
-        <div class="adm-kpi-sub" style="font-size:11px;color:var(--muted)">EUR equiv (LEK at 100)</div>
-      </div>
-      <div class="adm-kpi" data-color="red">
-        <div class="adm-kpi-lbl">Total Cash Out 2025</div>
-        <div class="adm-kpi-val">€1.68M</div>
-        <div class="adm-kpi-sub" style="font-size:11px;color:var(--muted)">Wages, taxes, suppliers</div>
-      </div>
-      <div class="adm-kpi" data-color="amber">
-        <div class="adm-kpi-lbl">EUR Sources</div>
-        <div class="adm-kpi-val">60%</div>
-        <div class="adm-kpi-sub" style="font-size:11px;color:var(--muted)">of total cash received</div>
-      </div>
-      <div class="adm-kpi" data-color="teal">
-        <div class="adm-kpi-lbl">LEK Sources</div>
-        <div class="adm-kpi-val">40%</div>
-        <div class="adm-kpi-sub" style="font-size:11px;color:var(--muted)">of total cash received</div>
-      </div>
-    </div>
-
-    <!-- 3 Pie Charts -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:32px">
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Sources of Cash — 2025 Annual</div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR equiv (LEK converted at 100 ALL/EUR)</div>
-        <canvas id="adm-c-cf-src" height="260"></canvas>
-      </div>
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Cash Uses — 2025 Annual</div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR amounts</div>
-        <canvas id="adm-c-cf-uses" height="260"></canvas>
-      </div>
-      <div style="background:var(--card,#0d1f3c);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
-        <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">EUR vs LEK — Source Split</div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">% by currency of cash received</div>
-        <canvas id="adm-c-cf-split" height="260"></canvas>
-      </div>
-    </div>
-
-  </div><!-- /admin-wrap -->
-  </div><!-- /sec_admin_panel -->
-</div><!-- /app -->
+</div>
 
 <script>
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
@@ -696,7 +429,7 @@ const MANAGER  = { user:'MANAGER',      pass:'Flow2026' };
 const FO_USER  = { user:'FRONT OFFICE', pass:'FO2026'   };
 const ADMIN    = { user:'ADMIN',         pass:'Rep26' };
 const ROLE_TABS = {
-  admin:   ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping','sales','admin_panel'],
+  admin:   ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping','sales'],
   manager: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping','sales'],
   fo:      ['fo','spa','pax','housekeeping']
 };
@@ -777,11 +510,9 @@ function showSec(id){
   const tab=document.getElementById('tab_'+id); if(tab) tab.classList.add('active');
   document.getElementById('tbSub').textContent=id.toUpperCase()+' · '+fRange()+' VS '+pYRange();
   const db=document.querySelector('.date-bar');
-  if(db) db.style.display=(id==='housekeeping'||id==='admin_panel')?'none':'flex';
+  if(db) db.style.display=id==='housekeeping'?'none':'flex';
   // Auto-load Sales data when switching to Sales tab
   if(id==='sales' && typeof salesAutoLoad==='function') salesAutoLoad();
-  // Lazy-init Admin Panel charts on first open
-  if(id==='admin_panel' && typeof admLazyInit==='function') admLazyInit();
 }
 
 // ─── DATE ─────────────────────────────────────────────────────────────────────
@@ -817,7 +548,7 @@ function setLoading(){
 function setErr(m){
   ['overview','fo','fnb','spa','pax','cashflow','finance'].forEach(id=>{
     const el=document.getElementById('c_'+id);
-    if(el) el.innerHTML=`<div class="err">${m}</div>`;
+    if(el) el.innerHTML=`<div class="err">⚠️ ${m}</div>`;
   });
 }
 
@@ -956,7 +687,7 @@ function rFO(fo,foY){
   const days2=Math.max(1,Math.round((new Date(toDate+'T00:00:00')-new Date(fromDate+'T00:00:00'))/(1000*60*60*24))+1);
   const occ=(rooms/(days2*TR)*100).toFixed(1);
   el.innerHTML=`<div class="sec-card">
-    <div class="sec-hdr2">Hotel Daily Performance — ${fRange()}</div>
+    <div class="sec-hdr2">🏨 Hotel Daily Performance — ${fRange()}</div>
     <table class="dtable">
       <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
       <tr class="sh"><td colspan="3">Dhoma</td></tr>
@@ -979,15 +710,15 @@ function rFNB(fnb,fnbY){
   const netoY=totY-n(fnbY.house_use);
   const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v">${fL(v)}</td><td class="v">${vy!==undefined?fL(vy):'—'}</td></tr>`;
   el.innerHTML=`<div class="sec-card">
-    <div class="sec-hdr2">F&B Daily Revenues — ${fRange()}</div>
+    <div class="sec-hdr2">🍽️ F&B Daily Revenues — ${fRange()}</div>
     <table class="dtable">
       <tr><th>Outlet</th><th class="v">Sot (Lek)</th><th class="v">YoY</th></tr>
-      ${row('Flower Restaurant',n(fnb.flower),n(fnbY.flower))}
-      ${row('Pool Bar',n(fnb.pool_bar),n(fnbY.pool_bar))}
-      ${row('Brutal Garden',n(fnb.brutal),n(fnbY.brutal))}
-      ${row('Pool Bar Garden',n(fnb.pool_garden),n(fnbY.pool_garden))}
-      ${row('Beach Bar',n(fnb.beach_bar),n(fnbY.beach_bar))}
-      ${row('House Use',n(fnb.house_use),n(fnbY.house_use))}
+      ${row('🌸 Flower Restaurant',n(fnb.flower),n(fnbY.flower))}
+      ${row('🍹 Pool Bar',n(fnb.pool_bar),n(fnbY.pool_bar))}
+      ${row('🍖 Brutal Garden',n(fnb.brutal),n(fnbY.brutal))}
+      ${row('🏊 Pool Bar Garden',n(fnb.pool_garden),n(fnbY.pool_garden))}
+      ${row('🏖️ Beach Bar',n(fnb.beach_bar),n(fnbY.beach_bar))}
+      ${row('🏠 House Use',n(fnb.house_use),n(fnbY.house_use))}
       <tr><td>Xhiro Neto</td><td class="v g">${fL(neto)}</td><td class="v">${totY?fL(netoY):'—'}</td></tr>
       <tr class="tr"><td>Total Xhiro</td><td class="v g">${fL(tot)}</td><td class="v">${totY?fL(totY):'—'}</td></tr>
     </table>
@@ -998,11 +729,11 @@ function rFNB(fnb,fnbY){
 function rSPA(spa,spaY){
   const el=document.getElementById('c_spa'); if(!el)return;
   el.innerHTML=`<div class="sec-card">
-    <div class="sec-hdr2">SPA Daily Revenues — ${fRange()}</div>
+    <div class="sec-hdr2">💆 SPA Daily Revenues — ${fRange()}</div>
     <table class="dtable">
       <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY</th></tr>
-      <tr><td>Të Ardhura Ditore</td><td class="v g">${fL(n(spa.revenues))}</td><td class="v">${fL(n(spaY.revenues))}</td></tr>
-      <tr class="tr"><td>Total Shërbime</td><td class="v g">${spa.total_services||0}</td><td class="v">${spaY.total_services||0}</td></tr>
+      <tr><td>💰 Të Ardhura Ditore</td><td class="v g">${fL(n(spa.revenues))}</td><td class="v">${fL(n(spaY.revenues))}</td></tr>
+      <tr class="tr"><td>🧖 Total Shërbime</td><td class="v g">${spa.total_services||0}</td><td class="v">${spaY.total_services||0}</td></tr>
     </table>
   </div>`;
 }
@@ -1014,13 +745,13 @@ function rPAX(boards,boardsY){
   const totY=n(boardsY.pax_bb)+n(boardsY.pax_hb)+n(boardsY.pax_ai)+n(boardsY.pax_romantic);
   const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v g">${v||0}</td><td class="v">${vy!==undefined?vy:'—'}</td></tr>`;
   el.innerHTML=`<div class="sec-card">
-    <div class="sec-hdr2">PAX / Daily Boards — ${fRange()}</div>
+    <div class="sec-hdr2">👥 PAX / Daily Boards — ${fRange()}</div>
     <table class="dtable">
       <tr><th>Pako</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
-      ${row('BB PAX',n(boards.pax_bb),n(boardsY.pax_bb))}
-      ${row('HB PAX',n(boards.pax_hb),n(boardsY.pax_hb))}
-      ${row('AI PAX',n(boards.pax_ai),n(boardsY.pax_ai))}
-      ${row('Romantic PAX',n(boards.pax_romantic),n(boardsY.pax_romantic))}
+      ${row('🛏️ BB PAX',n(boards.pax_bb),n(boardsY.pax_bb))}
+      ${row('🍽️ HB PAX',n(boards.pax_hb),n(boardsY.pax_hb))}
+      ${row('⭐ AI PAX',n(boards.pax_ai),n(boardsY.pax_ai))}
+      ${row('💑 Romantic PAX',n(boards.pax_romantic),n(boardsY.pax_romantic))}
       <tr class="tr"><td>TOTAL PAX</td><td class="v g">${tot}</td><td class="v">${totY||'—'}</td></tr>
     </table>
   </div>`;
@@ -1037,11 +768,11 @@ function rCF(cf){
   const row=(l,v,e=false)=>`<tr><td>${l}${e?' <span style="color:var(--muted);font-size:11px">(€)</span>':''}</td><td class="v">${e?fE(v):fL(v)}</td></tr>`;
   el.innerHTML=`
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-      <button class="btn-xl" onclick="exportCF()">Shkarko Excel</button>
+      <button class="btn-xl" onclick="exportCF()">📊 Shkarko Excel</button>
     </div>
     <div class="two-col">
       <div class="sec-card">
-        <div class="sec-hdr2">HYRJE — Kurs ${EC} Lek/€</div>
+        <div class="sec-hdr2">✅ HYRJE — Kurs ${EC} Lek/€</div>
         <table class="dtable">
           <tr><th>Zëri</th><th class="v">Vlera</th></tr>
           ${row('Non Cash Lek',n(ark.non_cash_lek))}
@@ -1057,7 +788,7 @@ function rCF(cf){
         </table>
       </div>
       <div class="sec-card">
-        <div class="sec-hdr2">DALJE</div>
+        <div class="sec-hdr2">❌ DALJE</div>
         <table class="dtable">
           <tr><th>Zëri</th><th class="v">Vlera</th></tr>
           ${row('Paga',n(pag.paga))}
@@ -1090,27 +821,27 @@ function rFin(fin){
   const row=(l,v)=>`<tr><td>${l}</td><td class="v">${fL(n(v))}</td></tr>`;
   el.innerHTML=`
     <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-      <button class="btn-xl" onclick="exportFin()">Shkarko Excel</button>
+      <button class="btn-xl" onclick="exportFin()">📊 Shkarko Excel</button>
     </div>
     <div class="sec-card">
-      <div class="sec-hdr2">Shpenzime Ditore sipas Zërit — ${fRange()}</div>
+      <div class="sec-hdr2">📦 Shpenzime Ditore sipas Zërit — ${fRange()}</div>
       <table class="dtable">
         <tr><th>Zëri</th><th class="v">Lek</th></tr>
-        ${row('Beach Bar',fin.beach_bar)}
-        ${row('Flower Restorant',fin.flower)}
-        ${row('Pool Bar',fin.pool_bar)}
-        ${row('Brutal',fin.brutal)}
-        ${row('Pool Bar Garden',fin.pool_garden)}
-        ${row('Overheads F&B',fin.overheads_fnb)}
-        ${row('Magazina Qendrore',fin.mag_qendrore)}
-        ${row('Operacionale Mikse',fin.operacionale)}
-        ${row('SPA',fin.spa)}
-        ${row('Mirëmbajtje & Riparime',fin.mirembajtje)}
-        ${row('Marketing',fin.marketing)}
-        ${row('Familja',fin.familja)}
-        ${row('Shpenzime Hoteli',fin.hoteli)}
-        ${row('Magazina GARDEN (Investime)',fin.mag_garden)}
-        ${row('Paga & Utilitete',fin.paga_util)}
+        ${row('🏖️ Beach Bar',fin.beach_bar)}
+        ${row('🌸 Flower Restorant',fin.flower)}
+        ${row('🍹 Pool Bar',fin.pool_bar)}
+        ${row('🍖 Brutal',fin.brutal)}
+        ${row('🏊 Pool Bar Garden',fin.pool_garden)}
+        ${row('📊 Overheads F&B',fin.overheads_fnb)}
+        ${row('🏪 Magazina Qendrore',fin.mag_qendrore)}
+        ${row('⚙️ Operacionale Mikse',fin.operacionale)}
+        ${row('💆 SPA',fin.spa)}
+        ${row('🔧 Mirëmbajtje & Riparime',fin.mirembajtje)}
+        ${row('📢 Marketing',fin.marketing)}
+        ${row('👨‍👩‍👧 Familja',fin.familja)}
+        ${row('🏨 Shpenzime Hoteli',fin.hoteli)}
+        ${row('🌿 Magazina GARDEN (Investime)',fin.mag_garden)}
+        ${row('💼 Paga & Utilitete',fin.paga_util)}
         <tr class="tr"><td>TOTAL SHPENZIME</td><td class="v g">${fL(tot)}</td></tr>
       </table>
     </div>`;
@@ -1202,7 +933,7 @@ function hmsRenderFO(){
   const statsEl=document.getElementById('hms-stats');
   if(statsEl) statsEl.innerHTML='<div class="hms-stat"><div class="hms-stat-n" style="color:var(--text)">'+s.total+'</div><div class="hms-stat-l">Total</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--gold)">'+s.liree+'</div><div class="hms-stat-l">E Lirë</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--gold)">'+s.totale+'</div><div class="hms-stat-l">Totale</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--blue)">'+s.ditore+'</div><div class="hms-stat-l">Ditore</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:var(--up)">'+s.ardhje+'</div><div class="hms-stat-l">Ardhje</div></div><div class="hms-stat"><div class="hms-stat-n" style="color:#f97316">'+s.ikje+'</div><div class="hms-stat-l">Ikje</div></div>';
   const dateEl=document.getElementById('hms-date');
-  if(dateEl) dateEl.textContent=hmsDateAlb(new Date());
+  if(dateEl) dateEl.textContent='📅 '+hmsDateAlb(new Date());
   // Hide edit controls for FO (viewer only)
   var resetBtn=document.querySelector('[onclick="hmsReset()"]');
   var uploadBtn=document.querySelector('[onclick="document.getElementById(\'hms-file-in\').click()"]');
@@ -1216,7 +947,7 @@ function hmsRenderFO(){
   let out='';
   for(const fl in floors){
     const nums=floors[fl];
-    out+='<div class="hms-floor-wrap"><div class="hms-floor-hdr"><span class="hms-floor-lbl">'+fl+'</span><button class="hms-btn-prn" onclick="hmsPrintFloor(\''+fl+'\')">Printo '+fl+'</button></div><div class="hms-tbl-wrap"><table class="hms-table"><thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th><th style="min-width:100px">Shënime</th></tr></thead><tbody>';
+    out+='<div class="hms-floor-wrap"><div class="hms-floor-hdr"><span class="hms-floor-lbl">'+fl+'</span><button class="hms-btn-prn" onclick="hmsPrintFloor(\''+fl+'\')">🖨 Printo '+fl+'</button></div><div class="hms-tbl-wrap"><table class="hms-table"><thead><tr><th>Nr.</th><th>Pers.</th><th>Check In</th><th>Check Out</th><th>Status</th><th>Pastrimi</th><th>VIP</th><th>ROM</th><th>DEC</th><th>WP</th><th>BC</th><th style="min-width:100px">Shënime</th></tr></thead><tbody>';
     for(let ni=0;ni<nums.length;ni++){
       const num=nums[ni],k=hmsBld+'-'+num,room=hmsRooms[k];if(!room)continue;
       const rc={ardhje:'hr-arr',ikje:'hr-dep',qendrim:'hr-occ'}[room.status]||'';
@@ -1269,8 +1000,8 @@ window.hmsPush=async function(silent){
   try{
     const res=await fetch('/api/hms/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state:hmsRooms})});
     const data=await res.json();
-    if(!silent&&lbl){lbl.textContent=data.ok?'U ruajt':'Gabim';setTimeout(function(){if(lbl)lbl.textContent='';},2500);}
-  }catch(e){if(!silent&&lbl)lbl.textContent='Server error';console.warn('[HMS]',e.message);}
+    if(!silent&&lbl){lbl.textContent=data.ok?'✅ U ruajt':'⚠ Gabim';setTimeout(function(){if(lbl)lbl.textContent='';},2500);}
+  }catch(e){if(!silent&&lbl)lbl.textContent='⚠ Server';console.warn('[HMS]',e.message);}
 };
 
 async function hmsPull(){
@@ -1378,13 +1109,11 @@ hmsPull().then(function(){hmsRenderFO();});
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script>
 (function(){
 // ─── DAILY PICK UP & SEASON SNAPSHOT ──────────────────────────────────────────────────────────────
 var ROOMS=110;
 var MDAYS={1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31};
-var _lastSalesAgg=null; // ruaj agg-un e fundit për të llogaritur diferencën
 var MAL={1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',
          7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
 var EX_ROOMS=new Set(['VILA 1','VILA 2','VILA1','VILA2','313']);
@@ -1559,28 +1288,18 @@ function avail(yr,mo){return ROOMS*(MDAYS[mo]||30);}
 function euro(v){return '\u20ac'+Math.round(v).toLocaleString('de-DE');}
 function pct(v){return (v*100).toFixed(1)+'%';}
 
-function salesRender(agg, prev){
+function salesRender(agg){
   var tN=agg.tN,tR=agg.tR,tRes=agg.tRes;
   var tAv=0; Object.values(agg.mo).forEach(function(m){tAv+=avail(m.yr,m.mo);});
   var occ=tAv>0?tN/tAv:0, adr=tN>0?tR/tN:0;
   document.getElementById('sv_occ').textContent=pct(occ);
   document.getElementById('sv_occ_sub').textContent=tN.toLocaleString()+' net\u00eb / '+tAv.toLocaleString()+' disponueshme';
-  // Daily Pick Up delta
-  var dN='', dR='';
-  if(prev && prev.tN!=null && prev.tR!=null){
-    var dn=tN-prev.tN, dr=tR-prev.tR;
-    var clrN=dn>=0?'#22c55e':'#ef4444', clrR=dr>=0?'#22c55e':'#ef4444';
-    dN=' <span style="color:'+clrN+';font-weight:700;">'+(dn>=0?'+':'')+dn.toLocaleString()+' net\u00eb</span>';
-    dR=' <span style="color:'+clrR+';font-weight:700;">'+(dr>=0?'+':'')+euro(dr)+'</span>';
-    if(prev.filename) dN+=' <span style="color:var(--muted);font-weight:400;">vs '+prev.filename+'</span>';
-  }
   document.getElementById('sv_nights').textContent=tN.toLocaleString();
-  document.getElementById('sv_nights_sub').innerHTML='ADR: '+euro(adr)+dN;
+  document.getElementById('sv_nights_sub').textContent='ADR: '+euro(adr);
   document.getElementById('sv_rev').textContent=euro(tR);
-  document.getElementById('sv_rev_sub').innerHTML='ADR: '+euro(adr)+' / net\u00eb'+dR;
+  document.getElementById('sv_rev_sub').textContent='ADR: '+euro(adr)+' / net\u00eb';
   document.getElementById('sv_res').textContent=tRes.toLocaleString();
   document.getElementById('sv_res_sub').textContent='Mesatare: '+(tN/Math.max(tRes,1)).toFixed(1)+' net\u00eb/rez.';
-  _lastSalesAgg=agg;
   document.getElementById('sf_rev').textContent=euro(agg.fR);
   document.getElementById('sf_sub').textContent=agg.fN.toLocaleString()+' net\u00eb \u00b7 ADR '+euro(agg.fN>0?agg.fR/agg.fN:0);
   document.getElementById('sg_rev').textContent=euro(agg.gR);
@@ -1653,18 +1372,15 @@ function salesAutoLoad(){
     .then(function(r){return r.json();})
     .then(function(j){
       if(!j.ok||!j.data) return;
-      var prev=( j.data.prevTotalRev!=null)
-        ? {tR:j.data.prevTotalRev, tN:j.data.prevTotalNights, filename:j.data.prevFilename||null}
-        : null;
       if(j.data.csv){
         var rows=salesParseCSV(j.data.csv);
         if(rows.length){
-          salesRender(salesAggregate(rows), prev);
+          salesRender(salesAggregate(rows));
           var el=document.getElementById('salesLastUpdate');
           if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
         }
       } else if(j.data.agg){
-        salesRender(j.data.agg, prev);
+        salesRender(j.data.agg);
         var el=document.getElementById('salesLastUpdate');
         if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
       }
@@ -1706,11 +1422,7 @@ function salesUpload(input){
       var rows=salesParseXML(e.target.result);
       if(!rows.length){alert('Nuk u gjet asnj\u00eb rezervim.');return;}
       var agg=salesAggregate(rows);
-      // diferenca vs upload i m\u00ebparsh\u00ebm
-      var prev=_lastSalesAgg
-        ? {tR:_lastSalesAgg.tR, tN:_lastSalesAgg.tN, filename:'upload i m\u00ebparsh\u00ebm'}
-        : null;
-      salesRender(agg, prev);
+      salesRender(agg);
       salesSetTs('Excel: '+file.name+' ('+rows.length+' rez.)');
       fetch('/api/sales-state',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({agg:agg,filename:file.name+' ('+rows.length+' rez.)',ts:new Date().toISOString()})
@@ -1724,428 +1436,6 @@ function salesUpload(input){
 window.salesUpload=salesUpload;
 window.salesLoadSheets=salesLoadSheets;
 window.salesAutoLoad=salesAutoLoad;
-})();
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ── ADMIN PANEL MODULE ─────────────────────────────────────────────────────────
-// ═══════════════════════════════════════════════════════════════════════════════
-(function(){
-  'use strict';
-  var G=window;
-  var GOLD='#c9a84c',GOLD2='#e8c97a',GREEN='#4caf7d',RED='#e05252',AMBER='#e8a23a',
-      BLUE='#5b9bd5',PURPLE='#a67cc3',TEAL='#4db6ac',PINK='#e07891';
-  var MO12=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var MO4=['Jan','Feb','Mar','Apr'];
-  // Unregister datalabels globally — only enable per-chart for pie/doughnut
-  if(window.ChartDataLabels&&window.Chart) {
-    try{ Chart.unregister(ChartDataLabels); }catch(e){}
-  }
-
-  // ── Embedded data from Managerial Report 2026 ──────────────────────────────
-  var ADM_DATA={
-    // lyLabel = the specific LY period this month/period is compared against
-    all:{rev:532096,revB:842762,revLY:370466,exp:702643,expB:637000,expLY:523924,
-         prf:-170548,prfB:205762,prfLY:-153458,occ:41,occLY:16.5,rn:4107,rnLY:1607,
-         adr:99.4,adrLY:87,label:'YTD Jan–Apr 2026',lyLabel:'Jan–Apr 2025'},
-    jan:{rev:193890,revB:185000,revLY:143289,exp:229141,expB:188968,expLY:118000,
-         prf:-35251,prfB:-3968,prfLY:25289,occ:27,occLY:19,rn:936,rnLY:653,
-         adr:99.4,adrLY:81.9,label:'January 2026',lyLabel:'January 2025'},
-    feb:{rev:151965,revB:180254,revLY:108722,exp:231738,expB:193559,expLY:95000,
-         prf:-79773,prfB:-13305,prfLY:13722,occ:19,occLY:13,rn:670,rnLY:436,
-         adr:91.7,adrLY:91.6,label:'February 2026',lyLabel:'February 2025'},
-    mar:{rev:186240,revB:204988,revLY:118454,exp:241764,expB:209440,expLY:105000,
-         prf:-55524,prfB:-4452,prfLY:13454,occ:25,occLY:15,rn:848,rnLY:518,
-         adr:99.0,adrLY:88.7,label:'March 2026',lyLabel:'March 2025'},
-    apr:{rev:160408,revB:272520,revLY:164594,exp:250000,expB:245000,expLY:143000,
-         prf:-28015,prfB:27520,prfLY:21594,occ:46,occLY:22,rn:1653,rnLY:801,
-         adr:97.1,adrLY:93.5,label:'April 2026',lyLabel:'April 2025'}
-  };
-
-  var ADM_INS={
-    all:{
-      danger:['YTD Revenue <span>€532k</span> is <span>37% below</span> the 4-month budget of <span>€842k</span>',
-              'April shortfall critical: <span>€160k actual vs €273k budget</span> (−41%)',
-              'February weakest month: <span>€152k vs €180k budget</span> (−16%)'],
-      warn:['YTD Expenses <span>€703k</span> exceed budget by <span>€66k (+10%)</span>',
-            'Pre-season staffing driving overrun — typical Jan–Apr pattern',
-            'F&B Cost of Sale tracking above budget ratio'],
-      good:['Occupancy <span>41% YTD</span> — more than double LY (16.5%)',
-            'ADR <span>€99.40</span> growing +14% vs last year',
-            'Room Nights <span>4,107 YTD</span> — +156% vs same period LY',
-            'Reputation: <span>4.6 Google</span>, <span>9.2 Booking.com</span>'],
-      info:['Activate summer OTA campaigns to recover April channel shortfall',
-            'May–June pricing needs ADR <span>€130+</span> to hit annual budget',
-            'MICE pipeline strong — push group bookings for May–June']
-    },
-    jan:{
-      danger:['Expenses overran by <span>€40k</span> — NOP <span>-€35.3k</span> vs budget <span>-€4k</span>'],
-      warn:['Expenses <span>€229k</span> exceeded budget <span>€189k</span> by €40k (+21%)',
-            'Pre-opening and staffing costs above plan'],
-      good:['Revenue beat budget by <span>+€8.9k</span> (+5%)',
-            'Occupancy <span>27%</span> vs 19% LY — significant improvement',
-            'Room nights <span>936</span> vs 653 LY — +43%'],
-      info:['Monitor expense trajectory into February',
-            'MICE revenue of <span>€27k</span> — strong start to off-season']
-    },
-    feb:{
-      danger:['Revenue <span>€152k</span> missed budget <span>€180k</span> by <span>−28k (−16%)</span>',
-              'NOP <span>-€79.8k</span> — worst month YTD, well below budget of <span>-€13k</span>'],
-      warn:['Expenses <span>€232k</span> exceeded budget <span>€194k</span> by <span>€38k</span>',
-            'February structurally weak — low season occupancy'],
-      good:['ADR <span>€91.7</span> improving vs LY <span>€91.6</span>',
-            'Spa revenue contributing positively'],
-      info:['Consider targeted promotions for February in future budgets',
-            'Review staffing levels for low-season months']
-    },
-    mar:{
-      danger:['Revenue <span>€186k</span> missed budget <span>€205k</span> by <span>−19k (−9%)</span>',
-              'NOP <span>-€55.5k</span> vs budget <span>-€4.5k</span> — expenses over plan'],
-      warn:['Expenses <span>€242k</span> exceeded budget <span>€209k</span> by <span>€33k (+16%)</span>'],
-      good:['Occupancy <span>25%</span> vs 15% LY — strong improvement',
-            'Room nights <span>848</span> vs 518 LY — +64%'],
-      info:['April should benefit from late Easter bookings spillover',
-            'Review OTA rates for spring shoulder season']
-    },
-    apr:{
-      danger:['Revenue <span>€160k</span> severely missed budget <span>€273k</span> by <span>−€113k (−41%)</span>',
-              'Largest budget shortfall of any month YTD'],
-      warn:['NOP <span>-€28k</span> vs budget <span>+€27k</span> — missed profit target by €55k',
-            'Wholesaler channels not activated for April'],
-      good:['Occupancy <span>46%</span> — best month YTD, vs 22% LY',
-            'Room nights <span>1,653</span> — highest month YTD (+106% vs LY)',
-            'Direct bookings strong at <span>€111k</span>'],
-      info:['Critical: revenue gap must be recovered in May–August peak',
-            'Activate all OTA and wholesale contracts immediately']
-    }
-  };
-
-  var admInited=false;
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  function af(v){
-    var a=Math.abs(v),s=v<0?'-€':'€';
-    if(a>=1000000) return s+(a/1000000).toFixed(2)+'M';
-    if(a>=1000) return s+Math.round(a/1000)+'k';
-    return s+a.toFixed(0);
-  }
-  function apct(a,b){ return Math.min(100,Math.round(Math.abs(a)/Math.abs(b)*100)); }
-  function ge(id){ return document.getElementById(id); }
-  function sv(id,t){ var e=ge(id); if(e) e.textContent=t; }
-  function sh(id,h){ var e=ge(id); if(e) e.innerHTML=h; }
-  function sc(id,p,v){ var e=ge(id); if(e) e.style[p]=v; }
-  function delta(v,ref,cls){ return '<span class="adm-delta '+cls+'">'+v+'</span> <span class="adm-ly">'+ref+'</span>'; }
-  function lyRef(d,val){ return 'vs '+af(val)+' ('+d.lyLabel+')'; }
-
-  // ── Filter toggle ──────────────────────────────────────────────────────────
-  G.admSetMode=function(mode){
-    var yb=ge('adm-btn-ytd'),mb=ge('adm-btn-mtd');
-    if(yb){yb.style.background=mode==='ytd'?'var(--gold)':'none';yb.style.color=mode==='ytd'?'#0a1628':'var(--muted)';}
-    if(mb){mb.style.background=mode==='mtd'?'var(--gold)':'none';mb.style.color=mode==='mtd'?'#0a1628':'var(--muted)';}
-    var ms=ge('adm-month');
-    if(mode==='mtd'&&ms){ms.value='apr';}
-    else if(mode==='ytd'&&ms&&ms.value==='apr'){ms.value='all';}
-    G.admApplyFilter();
-  };
-
-  // ── Apply filter & update all KPI / budget panel / insights ───────────────
-  G.admApplyFilter=function(){
-    var key=(ge('adm-month')||{value:'all'}).value||'all';
-    var d=ADM_DATA[key]||ADM_DATA.all;
-    var lbl=ge('adm-filter-lbl');
-    if(lbl) lbl.textContent='Showing: '+d.label;
-
-    // KPI cards — LY comparison always uses same period from prior year (d.lyLabel)
-    var revChg=Math.round((d.rev/d.revLY-1)*100);
-    var expChg=Math.round((d.exp/d.expLY-1)*100);
-    var rnChg =Math.round((d.rn /d.rnLY -1)*100);
-    var adrChg=Math.round((d.adr/d.adrLY-1)*100);
-    sv('adm-v-rev',af(d.rev));
-    sh('adm-d-rev',delta((revChg>=0?'↑ ':'↓ ')+Math.abs(revChg)+'%',lyRef(d,d.revLY),revChg>=0?'up':'dn'));
-    sv('adm-v-exp',af(d.exp));
-    sh('adm-d-exp',delta((expChg>=0?'↑ ':'↓ ')+Math.abs(expChg)+'%',lyRef(d,d.expLY),expChg>0?'dn':'up'));
-    sv('adm-v-prf',af(d.prf));
-    sc('adm-v-prf','color',d.prf>=0?'#4caf7d':'#e05252');
-    sh('adm-d-prf','<span class="adm-delta '+(d.prf>=0?'up':'dn')+'">'+(d.prf>=0?'Profit':'Loss')+'</span><span class="adm-ly"> '+lyRef(d,d.prfLY)+'</span>');
-    sv('adm-v-occ',d.occ+'%');
-    sh('adm-d-occ',delta('↑ '+(d.occ-d.occLY).toFixed(1)+'pp','vs '+d.occLY+'% ('+d.lyLabel+')','up'));
-    sv('adm-v-rn',d.rn.toLocaleString());
-    sh('adm-d-rn',delta((rnChg>=0?'↑ ':'↓ ')+Math.abs(rnChg)+'%','vs '+d.rnLY.toLocaleString()+' ('+d.lyLabel+')','up'));
-    sv('adm-v-adr','€'+d.adr.toFixed(2));
-    sh('adm-d-adr',delta((adrChg>=0?'↑ ':'↓ ')+Math.abs(adrChg)+'%','vs €'+d.adrLY+' ('+d.lyLabel+')','up'));
-
-    // Budget vs Actual panel
-    var rVar=d.rev-d.revB, eVar=d.exp-d.expB, pVar=d.prf-d.prfB;
-    var rPct=apct(d.rev,d.revB), ePct=apct(d.exp,d.expB);
-
-    sv('adm-bm-rev',af(d.rev)); sc('adm-bm-rev','color',rVar>=0?'#4caf7d':'#e8a23a');
-    sv('adm-bm-rev-b','Budget: '+af(d.revB)+' ('+d.label+')');
-    var barR=ge('adm-bar-rev'); if(barR){barR.style.width=rPct+'%';barR.style.background=rVar>=0?'#4caf7d':'#e8a23a';}
-    sv('adm-bm-rev-pct',rPct+'% of budget');
-    sv('adm-bm-rev-var',(rVar>=0?'+':'')+af(rVar)+' vs target');
-
-    sv('adm-bm-exp',af(d.exp));
-    sv('adm-bm-exp-b','Budget: '+af(d.expB)+' ('+d.label+')');
-    var barE=ge('adm-bar-exp'); if(barE){barE.style.width=Math.min(100,ePct)+'%';barE.style.background=eVar>0?'#e05252':'#4caf7d';}
-    sv('adm-bm-exp-pct',ePct+'% of budget'+(eVar>0?' — over target':' — within budget'));
-    sv('adm-bm-exp-var',(eVar>=0?'+':'')+af(eVar)+' vs budget');
-
-    sv('adm-bm-prf',af(d.prf)); sc('adm-bm-prf','color',d.prf>=0?'#4caf7d':'#e05252');
-    sv('adm-bm-prf-b','Budget: '+af(d.prfB)+' ('+d.label+')');
-    var barP=ge('adm-bar-prf'); if(barP){barP.style.width='100%';barP.style.background=pVar>=0?'#4caf7d':'#e05252';}
-    sv('adm-bm-prf-pct',d.prf>=0?'In profit — on/above budget':'In loss — budget expects '+af(d.prfB));
-    sv('adm-bm-prf-var',(pVar>=0?'+':'')+af(pVar)+' vs target');
-
-    // Insights
-    var ins=ADM_INS[key]||ADM_INS.all;
-    var panel=ge('adm-insights');
-    if(panel){
-      var types=['danger','warn','good','info'];
-      var titles=['⚠ Revenue & Profit Alert','⚡ Expense Watch','✓ Positive Indicators','◎ Actions Recommended'];
-      var colors={danger:'#e05252',warn:'#e8a23a',good:'#4caf7d',info:'#5b9bd5'};
-      panel.innerHTML=types.map(function(t,i){
-        var items=(ins[t]||[]).map(function(txt){
-          return '<div class="insight-item" style="color:'+colors[t]+'">'+txt+'</div>';
-        }).join('');
-        return '<div class="insight-box '+t+'"><div class="insight-title '+t+'">'+titles[i]+'</div>'+items+'</div>';
-      }).join('');
-    }
-  };
-
-  // ── Chart initialisation (lazy — only on first Admin tab open) ─────────────
-  G.admInitCharts=function(){
-    if(admInited||!window.Chart) return;
-    admInited=true;
-
-    var dfSc={
-      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8a9bbf',maxRotation:0}},
-      y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#8a9bbf'}}
-    };
-    var dfPl={
-      legend:{labels:{boxWidth:10,padding:8,color:'#8a9bbf'}},
-      tooltip:{mode:'index',intersect:false}
-    };
-    // datalabels plugin ref (will be null if CDN failed)
-    var DL=window.ChartDataLabels||null;
-    // Datalabels config for pie/donut — show % on slices ≥ 4%
-    var DL_CFG={
-      color:'#fff',
-      font:{weight:'bold',size:11},
-      textShadowBlur:4,
-      textShadowColor:'rgba(0,0,0,.85)',
-      formatter:function(value,ctx){
-        var data=ctx.dataset.data;
-        var sum=data.reduce(function(a,b){return a+(+b||0);},0);
-        var pct=sum?Math.round(value/sum*100):0;
-        return pct>=4?pct+'%':'';
-      }
-    };
-    // Pie/donut tooltip formatter — shows label + amount + %
-    function pieTooltip(unit){
-      return {callbacks:{label:function(ctx){
-        var v=ctx.raw,sum=ctx.dataset.data.reduce(function(a,b){return a+(+b||0);},0);
-        var pct=sum?Math.round(v/sum*100):0;
-        var fmt=unit==='K'?(v>=1000?(v/1000).toFixed(1)+'k':v):v.toLocaleString();
-        return ' '+(unit==='K'?'€':'')+(unit==='pct'?v+'%':fmt+(unit==='€'?' €':''))+'  ('+pct+'%)';
-      }}};
-    }
-    // Standard chart builder
-    function mk(id,type,data,opts,chartPlugins){
-      var c=ge(id); if(!c) return;
-      return new Chart(c,{type:type,data:data,
-        plugins:chartPlugins||[],
-        options:Object.assign({responsive:true,maintainAspectRatio:false},opts||{})});
-    }
-    // Pie/donut builder with datalabels enabled
-    function mkPie(id,type,data,opts){
-      var c=ge(id); if(!c) return;
-      var baseOpts=Object.assign({responsive:true,maintainAspectRatio:false},opts||{});
-      // inject datalabels config
-      if(!baseOpts.plugins) baseOpts.plugins={};
-      baseOpts.plugins.datalabels=DL_CFG;
-      return new Chart(c,{type:type,data:data,
-        plugins:DL?[DL]:[],options:baseOpts});
-    }
-
-    // 1. Budget Revenue
-    mk('adm-c-budrev','bar',{labels:MO4,datasets:[
-      {label:'Actual Revenue (€)',data:[193890,151965,186240,160408],backgroundColor:'rgba(76,175,125,.5)',borderColor:GREEN,borderWidth:1.5},
-      {label:'Budget (€)',data:[185000,180254,204988,272520],backgroundColor:'rgba(201,168,76,.2)',borderColor:GOLD,borderWidth:1.5},
-      {label:'Variance',data:[8890,-28289,-18748,-112112],type:'line',borderColor:AMBER,fill:false,tension:.2,borderWidth:2,pointRadius:5,
-       pointBackgroundColor:[GREEN,RED,RED,RED]}
-    ]},{plugins:dfPl,scales:dfSc});
-
-    // 2. Budget Expenses
-    mk('adm-c-budexp','bar',{labels:MO4,datasets:[
-      {label:'Actual Expenses (€)',data:[229141,231738,241764,250000],backgroundColor:'rgba(224,82,82,.5)',borderColor:RED,borderWidth:1.5},
-      {label:'Budget (€)',data:[188968,193559,209440,245000],backgroundColor:'rgba(201,168,76,.2)',borderColor:GOLD,borderWidth:1.5},
-      {label:'Overspend',data:[40173,38179,32324,5000],type:'line',borderColor:RED,fill:false,tension:.2,borderWidth:2,pointRadius:4}
-    ]},{plugins:dfPl,scales:dfSc});
-
-    // 3. Room Nights (USALI)
-    mk('adm-c-rn','bar',{labels:MO12,datasets:[
-      {label:'2024',data:[726,697,704,1128,1385,2421,3245,3355,2712,1121,666,594],backgroundColor:'rgba(91,155,213,.25)',borderColor:BLUE,borderWidth:1.5},
-      {label:'2025',data:[653,436,518,801,1905,2745,3177,3340,2947,1691,622,666],backgroundColor:'rgba(201,168,76,.25)',borderColor:GOLD,borderWidth:1.5},
-      {label:'2026',data:[936,670,848,1653,null,null,null,null,null,null,null,null],backgroundColor:'rgba(76,175,125,.4)',borderColor:GREEN,borderWidth:2},
-      {label:'Budget',data:[920,750,850,1500,2008,3850,4800,4850,3200,2300,1300,1450],type:'line',borderColor:AMBER,borderDash:[4,4],borderWidth:1.5,pointRadius:2,fill:false}
-    ]},{plugins:dfPl,scales:dfSc});
-
-    // 4. Occupancy
-    mk('adm-c-occ','bar',{labels:MO12,datasets:[
-      {label:'2024',data:[20,23,21,31,38,67,90,92,75,31,18,16],backgroundColor:'rgba(91,155,213,.3)',borderColor:BLUE,borderWidth:1.5},
-      {label:'2025',data:[19,13,15,22,53,76,88,92,82,47,17,18],backgroundColor:'rgba(201,168,76,.3)',borderColor:GOLD,borderWidth:1.5},
-      {label:'2026',data:[27,19,25,46,null,null,null,null,null,null,null,null],backgroundColor:'rgba(76,175,125,.4)',borderColor:GREEN,borderWidth:2}
-    ]},{plugins:dfPl,scales:{
-      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8a9bbf',maxRotation:0}},
-      y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:function(v){return v+'%';},color:'#8a9bbf'}}
-    }});
-
-    // 5. ADR Trend (values in ALL / Albanian Lek)
-    mk('adm-c-adr','line',{labels:MO12,datasets:[
-      {label:'2024 (ALL)',data:[9108,8725,9326,9053,10247,15162,17757,18735,14613,8750,9312,7916],borderColor:BLUE,backgroundColor:'rgba(91,155,213,.08)',fill:true,tension:.3,borderWidth:2,pointRadius:2},
-      {label:'2025 (ALL)',data:[8190,9161,8874,9346,11208,15684,19932,20923,15617,10998,9758,14346],borderColor:GOLD,backgroundColor:'rgba(201,168,76,.08)',fill:true,tension:.3,borderWidth:2,pointRadius:2},
-      {label:'2026 (ALL)',data:[10027,10533,9890,null,null,null,null,null,null,null,null,null],borderColor:GREEN,backgroundColor:'rgba(76,175,125,.1)',fill:true,tension:.3,borderWidth:2.5,pointRadius:4}
-    ]},{plugins:dfPl,scales:{
-      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8a9bbf',maxRotation:0}},
-      y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:function(v){return (v/1000).toFixed(0)+'k ALL';},color:'#8a9bbf'}}
-    }});
-
-    // 6. NOP Trend
-    mk('adm-c-nop','line',{labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'],datasets:[
-      {label:'NOP 2025 (€)',data:[-27378,-62496,-63584,-33259,93311,219117,405290,479629,268130],borderColor:RED,tension:.3,borderWidth:2,fill:false,pointRadius:3},
-      {label:'NOP 2026 (€)',data:[-35251,-79773,-55524,null,null,null,null,null,null],borderColor:AMBER,tension:.3,borderWidth:2.5,borderDash:[5,3],fill:false,pointRadius:4},
-      {label:'GOP 2025 (€)',data:[1583,null,-22241,8236,131732,269594,438456,507510,295370],borderColor:TEAL,tension:.3,borderWidth:1.5,fill:false,pointRadius:2}
-    ]},{plugins:dfPl,scales:{
-      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8a9bbf',maxRotation:0}},
-      y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:function(v){return '€'+(v/1000).toFixed(0)+'k';},color:'#8a9bbf'}}
-    }});
-
-    // 7. Channel Donut — with % labels on slices (EUR values)
-    mkPie('adm-c-ch','doughnut',{
-      labels:['Direct','MICE/Groups','Booking.com','Hotelbeds','OTS','Expedia','Webbeds','Website','Other'],
-      datasets:[{data:[298254,44289,12472,15157,15996,7940,4282,4509,3697],
-        backgroundColor:['rgba(201,168,76,.9)','rgba(76,175,125,.85)','rgba(91,155,213,.85)','rgba(232,162,58,.85)','rgba(224,82,82,.8)','rgba(166,124,195,.85)','rgba(77,182,172,.85)','rgba(224,120,145,.8)','rgba(138,155,191,.7)'],
-        borderColor:'#0d1f3c',borderWidth:2}]
-    },{plugins:{legend:{position:'right',labels:{padding:5,boxWidth:9,font:{size:10},color:'#8a9bbf'}},
-      tooltip:{callbacks:{label:function(ctx){
-        var v=ctx.raw,sum=ctx.dataset.data.reduce(function(a,b){return a+b;},0);
-        return ' €'+v.toLocaleString()+' ('+ Math.round(v/sum*100)+'%)';
-      }}},
-      datalabels:null // overridden below by DL_CFG in mkPie
-    }});
-
-    // 8. Source by Country
-    mk('adm-c-src','bar',{
-      labels:['Albania','Kosovo','UK','Switzerland','Germany','Poland','France','Netherlands','Sweden','Italy','USA'],
-      datasets:[{label:'Revenue 2026 YTD (€)',
-        data:[203417,129266,5105,8979,1429,2178,2529,2774,1360,254,556],
-        backgroundColor:[GOLD,BLUE,GREEN,PURPLE,AMBER,TEAL,'#e07891','#7986cb','#aed581','#4dd0e1','#f48fb1'].map(function(c){return c+'bb';}),
-        borderWidth:1,borderColor:'rgba(255,255,255,.1)'}]
-    },{indexAxis:'y',plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}},scales:{
-      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8a9bbf'}},
-      y:{grid:{display:false},ticks:{color:'#8a9bbf',font:{size:10}}}
-    }});
-
-    // 9. Board Production
-    mk('adm-c-board','bar',{labels:MO4,datasets:[
-      {label:'BB Package',data:[26295,34892,38640,108006],backgroundColor:'rgba(201,168,76,.7)',borderColor:GOLD,borderWidth:1},
-      {label:'HB Package',data:[45015,27316,43555,51196],backgroundColor:'rgba(76,175,125,.7)',borderColor:GREEN,borderWidth:1},
-      {label:'Full Board',data:[21130,6629,1040,289],backgroundColor:'rgba(91,155,213,.7)',borderColor:BLUE,borderWidth:1},
-      {label:'Romantic',data:[1410,1620,630,1010],backgroundColor:'rgba(166,124,195,.7)',borderColor:PURPLE,borderWidth:1}
-    ]},{plugins:dfPl,scales:dfSc});
-
-    // 10. Online Reputation
-    mk('adm-c-rep','bar',{labels:MO4,datasets:[
-      {label:'Reviews',data:[36,42,54,74],backgroundColor:'rgba(201,168,76,.4)',borderColor:GOLD,borderWidth:1.5,yAxisID:'y'},
-      {label:'Avg Rating',data:[4.58,4.77,4.60,4.48],type:'line',borderColor:GREEN,backgroundColor:'rgba(76,175,125,.1)',
-       fill:true,tension:.3,pointRadius:4,borderWidth:2,yAxisID:'y1'}
-    ]},{plugins:dfPl,scales:{
-      x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8a9bbf',maxRotation:0}},
-      y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#8a9bbf'},title:{display:true,text:'Reviews',color:'#8a9bbf'}},
-      y1:{position:'right',min:4,max:5,grid:{display:false},ticks:{color:'#8a9bbf'},title:{display:true,text:'Rating',color:'#8a9bbf'}}
-    }});
-
-    // 11. Marketing
-    mk('adm-c-mkt','bar',{labels:MO4,datasets:[
-      {label:'Revenue (€)',data:[193890,151965,186240,160408],backgroundColor:'rgba(201,168,76,.2)',borderColor:GOLD,borderWidth:1.5},
-      {label:'Marketing Spend (€)',data:[10501,8336,10453,10500],backgroundColor:'rgba(224,82,82,.4)',borderColor:RED,borderWidth:1.5},
-      {label:'Meta Ads (€)',data:[2275,2337,2940,2950],type:'line',borderColor:AMBER,fill:false,tension:.3,borderWidth:2,pointRadius:4}
-    ]},{plugins:dfPl,scales:dfSc});
-
-    // ── 12. CASH FLOW PIE CHARTS ─────────────────────────────────────────────
-    // Cash Sources 2025 Annual (EUR equiv — LEK sources converted at 100 ALL/EUR)
-    // EUR sources: Non-cash POS/Transfer, Reception EUR, F&B EUR, Allotment, ITAKA, MICE EUR
-    // LEK sources: Reception LEK→EUR, F&B LEK→EUR, Non-cash LEK→EUR, MICE LEK→EUR
-    var cfSrcLabels=['Non-cash EUR\n(POS/Transfer)','Cash EUR\n(Reception)','F&B EUR','Allotment','ITAKA','MICE EUR','Cash LEK\n(Reception)','F&B LEK','Non-cash LEK','MICE LEK'];
-    var cfSrcData  =[1285,285,95,340,165,215,530,720,255,55]; // K EUR equiv
-    var cfSrcColors=['rgba(201,168,76,.9)','rgba(232,162,58,.85)','rgba(77,182,172,.85)','rgba(91,155,213,.85)','rgba(59,130,246,.8)','rgba(76,175,125,.85)','rgba(166,124,195,.85)','rgba(224,120,145,.8)','rgba(138,155,191,.75)','rgba(224,82,82,.7)'];
-    mkPie('adm-c-cf-src','pie',{
-      labels:cfSrcLabels,
-      datasets:[{data:cfSrcData,backgroundColor:cfSrcColors,borderColor:'#0d1f3c',borderWidth:2}]
-    },{plugins:{
-      legend:{position:'bottom',labels:{padding:6,boxWidth:10,font:{size:9},color:'#8a9bbf'}},
-      tooltip:{callbacks:{label:function(ctx){
-        var v=ctx.raw,sum=cfSrcData.reduce(function(a,b){return a+b;},0);
-        return ' €'+v+'k ('+Math.round(v/sum*100)+'%)';
-      }}}
-    }});
-
-    // Cash Uses 2025 Annual (EUR)
-    // From wages data (known): total wages €985k. Remaining from known expense structure.
-    var cfUsesLabels=['Wages & Social','Food Suppliers','Taxes (TVSH/TAP)','Utilities','Maintenance','Marketing'];
-    var cfUsesData  =[986,195,185,135,95,82]; // K EUR
-    var cfUsesColors=['rgba(224,82,82,.9)','rgba(232,162,58,.85)','rgba(91,155,213,.85)','rgba(77,182,172,.85)','rgba(166,124,195,.85)','rgba(201,168,76,.85)'];
-    mkPie('adm-c-cf-uses','pie',{
-      labels:cfUsesLabels,
-      datasets:[{data:cfUsesData,backgroundColor:cfUsesColors,borderColor:'#0d1f3c',borderWidth:2}]
-    },{plugins:{
-      legend:{position:'bottom',labels:{padding:6,boxWidth:10,font:{size:9},color:'#8a9bbf'}},
-      tooltip:{callbacks:{label:function(ctx){
-        var v=ctx.raw,sum=cfUsesData.reduce(function(a,b){return a+b;},0);
-        return ' €'+v+'k ('+Math.round(v/sum*100)+'%)';
-      }}}
-    }});
-
-    // EUR vs LEK Sources Split (donut — single ring for clean visual)
-    // EUR sources total: 1285+285+95+340+165+215 = 2385 K EUR (60%)
-    // LEK sources total: 530+720+255+55 = 1560 K EUR equiv (40%)
-    mkPie('adm-c-cf-split','doughnut',{
-      labels:['EUR Sources (direct €)','LEK Sources (converted)'],
-      datasets:[{
-        data:[2385,1560],
-        backgroundColor:['rgba(201,168,76,.9)','rgba(91,155,213,.85)'],
-        borderColor:'#0d1f3c',borderWidth:3
-      }]
-    },{
-      cutout:'55%',
-      plugins:{
-        legend:{position:'bottom',labels:{padding:10,boxWidth:12,font:{size:11},color:'#8a9bbf'}},
-        tooltip:{callbacks:{label:function(ctx){
-          var v=ctx.raw,sum=2385+1560;
-          return ' €'+v+'k equiv ('+Math.round(v/sum*100)+'%)';
-        }}}
-      }
-    });
-  };
-
-  // ── Lazy init on first Admin tab open ─────────────────────────────────────
-  G.admLazyInit=function(){
-    G.admInitCharts();
-    G.admApplyFilter();
-  };
-
-  // ── Manual refresh button ──────────────────────────────────────────────────
-  G.admLoadAll=function(){
-    var lbl=ge('adm-filter-lbl');
-    if(lbl) lbl.textContent='↻ Refreshing…';
-    setTimeout(G.admApplyFilter, 200);
-  };
-
-  // ── Auto-refresh every 5 min when admin panel is visible ──────────────────
-  setInterval(function(){
-    var s=ge('sec_admin_panel');
-    if(s&&s.style.display!=='none') G.admApplyFilter();
-  }, 5*60*1000);
-
 })();
 
 // ─── SEND DAILY REPORT ───────────────────────────────────────────────────────
