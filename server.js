@@ -1159,11 +1159,10 @@ app.post('/api/send-monthly-report', async function(req, res) {
 
  try {
  // ── Helpers ────────────────────────────────────────────────────────────────
- const fE = (v) => v != null ? '€' + Math.round(v).toLocaleString('en') : '—';
+ const fE = (v) => v != null ? '€' + Math.round(v).toLocaleString('de-DE') : '—';
  const fK = (v) => v != null ? '€' + Math.round(v/1000) + 'k' : '—';
  const fP = (v) => v != null ? v.toFixed(1) + '%' : '—';
- const fPp = (v) => v != null ? Math.round(v) + '%' : '—';
- const fN = (v) => v != null ? Math.round(v).toLocaleString('en') : '—';
+ const fN = (v) => v != null ? Math.round(v).toLocaleString('de-DE') : '—';
  const delta = (a, b) => {
  if (a == null || b == null || b === 0) return '';
  const d = ((a - b) / Math.abs(b) * 100).toFixed(1);
@@ -1171,28 +1170,20 @@ app.post('/api/send-monthly-report', async function(req, res) {
  const sign = a >= b ? '+' : '';
  return `<span style="color:${col};font-weight:700">${sign}${d}%</span>`;
  };
- const budBadge = (actual, budget) => {
+ const budBadge = (actual, budget, invert) => {
  if (actual == null || budget == null) return '';
  const diff = actual - budget;
  const pct = budget !== 0 ? ((diff/Math.abs(budget))*100).toFixed(1) : '0';
- const col = diff >= 0 ? '#4caf7d' : '#e05252';
+ const good = invert ? diff <= 0 : diff >= 0;
+ const col = good ? '#4caf7d' : '#e05252';
  const sign = diff >= 0 ? '+' : '';
- return `<span style="color:${col};font-size:11px">${sign}${fE(diff)} (${sign}${pct}% vs budget)</span>`;
- };
- // Expense budget badge inverted (lower is better)
- const budBadgeExp = (actual, budget) => {
- if (actual == null || budget == null) return '';
- const diff = actual - budget;
- const pct = budget !== 0 ? ((diff/Math.abs(budget))*100).toFixed(1) : '0';
- const col = diff <= 0 ? '#4caf7d' : '#e05252';
- const sign = diff >= 0 ? '+' : '';
- return `<span style="color:${col};font-size:11px">${sign}${fE(diff)} (${sign}${pct}% vs budget)</span>`;
+ return `<span style="color:${col}">${sign}${fE(diff)} (${sign}${pct}% buxh.)</span>`;
  };
 
  // ── Insight type → colour mapping ──────────────────────────────────────────
  const insColor = { danger:'#e05252', warn:'#e8a23a', good:'#4caf7d', info:'#5b9bd5' };
- const insBg = { danger:'rgba(224,82,82,.07)', warn:'rgba(232,162,58,.07)', good:'rgba(76,175,125,.07)', info:'rgba(91,155,213,.07)' };
- const insBd = { danger:'rgba(224,82,82,.25)', warn:'rgba(232,162,58,.25)', good:'rgba(76,175,125,.2)', info:'rgba(91,155,213,.2)' };
+ const insBg   = { danger:'rgba(224,82,82,.08)', warn:'rgba(232,162,58,.08)', good:'rgba(76,175,125,.08)', info:'rgba(91,155,213,.08)' };
+ const insBd   = { danger:'rgba(224,82,82,.3)', warn:'rgba(232,162,58,.3)', good:'rgba(76,175,125,.25)', info:'rgba(91,155,213,.25)' };
 
  // ── Channel rows ───────────────────────────────────────────────────────────
  const chTotal = channels ? channels.reduce((s,x)=>s+x.v,0) : 0;
@@ -1200,12 +1191,12 @@ app.post('/api/send-monthly-report', async function(req, res) {
  ? channels.map(x => {
  const pct = chTotal > 0 ? (x.v/chTotal*100).toFixed(1) : '0';
  return `<tr style="border-bottom:1px solid #1a3358">
- <td style="padding:7px 12px;color:#c8d4e8">${x.l}</td>
- <td style="padding:7px 12px;text-align:right;font-weight:700;color:#e8eaf6">${fE(x.v)}</td>
- <td style="padding:7px 12px;text-align:right;color:#c9a84c">${pct}%</td>
+ <td style="padding:8px 10px;color:#c8d4e8;font-size:13px">${x.l}</td>
+ <td style="padding:8px 10px;text-align:right;font-weight:700;color:#e8eaf6;font-size:13px">${fE(x.v)}</td>
+ <td style="padding:8px 10px;text-align:right;color:#c9a84c;font-size:13px">${pct}%</td>
  </tr>`;
  }).join('')
- : `<tr><td colspan="3" style="padding:14px;color:#6b7fa3;text-align:center;font-style:italic">No channel data for this period</td></tr>`;
+ : `<tr><td colspan="3" style="padding:14px;color:#6b7fa3;text-align:center;font-style:italic">Pa të dhëna kanalesh</td></tr>`;
 
  // ── Cash Out breakdown rows ────────────────────────────────────────────────
  const cfItems = kpis.cfDaljeItems || [];
@@ -1214,172 +1205,162 @@ app.post('/api/send-monthly-report', async function(req, res) {
  ? cfItems.map(x => {
  const pct = cfTotal > 0 ? (x.v/cfTotal*100).toFixed(1) : '0';
  return `<tr style="border-bottom:1px solid #1a3358">
- <td style="padding:7px 12px;color:#c8d4e8">${x.l}</td>
- <td style="padding:7px 12px;text-align:right;font-weight:700;color:#e8eaf6">${fE(x.v)}</td>
- <td style="padding:7px 12px;text-align:right;color:#e05252">${pct}%</td>
+ <td style="padding:8px 10px;color:#c8d4e8;font-size:13px">${x.l}</td>
+ <td style="padding:8px 10px;text-align:right;font-weight:700;color:#e8eaf6;font-size:13px">${fE(x.v)}</td>
+ <td style="padding:8px 10px;text-align:right;color:#e05252;font-size:13px">${pct}%</td>
  </tr>`;
  }).join('')
- : `<tr><td colspan="3" style="padding:14px;color:#6b7fa3;text-align:center;font-style:italic">No CF data for this period</td></tr>`;
+ : '';
 
  // ── Insight sections HTML ──────────────────────────────────────────────────
  const insHtml = (insights || []).map(box => {
- const c = insColor[box.type] || '#c9a84c';
- const bg = insBg[box.type] || 'rgba(201,168,76,.07)';
- const bd = insBd[box.type] || 'rgba(201,168,76,.2)';
+ const c  = insColor[box.type] || '#c9a84c';
+ const bg = insBg[box.type]   || 'rgba(201,168,76,.08)';
+ const bd = insBd[box.type]   || 'rgba(201,168,76,.25)';
  const bullets = (box.para || '').split('\n').filter(Boolean).map(line =>
- `<div style="padding:5px 0 5px 18px;position:relative;color:#c8d4e8;font-size:13px;line-height:1.55;border-bottom:1px solid rgba(255,255,255,.04)">
- <span style="position:absolute;left:4px;color:${c};font-weight:700">›</span>
- ${line.replace(/^•\s*/,'')}
- </div>`
+ `<div style="padding:6px 0 6px 16px;position:relative;color:#c8d4e8;font-size:13px;line-height:1.6;border-bottom:1px solid rgba(255,255,255,.05)">
+ <span style="position:absolute;left:2px;color:${c};font-weight:700">&#8250;</span>
+ ${line.replace(/^[•\s]*/,'')}</div>`
  ).join('');
- return `<div style="background:${bg};border:1px solid ${bd};border-radius:10px;padding:18px 20px;margin-bottom:16px">
- <div style="font-size:11px;font-weight:800;color:${c};text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">${box.title}</div>
- ${bullets}
- </div>`;
+ return `<div style="background:${bg};border-left:3px solid ${c};border-radius:8px;padding:16px 18px;margin-bottom:14px">
+ <div style="font-size:12px;font-weight:800;color:${c};letter-spacing:.5px;margin-bottom:10px">${box.title}</div>
+ ${bullets}</div>`;
  }).join('');
 
  const nowStr = new Date().toLocaleString('sq-AL',{timeZone:'Europe/Tirane',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
 
+ // ── KPI row helper (table-based for email compatibility) ───────────────────
+ const kpiRow = (label, valHtml, subHtml, last) =>
+ `<tr style="${last?'':'border-bottom:1px solid #1a3358'}">
+ <td style="padding:12px 14px;color:#8fa3c0;font-size:13px;vertical-align:middle;width:45%">${label}</td>
+ <td style="padding:12px 14px;text-align:right;vertical-align:top">
+ ${valHtml}
+ <div style="font-size:11px;color:#6b7fa3;margin-top:3px">${subHtml}</div>
+ </td></tr>`;
+
  // ── Email HTML ─────────────────────────────────────────────────────────────
- const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
-<body style="margin:0;padding:0;background:#070f1e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-<div style="max-width:700px;margin:0 auto;padding:24px 16px">
+ const html = `<!DOCTYPE html>
+<html lang="sq"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Raport Mujor Managerial · ${periodLabel}</title></head>
+<body style="margin:0;padding:0;background:#070f1e;font-family:Arial,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#070f1e"><tr><td align="center" style="padding:24px 12px">
+<table width="660" cellpadding="0" cellspacing="0" style="max-width:660px">
 
- <!-- HEADER -->
- <div style="background:linear-gradient(135deg,#0f2040,#0a1628);border:1px solid #1a3358;border-radius:16px;padding:28px 30px;margin-bottom:20px;text-align:center">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">FLOWER HOTELS &amp; RESORTS · Golem, Shqipëri</div>
- <div style="font-size:26px;font-weight:800;color:#e8c96d;letter-spacing:-1px">Raport Mujor Managerial</div>
- <div style="font-size:16px;font-weight:600;color:#e8eaf6;margin-top:6px">${periodLabel}</div>
- <div style="font-size:11px;color:#6b7fa3;margin-top:8px">Gjeneruar: ${nowStr}</div>
- </div>
+<!-- ═══ HEADER ═══ -->
+<tr><td style="background:linear-gradient(135deg,#0f2040,#0a1628);border:1px solid #1a3358;border-radius:16px;padding:28px 30px;text-align:center;margin-bottom:20px">
+ <div style="font-size:11px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">FLOWER HOTELS &amp; RESORTS &middot; GOLEM, SHQIP&Euml;RI</div>
+ <div style="font-size:28px;font-weight:800;color:#e8c96d;letter-spacing:-1px;margin-bottom:6px">Raport Mujor Managerial</div>
+ <div style="font-size:17px;font-weight:600;color:#e8eaf6;margin-bottom:8px">${periodLabel}</div>
+ <div style="font-size:11px;color:#6b7fa3">Gjeneruar: ${nowStr}</div>
+</td></tr>
+<tr><td style="height:16px"></td></tr>
 
- <!-- KPI OVERVIEW -->
- <div style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:22px;margin-bottom:16px">
- <div style="font-size:12px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.6px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #1a3358"> Pasqyrë KPI — ${periodLabel}</div>
+<!-- ═══ KPI PASQYRË ═══ -->
+<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:22px">
+ <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #1a3358">&#9670; PASQYR&Euml; KPI &mdash; ${periodLabel}</div>
+ <table width="100%" cellpadding="0" cellspacing="0">
+ ${kpiRow('Të Ardhurat',
+   `<div style="font-size:22px;font-weight:800;color:#4caf7d">${fK(kpis.rev)}</div>`,
+   `Buxheti ${fK(kpis.budRev)} &middot; ${budBadge(kpis.rev,kpis.budRev,false)} &middot; VK ${fK(kpis.lyRev)} ${delta(kpis.rev,kpis.lyRev)}`)}
+ ${kpiRow('Shpenzimet',
+   `<div style="font-size:22px;font-weight:800;color:#e05252">${fK(kpis.exp)}</div>`,
+   `Buxheti ${fK(kpis.budExp)} &middot; ${budBadge(kpis.exp,kpis.budExp,true)} &middot; VK ${fK(kpis.lyExp)} ${delta(kpis.exp,kpis.lyExp)}`)}
+ ${kpiRow('Fitimi Neto (NOP)',
+   `<div style="font-size:22px;font-weight:800;color:${(kpis.prf||0)>=0?'#4caf7d':'#e05252'}">${fK(kpis.prf)}</div>`,
+   `Buxheti ${fK(kpis.budPrf)} &middot; ${budBadge(kpis.prf,kpis.budPrf,false)} &middot; VK ${fK(kpis.lyPrf)}`)}
+ ${kpiRow('Okupanca',
+   `<div style="font-size:22px;font-weight:800;color:#c9a84c">${fP(kpis.occ)}</div>`,
+   `VK ${fP(kpis.lyOcc)} ${delta(kpis.occ,kpis.lyOcc)}`)}
+ ${kpiRow('ADR &mdash; Çmimi Mesatar',
+   `<div style="font-size:22px;font-weight:800;color:#c9a84c">${fE(kpis.adr)}</div>`,
+   `VK ${fE(kpis.lyAdr)} ${delta(kpis.adr,kpis.lyAdr)}`)}
+ ${kpiRow('Nete të Shitura',
+   `<div style="font-size:22px;font-weight:800;color:#3b82f6">${fN(kpis.rn)}</div>`,
+   `VK ${fN(kpis.lyRn)} ${delta(kpis.rn,kpis.lyRn)} &middot; Disponueshme ${fN(kpis.rnAvail)}`,true)}
+ </table>
+</td></tr>
+<tr><td style="height:14px"></td></tr>
 
- <!-- Revenue row -->
- <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #1a3358">
- <span style="color:#8fa3c0;font-size:13px">Revenue</span>
- <div style="text-align:right">
- <div style="font-size:20px;font-weight:800;color:#4caf7d">${fK(kpis.rev)}</div>
- <div style="font-size:11px;color:#6b7fa3;margin-top:2px">Budget ${fK(kpis.budRev)} · ${budBadge(kpis.rev, kpis.budRev)} · LY ${fK(kpis.lyRev)} ${delta(kpis.rev,kpis.lyRev)}</div>
- </div>
- </div>
-
- <!-- Expenses row -->
- <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #1a3358">
- <span style="color:#8fa3c0;font-size:13px">Expenses</span>
- <div style="text-align:right">
- <div style="font-size:20px;font-weight:800;color:#e05252">${fK(kpis.exp)}</div>
- <div style="font-size:11px;color:#6b7fa3;margin-top:2px">Budget ${fK(kpis.budExp)} · ${budBadgeExp(kpis.exp, kpis.budExp)} · LY ${fK(kpis.lyExp)} ${delta(kpis.exp,kpis.lyExp)}</div>
- </div>
- </div>
-
- <!-- NOP row -->
- <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #1a3358">
- <span style="color:#8fa3c0;font-size:13px">Net Operating Profit</span>
- <div style="text-align:right">
- <div style="font-size:20px;font-weight:800;color:${kpis.prf>=0?'#4caf7d':'#e05252'}">${fK(kpis.prf)}</div>
- <div style="font-size:11px;color:#6b7fa3;margin-top:2px">Budget ${fK(kpis.budPrf)} · ${budBadge(kpis.prf, kpis.budPrf)} · LY ${fK(kpis.lyPrf)}</div>
- </div>
- </div>
-
- <!-- Occupancy row -->
- <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #1a3358">
- <span style="color:#8fa3c0;font-size:13px">Occupancy</span>
- <div style="text-align:right">
- <div style="font-size:20px;font-weight:800;color:#c9a84c">${fP(kpis.occ)}</div>
- <div style="font-size:11px;color:#6b7fa3;margin-top:2px">LY ${fP(kpis.lyOcc)} ${delta(kpis.occ,kpis.lyOcc)}</div>
- </div>
- </div>
-
- <!-- ADR row -->
- <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #1a3358">
- <span style="color:#8fa3c0;font-size:13px">ADR</span>
- <div style="text-align:right">
- <div style="font-size:20px;font-weight:800;color:#c9a84c">${fE(kpis.adr)}</div>
- <div style="font-size:11px;color:#6b7fa3;margin-top:2px">LY ${fE(kpis.lyAdr)} ${delta(kpis.adr,kpis.lyAdr)}</div>
- </div>
- </div>
-
- <!-- Room Nights row -->
- <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0">
- <span style="color:#8fa3c0;font-size:13px">Room Nights</span>
- <div style="text-align:right">
- <div style="font-size:20px;font-weight:800;color:#3b82f6">${fN(kpis.rn)}</div>
- <div style="font-size:11px;color:#6b7fa3;margin-top:2px">LY ${fN(kpis.lyRn)} ${delta(kpis.rn,kpis.lyRn)} · Available ${fN(kpis.rnAvail)}</div>
- </div>
- </div>
- </div>
-
- <!-- MARKETING & LABOR -->
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
- <div style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:18px 20px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px"> Marketing</div>
- <div style="font-size:22px;font-weight:800;color:#e8eaf6;margin-bottom:6px">${fK(kpis.mktTotal)}</div>
- <div style="font-size:11px;color:#6b7fa3">Total incl. House Use ${fK(kpis.mktHU)}</div>
- <div style="margin-top:10px;font-size:12px;color:#8fa3c0">Cash Spend: <strong style="color:#c9a84c">${fK(kpis.mktSpend)}</strong></div>
- <div style="font-size:12px;color:#8fa3c0;margin-top:4px">Cash % of Rev: <strong style="color:#c9a84c">${fP(kpis.mktCashPct)}</strong></div>
- <div style="font-size:12px;color:#8fa3c0;margin-top:4px">ROI (Rev÷Cash): <strong style="color:#4caf7d">${kpis.mktRoi != null ? kpis.mktRoi.toFixed(1)+'x' : '—'}</strong></div>
- </div>
- <div style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:18px 20px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px"> Cash Flow (CF Sheet)</div>
+<!-- ═══ MARKETING ═══ -->
+<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:20px 22px">
+ <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #1a3358">&#9670; MARKETING &amp; SHPENZIME PROMOVUESE</div>
+ <table width="100%" cellpadding="0" cellspacing="0">
+ <tr>
+ <td style="width:50%;vertical-align:top;padding-right:10px">
+ <div style="font-size:11px;color:#6b7fa3;margin-bottom:4px">Total (incl. përdorim i brendshëm)</div>
+ <div style="font-size:22px;font-weight:800;color:#e8eaf6;margin-bottom:10px">${fK(kpis.mktTotal)}</div>
+ <div style="font-size:12px;color:#8fa3c0;margin-bottom:4px">Shpenzim Cash neto: <strong style="color:#c9a84c">${fK(kpis.mktSpend)}</strong></div>
+ <div style="font-size:12px;color:#8fa3c0;margin-bottom:4px">House Use (i brendshëm): <strong style="color:#6b7fa3">${fK(kpis.mktHU)}</strong></div>
+ <div style="font-size:12px;color:#8fa3c0;margin-bottom:4px">Cash % e të ardhurave: <strong style="color:#c9a84c">${fP(kpis.mktCashPct)}</strong></div>
+ <div style="font-size:12px;color:#8fa3c0">ROI (Të ardhura &divide; Cash): <strong style="color:#4caf7d">${kpis.mktRoi != null ? kpis.mktRoi.toFixed(1)+'x' : '—'}</strong></div>
+ </td>
+ <td style="width:50%;vertical-align:top;padding-left:10px;border-left:1px solid #1a3358">
+ <div style="font-size:11px;color:#6b7fa3;margin-bottom:4px">Cash Flow &mdash; Hyrje (Fleta CF)</div>
  ${kpis.cfHyrje26 != null
- ? `<div style="font-size:22px;font-weight:800;color:#4caf7d;margin-bottom:6px">${fK(kpis.cfHyrje26)}</div>
- <div style="font-size:11px;color:#6b7fa3">Cash In · ${kpis.cfLekPct != null ? 'Lek '+kpis.cfLekPct+'%' : ''}</div>
- <div style="margin-top:10px;font-size:12px;color:#8fa3c0">Cash Out: <strong style="color:#e05252">${fK(kpis.cfDalje26)}</strong></div>
- <div style="font-size:12px;color:#8fa3c0;margin-top:4px">EUR In: <strong style="color:#4caf7d">${fE(kpis.cfHyrjeEUR_eur)}</strong> · LEK In: <strong style="color:#c9a84c">${fE(kpis.cfHyrjeALL_eur)}</strong></div>`
- : `<div style="color:#6b7fa3;font-size:13px;font-style:italic;padding-top:8px">Daily Cash Flow sheet not entered for this period</div>`
- }
- </div>
- </div>
+ ? `<div style="font-size:22px;font-weight:800;color:#4caf7d;margin-bottom:10px">${fK(kpis.cfHyrje26)}</div>
+ <div style="font-size:12px;color:#8fa3c0;margin-bottom:4px">Hyrje EUR: <strong style="color:#4caf7d">${fE(kpis.cfHyrjeEUR_eur)}</strong></div>
+ <div style="font-size:12px;color:#8fa3c0">Hyrje LEK (në EUR): <strong style="color:#c9a84c">${fE(kpis.cfHyrjeALL_eur)}</strong></div>`
+ : `<div style="color:#6b7fa3;font-size:13px;font-style:italic;padding-top:8px">Fleta CF Ditore nuk është plotesuar</div>`}
+ </td>
+ </tr>
+ </table>
+</td></tr>
+<tr><td style="height:14px"></td></tr>
 
- <!-- CHANNEL MIX -->
- <div style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:18px 20px;margin-bottom:16px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px"> Channel Mix — Room Revenue</div>
- <table style="width:100%;border-collapse:collapse">
- <thead><tr style="border-bottom:1px solid #1a3358">
- <th style="text-align:left;color:#6b7fa3;font-size:10px;font-weight:600;padding:0 12px 8px;text-transform:uppercase">Channel</th>
- <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:600;padding:0 12px 8px;text-transform:uppercase">Revenue</th>
- <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:600;padding:0 12px 8px;text-transform:uppercase">Share</th>
+<!-- ═══ MIXI I KANALEVE ═══ -->
+<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:20px 22px">
+ <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #1a3358">&#9670; MIXI I KANALEVE &mdash; T&Euml; ARDHURA DHOMASH</div>
+ <table width="100%" cellpadding="0" cellspacing="0">
+ <thead><tr style="border-bottom:2px solid #1a3358">
+ <th style="text-align:left;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase;letter-spacing:.5px">Kanali</th>
+ <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase;letter-spacing:.5px">Të Ardhura</th>
+ <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase;letter-spacing:.5px">Pjesa</th>
  </tr></thead>
  <tbody>${chRows}</tbody>
+ ${chTotal > 0 ? `<tfoot><tr style="border-top:2px solid #1a3358">
+ <td style="padding:9px 10px;font-weight:700;color:#e8eaf6;font-size:13px">Totali</td>
+ <td style="padding:9px 10px;text-align:right;font-weight:800;color:#c9a84c;font-size:13px">${fE(chTotal)}</td>
+ <td style="padding:9px 10px;text-align:right;color:#6b7fa3;font-size:13px">100%</td>
+ </tr></tfoot>` : ''}
  </table>
- </div>
+</td></tr>
+<tr><td style="height:14px"></td></tr>
 
- <!-- CASH OUT BREAKDOWN -->
- ${cfItems.length > 0 ? `
- <div style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:18px 20px;margin-bottom:16px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px"> Cash Out Breakdown (Daily CF Sheet)</div>
- <table style="width:100%;border-collapse:collapse">
- <thead><tr style="border-bottom:1px solid #1a3358">
- <th style="text-align:left;color:#6b7fa3;font-size:10px;font-weight:600;padding:0 12px 8px;text-transform:uppercase">Category</th>
- <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:600;padding:0 12px 8px;text-transform:uppercase">Amount</th>
- <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:600;padding:0 12px 8px;text-transform:uppercase">%</th>
+${cfItems.length > 0 ? `<!-- ═══ CASH OUT ═══ -->
+<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:20px 22px">
+ <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #1a3358">&#9670; CASH OUT &mdash; DETAJE SIPAS KATEGORIS&Euml;</div>
+ <table width="100%" cellpadding="0" cellspacing="0">
+ <thead><tr style="border-bottom:2px solid #1a3358">
+ <th style="text-align:left;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase">Kategoria</th>
+ <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase">Shuma</th>
+ <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase">%</th>
  </tr></thead>
  <tbody>${cfRows}</tbody>
- <tfoot><tr>
- <td style="padding:9px 12px;font-weight:700;color:#e8eaf6">TOTAL</td>
- <td style="padding:9px 12px;text-align:right;font-weight:800;color:#e05252">${fE(cfTotal)}</td>
+ <tfoot><tr style="border-top:2px solid #1a3358">
+ <td style="padding:9px 10px;font-weight:700;color:#e8eaf6;font-size:13px">TOTALI</td>
+ <td style="padding:9px 10px;text-align:right;font-weight:800;color:#e05252;font-size:13px">${fE(cfTotal)}</td>
  <td></td>
  </tr></tfoot>
  </table>
- </div>` : ''}
+</td></tr>
+<tr><td style="height:14px"></td></tr>` : ''}
 
- <!-- MANAGEMENT INSIGHTS -->
- <div style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:22px;margin-bottom:16px">
- <div style="font-size:12px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.6px;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid #1a3358">◆ Management Insights — ${periodLabel}</div>
+<!-- ═══ KONKLUZIONE MENAXHERIALE ═══ -->
+<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:22px">
+ <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #1a3358">&#9670; KONKLUZIONE MENAXHERIALE &mdash; ${periodLabel}</div>
  ${insHtml}
- </div>
+</td></tr>
+<tr><td style="height:14px"></td></tr>
 
- <!-- FOOTER -->
- <div style="text-align:center;padding:16px 0;border-top:1px solid #1a3358;margin-top:4px">
- <div style="font-size:11px;color:#c9a84c;font-weight:600;letter-spacing:.5px">FLOWER HOTELS &amp; RESORTS · FLOW Dashboard</div>
- <div style="font-size:10px;color:#4a5f80;margin-top:4px">Raport i gjeneruar automatikisht · ${nowStr}</div>
- <div style="font-size:10px;color:#4a5f80;margin-top:2px">Konfidencial — vetëm për përdorim managerial të brendshëm</div>
- </div>
+<!-- ═══ FOOTER ═══ -->
+<tr><td style="text-align:center;padding:18px 0;border-top:1px solid #1a3358">
+ <div style="font-size:12px;color:#c9a84c;font-weight:700;letter-spacing:.8px;margin-bottom:6px">FLOWER HOTELS &amp; RESORTS &middot; FLOW Dashboard</div>
+ <div style="font-size:10px;color:#4a5f80;margin-bottom:4px">Raport i gjeneruar automatikisht &middot; ${nowStr}</div>
+ <div style="font-size:10px;color:#4a5f80">Konfidencial &mdash; vetëm për përdorim managerial të brendshëm</div>
+</td></tr>
 
-</div>
+</table>
+</td></tr></table>
 </body></html>`;
 
  const nodemailer = require('nodemailer');
