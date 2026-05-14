@@ -1159,208 +1159,195 @@ app.post('/api/send-monthly-report', async function(req, res) {
 
  try {
  // ── Helpers ────────────────────────────────────────────────────────────────
- const fE = (v) => v != null ? '€' + Math.round(v).toLocaleString('de-DE') : '—';
- const fK = (v) => v != null ? '€' + Math.round(v/1000) + 'k' : '—';
- const fP = (v) => v != null ? v.toFixed(1) + '%' : '—';
- const fN = (v) => v != null ? Math.round(v).toLocaleString('de-DE') : '—';
- const delta = (a, b) => {
- if (a == null || b == null || b === 0) return '';
- const d = ((a - b) / Math.abs(b) * 100).toFixed(1);
- const col = a >= b ? '#4caf7d' : '#e05252';
- const sign = a >= b ? '+' : '';
- return `<span style="color:${col};font-weight:700">${sign}${d}%</span>`;
- };
- const budBadge = (actual, budget, invert) => {
- if (actual == null || budget == null) return '';
- const diff = actual - budget;
- const pct = budget !== 0 ? ((diff/Math.abs(budget))*100).toFixed(1) : '0';
- const good = invert ? diff <= 0 : diff >= 0;
- const col = good ? '#4caf7d' : '#e05252';
- const sign = diff >= 0 ? '+' : '';
- return `<span style="color:${col}">${sign}${fE(diff)} (${sign}${pct}% buxh.)</span>`;
- };
+ const fE  = (v) => v != null ? '€' + Math.abs(Math.round(v)).toLocaleString('de-DE') : '—';
+ const fK  = (v) => { if(v==null) return '—'; const a=Math.abs(Math.round(v/1000)); return (v<0?'-':'')+'€'+a+'k'; };
+ const fP  = (v) => v != null ? v.toFixed(1) + '%' : '—';
+ const fN  = (v) => v != null ? Math.round(v).toLocaleString('de-DE') : '—';
+ const arrow = (a, b) => { if(a==null||b==null||b===0) return ''; const d=((a-b)/Math.abs(b)*100).toFixed(1); return (a>=b?'&#9650;':'&#9660;')+' '+Math.abs(d)+'%'; };
+ const arrowCol = (a,b,inv) => { if(a==null||b==null) return '#8fa3c0'; const good=inv?(a<=b):(a>=b); return good?'#4caf7d':'#e05252'; };
+ const diffStr = (a,b,inv) => { if(a==null||b==null) return ''; const d=a-b; const good=inv?(d<=0):(d>=0); const col=good?'#4caf7d':'#e05252'; const sign=d>=0?'+':''; return '<span style="color:'+col+';font-weight:700">'+sign+fK(d)+'</span>'; };
+ const pBar = (pct, col) => { const w=Math.min(100,Math.max(0,Math.round(pct))); return '<div style="background:#112240;border-radius:3px;height:6px;width:100%;margin-top:5px"><div style="background:'+col+';height:6px;width:'+w+'%;border-radius:3px"></div></div>'; };
 
- // ── Insight type → colour mapping ──────────────────────────────────────────
- const insColor = { danger:'#e05252', warn:'#e8a23a', good:'#4caf7d', info:'#5b9bd5' };
- const insBg   = { danger:'rgba(224,82,82,.08)', warn:'rgba(232,162,58,.08)', good:'rgba(76,175,125,.08)', info:'rgba(91,155,213,.08)' };
- const insBd   = { danger:'rgba(224,82,82,.3)', warn:'rgba(232,162,58,.3)', good:'rgba(76,175,125,.25)', info:'rgba(91,155,213,.25)' };
-
- // ── Channel rows ───────────────────────────────────────────────────────────
+ // ── Channel top 5 ──────────────────────────────────────────────────────────
  const chTotal = channels ? channels.reduce((s,x)=>s+x.v,0) : 0;
- const chRows = channels && channels.length > 0
- ? channels.map(x => {
- const pct = chTotal > 0 ? (x.v/chTotal*100).toFixed(1) : '0';
- return `<tr style="border-bottom:1px solid #1a3358">
- <td style="padding:8px 10px;color:#c8d4e8;font-size:13px">${x.l}</td>
- <td style="padding:8px 10px;text-align:right;font-weight:700;color:#e8eaf6;font-size:13px">${fE(x.v)}</td>
- <td style="padding:8px 10px;text-align:right;color:#c9a84c;font-size:13px">${pct}%</td>
- </tr>`;
- }).join('')
- : `<tr><td colspan="3" style="padding:14px;color:#6b7fa3;text-align:center;font-style:italic">Pa të dhëna kanalesh</td></tr>`;
+ const chTop = (channels||[]).slice().sort((a,b)=>b.v-a.v).slice(0,5);
+ const chColors = ['#c9a84c','#4caf7d','#3b82f6','#e8a23a','#8b5cf6'];
 
- // ── Cash Out breakdown rows ────────────────────────────────────────────────
- const cfItems = kpis.cfDaljeItems || [];
- const cfTotal = cfItems.reduce((s,x)=>s+x.v, 0);
- const cfRows = cfItems.length > 0
- ? cfItems.map(x => {
- const pct = cfTotal > 0 ? (x.v/cfTotal*100).toFixed(1) : '0';
- return `<tr style="border-bottom:1px solid #1a3358">
- <td style="padding:8px 10px;color:#c8d4e8;font-size:13px">${x.l}</td>
- <td style="padding:8px 10px;text-align:right;font-weight:700;color:#e8eaf6;font-size:13px">${fE(x.v)}</td>
- <td style="padding:8px 10px;text-align:right;color:#e05252;font-size:13px">${pct}%</td>
- </tr>`;
- }).join('')
- : '';
-
- // ── Insight sections HTML ──────────────────────────────────────────────────
- const insHtml = (insights || []).map(box => {
- const c  = insColor[box.type] || '#c9a84c';
- const bg = insBg[box.type]   || 'rgba(201,168,76,.08)';
- const bd = insBd[box.type]   || 'rgba(201,168,76,.25)';
- const bullets = (box.para || '').split('\n').filter(Boolean).map(line =>
- `<div style="padding:6px 0 6px 16px;position:relative;color:#c8d4e8;font-size:13px;line-height:1.6;border-bottom:1px solid rgba(255,255,255,.05)">
- <span style="position:absolute;left:2px;color:${c};font-weight:700">&#8250;</span>
- ${line.replace(/^[•\s]*/,'')}</div>`
- ).join('');
- return `<div style="background:${bg};border-left:3px solid ${c};border-radius:8px;padding:16px 18px;margin-bottom:14px">
- <div style="font-size:12px;font-weight:800;color:${c};letter-spacing:.5px;margin-bottom:10px">${box.title}</div>
- ${bullets}</div>`;
- }).join('');
+ // ── Insights ───────────────────────────────────────────────────────────────
+ const insIcon  = { danger:'!', warn:'~', good:'OK', info:'i' };
+ const insColor = { danger:'#e05252', warn:'#e8a23a', good:'#4caf7d', info:'#5b9bd5' };
+ const insBg    = { danger:'#1a0d0d', warn:'#1a1408', good:'#0d1a10', info:'#0d1320' };
+ const insBd    = { danger:'#4a1010', warn:'#4a3508', good:'#0f3318', info:'#0f2545' };
 
  const nowStr = new Date().toLocaleString('sq-AL',{timeZone:'Europe/Tirane',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+ const dateShort = new Date().toLocaleDateString('sq-AL',{timeZone:'Europe/Tirane',day:'2-digit',month:'long',year:'numeric'});
 
- // ── KPI row helper (table-based for email compatibility) ───────────────────
- const kpiRow = (label, valHtml, subHtml, last) =>
- `<tr style="${last?'':'border-bottom:1px solid #1a3358'}">
- <td style="padding:12px 14px;color:#8fa3c0;font-size:13px;vertical-align:middle;width:45%">${label}</td>
- <td style="padding:12px 14px;text-align:right;vertical-align:top">
- ${valHtml}
- <div style="font-size:11px;color:#6b7fa3;margin-top:3px">${subHtml}</div>
- </td></tr>`;
+ // Pre-compute values
+ const revPct  = kpis.budRev ? Math.round(kpis.rev/kpis.budRev*100) : null;
+ const expPct  = kpis.budExp ? Math.round(kpis.exp/kpis.budExp*100) : null;
+ const prfOk   = (kpis.prf||0) >= 0;
 
- // ── Email HTML ─────────────────────────────────────────────────────────────
+ // ── EMAIL HTML — Canva/Flower style ───────────────────────────────────────
  const html = `<!DOCTYPE html>
-<html lang="sq"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Raport Mujor Managerial · ${periodLabel}</title></head>
-<body style="margin:0;padding:0;background:#070f1e;font-family:Arial,Helvetica,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#070f1e"><tr><td align="center" style="padding:24px 12px">
-<table width="660" cellpadding="0" cellspacing="0" style="max-width:660px">
+<html lang="sq">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Raport Mujor &middot; ${periodLabel}</title>
+</head>
+<body style="margin:0;padding:0;background:#05111f;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#05111f">
+<tr><td align="center" style="padding:20px 10px 30px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
-<!-- ═══ HEADER ═══ -->
-<tr><td style="background:linear-gradient(135deg,#0f2040,#0a1628);border:1px solid #1a3358;border-radius:16px;padding:28px 30px;text-align:center;margin-bottom:20px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">FLOWER HOTELS &amp; RESORTS &middot; GOLEM, SHQIP&Euml;RI</div>
- <div style="font-size:28px;font-weight:800;color:#e8c96d;letter-spacing:-1px;margin-bottom:6px">Raport Mujor Managerial</div>
- <div style="font-size:17px;font-weight:600;color:#e8eaf6;margin-bottom:8px">${periodLabel}</div>
- <div style="font-size:11px;color:#6b7fa3">Gjeneruar: ${nowStr}</div>
+<!--=== HEADER BRAND BAR ===-->
+<tr><td style="background:#c9a84c;padding:3px 0;border-radius:12px 12px 0 0;"></td></tr>
+<tr><td style="background:linear-gradient(160deg,#0b1f3a 0%,#071629 60%,#030e1c 100%);padding:36px 36px 28px;border-radius:0 0 0 0;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td style="vertical-align:middle;">
+      <div style="font-size:10px;font-weight:700;color:#c9a84c;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">FLOWER HOTELS &amp; RESORTS &nbsp;&middot;&nbsp; GOLEM, SHQIP&Euml;RI</div>
+      <div style="font-size:32px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1;margin-bottom:8px;">Raport Mujor<br/><span style="color:#c9a84c;">${periodLabel}</span></div>
+      <div style="font-size:12px;color:#6b8aab;margin-top:6px;">${dateShort} &nbsp;&middot;&nbsp; Konfidencial &mdash; vetm&#235;m p&#235;r menaxhim</div>
+    </td>
+    <td style="text-align:right;vertical-align:top;padding-left:16px;">
+      <div style="display:inline-block;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);border-radius:8px;padding:10px 16px;text-align:center;">
+        <div style="font-size:9px;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">NOP</div>
+        <div style="font-size:26px;font-weight:800;color:${prfOk?'#4caf7d':'#e05252'};line-height:1;">${fK(kpis.prf)}</div>
+        <div style="font-size:9px;color:#6b8aab;margin-top:4px;">Fitimi Neto</div>
+      </div>
+    </td>
+  </tr>
+  </table>
 </td></tr>
-<tr><td style="height:16px"></td></tr>
 
-<!-- ═══ KPI PASQYRË ═══ -->
-<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:22px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #1a3358">&#9670; PASQYR&Euml; KPI &mdash; ${periodLabel}</div>
- <table width="100%" cellpadding="0" cellspacing="0">
- ${kpiRow('Të Ardhurat',
-   `<div style="font-size:22px;font-weight:800;color:#4caf7d">${fK(kpis.rev)}</div>`,
-   `Buxheti ${fK(kpis.budRev)} &middot; ${budBadge(kpis.rev,kpis.budRev,false)} &middot; VK ${fK(kpis.lyRev)} ${delta(kpis.rev,kpis.lyRev)}`)}
- ${kpiRow('Shpenzimet',
-   `<div style="font-size:22px;font-weight:800;color:#e05252">${fK(kpis.exp)}</div>`,
-   `Buxheti ${fK(kpis.budExp)} &middot; ${budBadge(kpis.exp,kpis.budExp,true)} &middot; VK ${fK(kpis.lyExp)} ${delta(kpis.exp,kpis.lyExp)}`)}
- ${kpiRow('Fitimi Neto (NOP)',
-   `<div style="font-size:22px;font-weight:800;color:${(kpis.prf||0)>=0?'#4caf7d':'#e05252'}">${fK(kpis.prf)}</div>`,
-   `Buxheti ${fK(kpis.budPrf)} &middot; ${budBadge(kpis.prf,kpis.budPrf,false)} &middot; VK ${fK(kpis.lyPrf)}`)}
- ${kpiRow('Okupanca',
-   `<div style="font-size:22px;font-weight:800;color:#c9a84c">${fP(kpis.occ)}</div>`,
-   `VK ${fP(kpis.lyOcc)} ${delta(kpis.occ,kpis.lyOcc)}`)}
- ${kpiRow('ADR &mdash; Çmimi Mesatar',
-   `<div style="font-size:22px;font-weight:800;color:#c9a84c">${fE(kpis.adr)}</div>`,
-   `VK ${fE(kpis.lyAdr)} ${delta(kpis.adr,kpis.lyAdr)}`)}
- ${kpiRow('Nete të Shitura',
-   `<div style="font-size:22px;font-weight:800;color:#3b82f6">${fN(kpis.rn)}</div>`,
-   `VK ${fN(kpis.lyRn)} ${delta(kpis.rn,kpis.lyRn)} &middot; Disponueshme ${fN(kpis.rnAvail)}`,true)}
- </table>
+<!--=== 3 BIG KPI HERO ===-->
+<tr><td style="background:#071629;padding:0 0 2px;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+  <td width="33%" style="padding:20px 12px 20px 24px;border-right:1px solid #1a3a5c;">
+    <div style="font-size:9px;color:#6b8aab;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px;">T&Euml; ARDHURAT</div>
+    <div style="font-size:28px;font-weight:800;color:#4caf7d;line-height:1;">${fK(kpis.rev)}</div>
+    <div style="font-size:11px;color:#6b8aab;margin-top:5px;">Buxheti ${fK(kpis.budRev)}</div>
+    ${revPct!=null?pBar(revPct,'#4caf7d'):''}
+    <div style="font-size:10px;margin-top:4px;"><span style="color:${arrowCol(kpis.rev,kpis.budRev,false)}">${diffStr(kpis.rev,kpis.budRev,false)} buxh.</span> &nbsp;<span style="color:${arrowCol(kpis.rev,kpis.lyRev,false)}">${arrow(kpis.rev,kpis.lyRev)} VK</span></div>
+  </td>
+  <td width="33%" style="padding:20px 12px;border-right:1px solid #1a3a5c;">
+    <div style="font-size:9px;color:#6b8aab;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px;">SHPENZIMET</div>
+    <div style="font-size:28px;font-weight:800;color:#e05252;line-height:1;">${fK(kpis.exp)}</div>
+    <div style="font-size:11px;color:#6b8aab;margin-top:5px;">Buxheti ${fK(kpis.budExp)}</div>
+    ${expPct!=null?pBar(Math.min(expPct,130),'#e05252'):''}
+    <div style="font-size:10px;margin-top:4px;"><span style="color:${arrowCol(kpis.exp,kpis.budExp,true)}">${diffStr(kpis.exp,kpis.budExp,true)} buxh.</span> &nbsp;<span style="color:#8fa3c0;">${arrow(kpis.exp,kpis.lyExp)} VK</span></div>
+  </td>
+  <td width="34%" style="padding:20px 24px 20px 12px;">
+    <div style="font-size:9px;color:#6b8aab;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px;">OKUPANCA</div>
+    <div style="font-size:28px;font-weight:800;color:#c9a84c;line-height:1;">${fP(kpis.occ)}</div>
+    <div style="font-size:11px;color:#6b8aab;margin-top:5px;">VK ${fP(kpis.lyOcc)}</div>
+    ${kpis.occ!=null?pBar(kpis.occ,'#c9a84c'):''}
+    <div style="font-size:10px;margin-top:4px;color:${arrowCol(kpis.occ,kpis.lyOcc,false)};">${arrow(kpis.occ,kpis.lyOcc)} ndaj VK</div>
+  </td>
+</tr>
+</table>
 </td></tr>
-<tr><td style="height:14px"></td></tr>
 
-<!-- ═══ MARKETING ═══ -->
-<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:20px 22px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #1a3358">&#9670; MARKETING &amp; SHPENZIME PROMOVUESE</div>
- <table width="100%" cellpadding="0" cellspacing="0">
- <tr>
- <td style="width:50%;vertical-align:top;padding-right:10px">
- <div style="font-size:11px;color:#6b7fa3;margin-bottom:4px">Total (incl. përdorim i brendshëm)</div>
- <div style="font-size:22px;font-weight:800;color:#e8eaf6;margin-bottom:10px">${fK(kpis.mktTotal)}</div>
- <div style="font-size:12px;color:#8fa3c0;margin-bottom:4px">Shpenzim Cash neto: <strong style="color:#c9a84c">${fK(kpis.mktSpend)}</strong></div>
- <div style="font-size:12px;color:#8fa3c0;margin-bottom:4px">House Use (i brendshëm): <strong style="color:#6b7fa3">${fK(kpis.mktHU)}</strong></div>
- <div style="font-size:12px;color:#8fa3c0;margin-bottom:4px">Cash % e të ardhurave: <strong style="color:#c9a84c">${fP(kpis.mktCashPct)}</strong></div>
- <div style="font-size:12px;color:#8fa3c0">ROI (Të ardhura &divide; Cash): <strong style="color:#4caf7d">${kpis.mktRoi != null ? kpis.mktRoi.toFixed(1)+'x' : '—'}</strong></div>
- </td>
- <td style="width:50%;vertical-align:top;padding-left:10px;border-left:1px solid #1a3358">
- <div style="font-size:11px;color:#6b7fa3;margin-bottom:4px">Cash Flow &mdash; Hyrje (Fleta CF)</div>
- ${kpis.cfHyrje26 != null
- ? `<div style="font-size:22px;font-weight:800;color:#4caf7d;margin-bottom:10px">${fK(kpis.cfHyrje26)}</div>
- <div style="font-size:12px;color:#8fa3c0;margin-bottom:4px">Hyrje EUR: <strong style="color:#4caf7d">${fE(kpis.cfHyrjeEUR_eur)}</strong></div>
- <div style="font-size:12px;color:#8fa3c0">Hyrje LEK (në EUR): <strong style="color:#c9a84c">${fE(kpis.cfHyrjeALL_eur)}</strong></div>`
- : `<div style="color:#6b7fa3;font-size:13px;font-style:italic;padding-top:8px">Fleta CF Ditore nuk është plotesuar</div>`}
- </td>
- </tr>
- </table>
+<!--=== 3 SECONDARY KPIs ===-->
+<tr><td style="background:#060f1c;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;border-top:1px solid #112240;">
+<table width="100%" cellpadding="0" cellspacing="0">
+<tr>
+  <td width="33%" style="padding:14px 12px 14px 24px;border-right:1px solid #112240;">
+    <div style="font-size:9px;color:#6b8aab;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">ADR</div>
+    <div style="font-size:20px;font-weight:800;color:#c9a84c;">${fE(kpis.adr)}</div>
+    <div style="font-size:10px;color:${arrowCol(kpis.adr,kpis.lyAdr,false)};margin-top:3px;">${arrow(kpis.adr,kpis.lyAdr)} &nbsp;<span style="color:#6b8aab;">VK ${fE(kpis.lyAdr)}</span></div>
+  </td>
+  <td width="33%" style="padding:14px 12px;border-right:1px solid #112240;">
+    <div style="font-size:9px;color:#6b8aab;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">NETE T&Euml; SHITURA</div>
+    <div style="font-size:20px;font-weight:800;color:#3b82f6;">${fN(kpis.rn)}</div>
+    <div style="font-size:10px;color:${arrowCol(kpis.rn,kpis.lyRn,false)};margin-top:3px;">${arrow(kpis.rn,kpis.lyRn)} &nbsp;<span style="color:#6b8aab;">VK ${fN(kpis.lyRn)}</span></div>
+  </td>
+  <td width="34%" style="padding:14px 24px 14px 12px;">
+    <div style="font-size:9px;color:#6b8aab;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">CASH IN</div>
+    <div style="font-size:20px;font-weight:800;color:#4caf7d;">${kpis.cfHyrje26!=null?fK(kpis.cfHyrje26):'—'}</div>
+    <div style="font-size:10px;color:#6b8aab;margin-top:3px;">EUR ${kpis.cfHyrjeEUR_eur!=null?fE(kpis.cfHyrjeEUR_eur):'—'}</div>
+  </td>
+</tr>
+</table>
 </td></tr>
-<tr><td style="height:14px"></td></tr>
 
-<!-- ═══ MIXI I KANALEVE ═══ -->
-<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:20px 22px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #1a3358">&#9670; MIXI I KANALEVE &mdash; T&Euml; ARDHURA DHOMASH</div>
- <table width="100%" cellpadding="0" cellspacing="0">
- <thead><tr style="border-bottom:2px solid #1a3358">
- <th style="text-align:left;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase;letter-spacing:.5px">Kanali</th>
- <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase;letter-spacing:.5px">Të Ardhura</th>
- <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase;letter-spacing:.5px">Pjesa</th>
- </tr></thead>
- <tbody>${chRows}</tbody>
- ${chTotal > 0 ? `<tfoot><tr style="border-top:2px solid #1a3358">
- <td style="padding:9px 10px;font-weight:700;color:#e8eaf6;font-size:13px">Totali</td>
- <td style="padding:9px 10px;text-align:right;font-weight:800;color:#c9a84c;font-size:13px">${fE(chTotal)}</td>
- <td style="padding:9px 10px;text-align:right;color:#6b7fa3;font-size:13px">100%</td>
- </tr></tfoot>` : ''}
- </table>
+<!--=== DIVIDER ===-->
+<tr><td style="background:#c9a84c;padding:2px 0;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;"></td></tr>
+
+<!--=== CHANNEL TABLE ===-->
+<tr><td style="background:#071629;padding:24px;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;">
+  <div style="font-size:9px;color:#c9a84c;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:16px;">MIXI I KANALEVE &nbsp;&mdash;&nbsp; T&Euml; ARDHURA DHOMASH</div>
+  <table width="100%" cellpadding="0" cellspacing="0">
+  <tr style="border-bottom:1px solid #112240;">
+    <th style="text-align:left;font-size:9px;color:#3a5270;letter-spacing:1.5px;text-transform:uppercase;padding:0 0 8px;font-weight:700;">KANALI</th>
+    <th style="text-align:right;font-size:9px;color:#3a5270;letter-spacing:1.5px;text-transform:uppercase;padding:0 0 8px;font-weight:700;">T&Euml; ARDHURA</th>
+    <th style="text-align:right;font-size:9px;color:#3a5270;letter-spacing:1.5px;text-transform:uppercase;padding:0 50px 8px 0;font-weight:700;">PJESA</th>
+  </tr>
+  ${chTop.map((x,i)=>{
+    const pct = chTotal>0 ? (x.v/chTotal*100) : 0;
+    const col = chColors[i]||'#6b8aab';
+    const barW = Math.round(pct);
+    return `<tr>
+    <td style="padding:10px 0;border-bottom:1px solid #0d1f35;">
+      <div style="display:inline-block;width:8px;height:8px;background:${col};border-radius:2px;margin-right:8px;vertical-align:middle;"></div>
+      <span style="color:#c8d4e8;font-size:13px;font-weight:600;">${x.l}</span>
+    </td>
+    <td style="padding:10px 0;text-align:right;border-bottom:1px solid #0d1f35;">
+      <span style="color:#e8eaf6;font-size:13px;font-weight:700;">${fE(x.v)}</span>
+    </td>
+    <td style="padding:10px 0 10px 16px;border-bottom:1px solid #0d1f35;">
+      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td style="width:80px;">
+          <div style="background:#112240;border-radius:3px;height:5px;"><div style="background:${col};height:5px;width:${barW}%;border-radius:3px;min-width:3px;"></div></div>
+        </td>
+        <td style="padding-left:8px;text-align:right;white-space:nowrap;">
+          <span style="color:${col};font-size:11px;font-weight:700;">${pct.toFixed(1)}%</span>
+        </td>
+      </tr></table>
+    </td>
+    </tr>`;
+  }).join('')}
+  ${chTotal>0?`<tr><td colspan="3" style="padding:10px 0 0;"><span style="font-size:11px;color:#3a5270;">Total te ardhurat dhomash: </span><span style="color:#c9a84c;font-weight:700;font-size:13px;">${fE(chTotal)}</span></td></tr>`:''}
+  </table>
 </td></tr>
-<tr><td style="height:14px"></td></tr>
 
-${cfItems.length > 0 ? `<!-- ═══ CASH OUT ═══ -->
-<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:20px 22px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #1a3358">&#9670; CASH OUT &mdash; DETAJE SIPAS KATEGORIS&Euml;</div>
- <table width="100%" cellpadding="0" cellspacing="0">
- <thead><tr style="border-bottom:2px solid #1a3358">
- <th style="text-align:left;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase">Kategoria</th>
- <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase">Shuma</th>
- <th style="text-align:right;color:#6b7fa3;font-size:10px;font-weight:700;padding:0 10px 10px;text-transform:uppercase">%</th>
- </tr></thead>
- <tbody>${cfRows}</tbody>
- <tfoot><tr style="border-top:2px solid #1a3358">
- <td style="padding:9px 10px;font-weight:700;color:#e8eaf6;font-size:13px">TOTALI</td>
- <td style="padding:9px 10px;text-align:right;font-weight:800;color:#e05252;font-size:13px">${fE(cfTotal)}</td>
- <td></td>
- </tr></tfoot>
- </table>
+<!--=== DIVIDER ===-->
+<tr><td style="background:#1a3a5c;padding:1px 0;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;"></td></tr>
+
+<!--=== KONKLUZIONE MENAXHERIALE ===-->
+<tr><td style="background:#060f1c;padding:24px;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;">
+  <div style="font-size:9px;color:#c9a84c;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:18px;">KONKLUZIONE MENAXHERIALE &nbsp;&mdash;&nbsp; ${periodLabel}</div>
+  ${(insights||[]).map(box=>{
+    const c   = insColor[box.type]||'#c9a84c';
+    const bg  = insBg[box.type]||'#0d1a10';
+    const bd  = insBd[box.type]||'#0f3318';
+    const ico = insIcon[box.type]||'i';
+    const titleClean = (box.title||'').replace(/[✓⚑ℹ⚠◆•►▶]/g,'').trim();
+    const bullets = (box.para||'').split('\n').filter(Boolean);
+    return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+    <tr>
+      <td style="background:${bg};border:1px solid ${bd};border-left:4px solid ${c};border-radius:8px;padding:16px 18px;">
+        <div style="font-size:11px;font-weight:800;color:${c};text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">${titleClean}</div>
+        ${bullets.map(line=>{
+          const clean = line.replace(/^[•\-\s]*/,'').replace(/[✓⚑ℹ⚠◆]/g,'').trim();
+          return `<div style="font-size:12px;color:#9ab0cc;line-height:1.65;margin-bottom:6px;padding-left:12px;border-left:1px solid ${bd};">${clean}</div>`;
+        }).join('')}
+      </td>
+    </tr>
+    </table>`;
+  }).join('')}
 </td></tr>
-<tr><td style="height:14px"></td></tr>` : ''}
 
-<!-- ═══ KONKLUZIONE MENAXHERIALE ═══ -->
-<tr><td style="background:#0f2040;border:1px solid #1a3358;border-radius:14px;padding:22px">
- <div style="font-size:11px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.8px;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid #1a3358">&#9670; KONKLUZIONE MENAXHERIALE &mdash; ${periodLabel}</div>
- ${insHtml}
-</td></tr>
-<tr><td style="height:14px"></td></tr>
-
-<!-- ═══ FOOTER ═══ -->
-<tr><td style="text-align:center;padding:18px 0;border-top:1px solid #1a3358">
- <div style="font-size:12px;color:#c9a84c;font-weight:700;letter-spacing:.8px;margin-bottom:6px">FLOWER HOTELS &amp; RESORTS &middot; FLOW Dashboard</div>
- <div style="font-size:10px;color:#4a5f80;margin-bottom:4px">Raport i gjeneruar automatikisht &middot; ${nowStr}</div>
- <div style="font-size:10px;color:#4a5f80">Konfidencial &mdash; vetëm për përdorim managerial të brendshëm</div>
+<!--=== FOOTER ===-->
+<tr><td style="background:#c9a84c;padding:3px 0;border-radius:0 0 12px 12px;"></td></tr>
+<tr><td style="padding:16px 0 4px;text-align:center;">
+  <div style="font-size:11px;color:#c9a84c;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;">FLOWER HOTELS &amp; RESORTS &middot; FLOW Dashboard</div>
+  <div style="font-size:10px;color:#3a5270;">Gjeneruar automatikisht &middot; ${nowStr} &nbsp;&middot;&nbsp; Konfidencial</div>
 </td></tr>
 
 </table>
-</td></tr></table>
+</td></tr>
+</table>
 </body></html>`;
 
  const nodemailer = require('nodemailer');
