@@ -582,7 +582,7 @@ function parseExpensesByMonth(rows) {
     const r = rows[i];
     const key  = (r[0]||'').trim();
     // Strip emoji / non-ASCII symbols from category names (e.g. "Entertainment ❗" → "Entertainment")
-    const cat  = (r[1]||'').trim().replace(/[^ -À-ÿ]/g, '').trim();
+    const cat  = (r[1]||'').trim().replace(/[^ -À-ÿ]/g, '').trim();
     const val  = parseFloat((r[2]||'').toString().replace(/[^0-9.\-]/g,'')) || 0;
     if (!key || !cat) continue;
     if (!map[key]) map[key] = {};
