@@ -236,6 +236,71 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .btn-send-report:hover:not(:disabled){background:linear-gradient(135deg,#2d5aa0,#3b6fd4);color:#bfdbfe;transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,130,246,.3);}
 .btn-send-report:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 @keyframes sr-spin{to{transform:rotate(360deg)}}
+
+/* ── ADMIN PANEL — LAYOUT GRIDS ── */
+.adm-g6{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:16px;}
+.adm-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;}
+.adm-g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+.adm-g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.adm-g2-wide{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:16px;}
+.adm-g2-wider{display:grid;grid-template-columns:1.8fr 1fr;gap:14px;margin-bottom:16px;}
+.adm-g2-pl{display:grid;grid-template-columns:1fr 1.6fr;gap:14px;margin-bottom:16px;}
+.adm-g2-src{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:16px;}
+.adm-g3-gf{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:14px;margin-bottom:16px;}
+.adm-g2-bud{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.adm-g3-bud{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.adm-g2-ins{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.adm-g2-cf{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px;}
+
+/* chart containers scrollable on small screens */
+#sec_admin_panel canvas{max-width:100%;}
+#sec_admin_panel .adm-wrap{padding:16px;}
+
+/* ── ADMIN PANEL — MOBILE RESPONSIVE ── */
+@media(max-width:768px){
+ /* Padding wrapper */
+ #sec_admin_panel > div[style*="max-width:1400px"]{padding:12px 10px!important;}
+
+ /* Filter bar: stack neatly */
+ #adm-filter-bar{padding:10px 12px!important;gap:8px!important;}
+ #adm-filter-bar > span{display:none!important;} /* hide text labels */
+ #adm-filter-bar > div:first-of-type{flex-shrink:0;} /* YTD/MTD buttons */
+ #adm-filter-lbl{margin-left:0!important;order:10;width:100%;text-align:center;}
+ #btnMonthlyReport{order:11;width:100%;justify-content:center;}
+ #adm-month,#adm-cmp{flex:1;min-width:0;font-size:12px!important;}
+
+ /* KPI grid: 2 columns on mobile */
+ .adm-g6{grid-template-columns:1fr 1fr!important;}
+ .adm-kpi-val{font-size:20px!important;}
+
+ /* Cash flow KPI: 2 columns */
+ .adm-g4,#adm-cf-kpis{grid-template-columns:1fr 1fr!important;}
+
+ /* All 2-col and 3-col grids → 1 column */
+ .adm-g3,.adm-g3-bud,.adm-g3-gf,
+ .adm-g2,.adm-g2-wide,.adm-g2-wider,
+ .adm-g2-pl,.adm-g2-src,.adm-g2-bud,
+ .adm-g2-ins,.adm-g2-cf{grid-template-columns:1fr!important;}
+
+ /* Remove large bottom margins */
+ .adm-g2-cf{margin-bottom:16px!important;}
+
+ /* Section headers: smaller font */
+ #sec_admin_panel [style*="font-size:15px"]{font-size:13px!important;}
+
+ /* Chart height reduction */
+ #sec_admin_panel canvas{max-height:220px;}
+
+ /* Budget bars section inner padding */
+ #sec_admin_panel [style*="padding:16px;border:1px solid"]{padding:12px!important;}
+}
+
+@media(max-width:480px){
+ /* Very small phones: KPI 1 column */
+ .adm-g6{grid-template-columns:1fr!important;}
+ .adm-g4,#adm-cf-kpis{grid-template-columns:1fr!important;}
+ #sec_admin_panel canvas{max-height:180px;}
+}
 .sr-spin{animation:sr-spin .8s linear infinite;display:inline-block;}
 #srToast{position:fixed;bottom:24px;right:24px;background:#0f2040;border:1px solid #1e3a5f;border-radius:10px;padding:12px 18px;font-size:13px;color:#93c5fd;z-index:9999;opacity:0;transform:translateY(8px);pointer-events:none;transition:all .25s;max-width:320px;}
 #srToast.show{opacity:1;transform:translateY(0);}
@@ -484,7 +549,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <span style="background:rgba(76,175,125,.15);border:1px solid rgba(76,175,125,.3);color:#4caf7d;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Live</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
- <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:16px">
+ <div class="adm-g6">
  <div class="adm-kpi" data-color="green"><div class="adm-kpi-lbl">Të ardhurat YTD</div><div class="adm-kpi-val" id="adm-v-rev">€532k</div><div class="adm-kpi-sub" id="adm-d-rev"><span class="adm-delta up">↑ 44%</span> <span class="adm-ly">vs Jan–Prill 2025</span></div></div>
  <div class="adm-kpi" data-color="red"><div class="adm-kpi-lbl">Shpenzimet YTD</div><div class="adm-kpi-val" id="adm-v-exp">€703k</div><div class="adm-kpi-sub" id="adm-d-exp"><span class="adm-delta dn">↑ 34%</span> <span class="adm-ly">vs Jan–Prill 2025</span></div></div>
  <div class="adm-kpi" data-color="red"><div class="adm-kpi-lbl">Fitimi Neto</div><div class="adm-kpi-val" id="adm-v-prf" style="color:#e05252">-€171k</div><div class="adm-kpi-sub" id="adm-d-prf"><span class="adm-delta dn">Humbje</span> <span class="adm-ly">vs Jan–Prill 2025</span></div></div>
@@ -500,7 +565,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:20px;margin-bottom:16px">
- <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+ <div class="adm-g3-bud">
  <div style="background:rgba(255,255,255,.04);border-radius:8px;padding:16px;border:1px solid rgba(201,168,76,.12)">
  <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Të Ardhurat</div>
  <div id="adm-bm-rev" style="font-size:26px;font-weight:700;color:#4caf7d">€532k</div>
@@ -523,7 +588,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div style="display:flex;justify-content:space-between;font-size:11px"><span id="adm-bm-prf-pct" style="color:#e05252">Në humbje</span><span id="adm-bm-prf-var" style="color:#e05252;font-weight:700">-€377k</span></div>
  </div>
  </div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+ <div class="adm-g2-bud">
  <div style="background:rgba(255,255,255,.03);border-radius:8px;padding:14px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Të ardhurat vs Buxheti — Mujore (€)</div>
  <canvas id="adm-c-budrev" height="160"></canvas>
@@ -534,7 +599,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  </div>
  </div>
  <div style="font-size:12px;font-weight:700;color:var(--gold2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">◆ Konkluzione Menaxheriale</div>
- <div id="adm-insights" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+ <div id="adm-insights" class="adm-g2-ins"></div>
  </div>
 
  <!-- USALI -->
@@ -543,7 +608,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Mbyllja e Muajit</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
- <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px">
+ <div class="adm-g3">
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Nete të Shitura — 2024/2025/2026</div>
  <canvas id="adm-c-rn" height="180"></canvas>
@@ -564,7 +629,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Mbyllja e Muajit</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
- <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;margin-bottom:16px">
+ <div class="adm-g2-pl">
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Tendenca NOP / GOP (€)</div>
  <canvas id="adm-c-nop" height="220"></canvas>
@@ -582,7 +647,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <span style="background:rgba(76,175,125,.15);border:1px solid rgba(76,175,125,.3);color:#4caf7d;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Live</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
- <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:16px">
+ <div class="adm-g2-src">
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div id="adm-src-title" style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Top 5 Burimi sipas Nacionalitetit — 2026 YTD (€)</div>
  <div style="font-size:10px;color:var(--muted);margin-bottom:10px">Burimi: Fleta Source Markets · Të ardhura dhome EUR</div>
@@ -610,7 +675,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  </div>
  <!-- Charts shown after upload -->
  <div id="adm-gf-panel" style="display:none">
- <div style="display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:14px;margin-bottom:16px">
+ <div class="adm-g3-gf">
  <!-- Platform ratings + sentiment -->
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:2px;text-transform:uppercase;letter-spacing:.4px">⭐ Vlerësimet sipas Platformës</div>
@@ -641,7 +706,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <span style="background:rgba(76,175,125,.15);border:1px solid rgba(76,175,125,.3);color:#4caf7d;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Live</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
- <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:16px">
+ <div class="adm-g2-wide">
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Cash Marketing Spend &amp; ROI by Month</div>
  <div id="adm-mkt-sub" style="font-size:10px;color:var(--muted);margin-bottom:10px">Shpenzim = vetëm cash (përjashtuar House Use) · Shufrat = cash + Meta Ads · Vija = ROI (Të ardhura÷Shpenzim)</div>
@@ -681,7 +746,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <span style="background:rgba(224,82,82,.15);border:1px solid rgba(224,82,82,.3);color:#e05252;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">YTD 2026</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
- <div style="display:grid;grid-template-columns:1.8fr 1fr;gap:14px;margin-bottom:16px">
+ <div class="adm-g2-wider">
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Kategoritë Kryesore të Shpenzimeve — Jan–Prill 2026</div>
  <div style="font-size:10px;color:var(--muted);margin-bottom:12px">Burimi: Fleta Expenses · Lek (ALL) · renditur sipas shumës</div>
@@ -699,10 +764,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Fleta e Cash Flow Ditore 2026</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
- <div id="adm-cf-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+ <div id="adm-cf-kpis" class="adm-g4">
  <!-- Populated dynamically by admInitCFCharts(d) -->
  </div>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px">
+ <div class="adm-g2-cf">
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px"> Hyrje (Cash In) — Muaji i kaluar vs Aktual</div>
  <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Ditore · vetëm Prill 2026 (Jan–Mars nuk janë plotësuar)</div>
