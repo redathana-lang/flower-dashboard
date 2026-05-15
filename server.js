@@ -1159,195 +1159,244 @@ app.post('/api/send-monthly-report', async function(req, res) {
 
  try {
  // ── Helpers ────────────────────────────────────────────────────────────────
- const fE  = (v) => v != null ? '€' + Math.abs(Math.round(v)).toLocaleString('de-DE') : '—';
- const fK  = (v) => { if(v==null) return '—'; const a=Math.abs(Math.round(v/1000)); return (v<0?'-':'')+'€'+a+'k'; };
- const fP  = (v) => v != null ? v.toFixed(1) + '%' : '—';
- const fN  = (v) => v != null ? Math.round(v).toLocaleString('de-DE') : '—';
- const arrow = (a, b) => { if(a==null||b==null||b===0) return ''; const d=((a-b)/Math.abs(b)*100).toFixed(1); return (a>=b?'&#9650;':'&#9660;')+' '+Math.abs(d)+'%'; };
- const arrowCol = (a,b,inv) => { if(a==null||b==null) return '#8fa3c0'; const good=inv?(a<=b):(a>=b); return good?'#4caf7d':'#e05252'; };
- const diffStr = (a,b,inv) => { if(a==null||b==null) return ''; const d=a-b; const good=inv?(d<=0):(d>=0); const col=good?'#4caf7d':'#e05252'; const sign=d>=0?'+':''; return '<span style="color:'+col+';font-weight:700">'+sign+fK(d)+'</span>'; };
- const pBar = (pct, col) => { const w=Math.min(100,Math.max(0,Math.round(pct))); return '<div style="background:#112240;border-radius:3px;height:6px;width:100%;margin-top:5px"><div style="background:'+col+';height:6px;width:'+w+'%;border-radius:3px"></div></div>'; };
+ const fE  = (v) => v != null ? '&euro;' + Math.abs(Math.round(v)).toLocaleString('de-DE') : '&mdash;';
+ const fK  = (v) => { if(v==null) return '&mdash;'; const a=Math.abs(Math.round(v/1000)); return (v<0?'-':'')+'&euro;'+a+'k'; };
+ const fP  = (v) => v != null ? v.toFixed(1) + '%' : '&mdash;';
+ const fN  = (v) => v != null ? Math.round(v).toLocaleString('de-DE') : '&mdash;';
+ const arrowTxt = (a, b) => { if(a==null||b==null||b===0) return ''; const d=((a-b)/Math.abs(b)*100).toFixed(1); return (a>=b?'&#9650;':'&#9660;')+' '+Math.abs(d)+'%'; };
+ const arrowCol = (a,b,inv) => { if(a==null||b==null) return '#7a94b0'; const good=inv?(a<=b):(a>=b); return good?'#4caf7d':'#e05252'; };
+ const diffStr = (a,b,inv) => { if(a==null||b==null) return ''; const d=a-b; const good=inv?(d<=0):(d>=0); const col=good?'#4caf7d':'#e05252'; const sign=d>=0?'+':''; return '<font color="'+col+'"><b>'+sign+fK(d)+'</b></font>'; };
+ // Table-based progress bar (works in all email clients)
+ const pBar = (pct, col) => {
+   const w = Math.min(100, Math.max(2, Math.round(pct)));
+   const r = 100 - w;
+   return '<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;"><tr>'
+     +'<td width="'+w+'%" bgcolor="'+col+'" style="height:5px;font-size:0;line-height:0;">&nbsp;</td>'
+     +(r>0?'<td width="'+r+'%" bgcolor="#0d2040" style="height:5px;font-size:0;line-height:0;">&nbsp;</td>':'')
+     +'</tr></table>';
+ };
 
  // ── Channel top 5 ──────────────────────────────────────────────────────────
  const chTotal = channels ? channels.reduce((s,x)=>s+x.v,0) : 0;
  const chTop = (channels||[]).slice().sort((a,b)=>b.v-a.v).slice(0,5);
  const chColors = ['#c9a84c','#4caf7d','#3b82f6','#e8a23a','#8b5cf6'];
 
- // ── Insights ───────────────────────────────────────────────────────────────
- const insIcon  = { danger:'!', warn:'~', good:'OK', info:'i' };
- const insColor = { danger:'#e05252', warn:'#e8a23a', good:'#4caf7d', info:'#5b9bd5' };
- const insBg    = { danger:'#1a0d0d', warn:'#1a1408', good:'#0d1a10', info:'#0d1320' };
- const insBd    = { danger:'#4a1010', warn:'#4a3508', good:'#0f3318', info:'#0f2545' };
+ // (insight section configs now defined inline before html template)
 
  const nowStr = new Date().toLocaleString('sq-AL',{timeZone:'Europe/Tirane',day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
  const dateShort = new Date().toLocaleDateString('sq-AL',{timeZone:'Europe/Tirane',day:'2-digit',month:'long',year:'numeric'});
 
  // Pre-compute values
- const revPct  = kpis.budRev ? Math.round(kpis.rev/kpis.budRev*100) : null;
- const expPct  = kpis.budExp ? Math.round(kpis.exp/kpis.budExp*100) : null;
- const prfOk   = (kpis.prf||0) >= 0;
+ const revPct = kpis.budRev ? kpis.rev/kpis.budRev*100 : null;
+ const expPct = kpis.budExp ? kpis.exp/kpis.budExp*100 : null;
+ const prfOk  = (kpis.prf||0) >= 0;
 
- // ── EMAIL HTML — Canva/Flower style ───────────────────────────────────────
+ // ── Insight sections config ──────────────────────────────────────────────────
+ const insSections = [
+   { key:'pozitive',    label:'Cfare shkoi mire',           c:'#4caf7d', bg:'#0d1c10', bd:'#0f3c1a' },
+   { key:'problematika',label:'Ku u vune re problematika',  c:'#e05252', bg:'#1c0d0d', bd:'#4a1010' },
+   { key:'sugjerime',  label:'Sugjerime per permiresim',    c:'#e8a23a', bg:'#1c1408', bd:'#4a3408' },
+   { key:'planifikim', label:'Masa & Planifikim',           c:'#5b9bd5', bg:'#0d1424', bd:'#0f2a50' },
+ ];
+ const insData = insights || {};
+
+ // ── EMAIL HTML — single-column outer card, nested tables for multi-col sections
  const html = `<!DOCTYPE html>
-<html lang="sq">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<html lang="sq" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Raport Mujor &middot; ${periodLabel}</title>
 </head>
-<body style="margin:0;padding:0;background:#05111f;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#05111f">
-<tr><td align="center" style="padding:20px 10px 30px;">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+<body style="margin:0;padding:0;background-color:#05111f;" bgcolor="#05111f">
 
-<!--=== HEADER BRAND BAR ===-->
-<tr><td style="background:#c9a84c;padding:3px 0;border-radius:12px 12px 0 0;"></td></tr>
-<tr><td style="background:linear-gradient(160deg,#0b1f3a 0%,#071629 60%,#030e1c 100%);padding:36px 36px 28px;border-radius:0 0 0 0;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;">
-  <table width="100%" cellpadding="0" cellspacing="0">
+<!-- OUTER WRAPPER -->
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" bgcolor="#05111f">
+<tr><td align="center" style="padding:24px 10px 32px;">
+
+<!-- CARD 600px — strictly single column -->
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;">
+
+<!--== GOLD TOP BAR ==-->
+<tr><td bgcolor="#c9a84c" height="4" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+<!--== HEADER ==-->
+<tr><td bgcolor="#071629" style="padding:28px 28px 22px;border-left:2px solid #1a3a5c;border-right:2px solid #1a3a5c;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
-    <td style="vertical-align:middle;">
-      <div style="font-size:10px;font-weight:700;color:#c9a84c;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">FLOWER HOTELS &amp; RESORTS &nbsp;&middot;&nbsp; GOLEM, SHQIP&Euml;RI</div>
-      <div style="font-size:32px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1;margin-bottom:8px;">Raport Mujor<br/><span style="color:#c9a84c;">${periodLabel}</span></div>
-      <div style="font-size:12px;color:#6b8aab;margin-top:6px;">${dateShort} &nbsp;&middot;&nbsp; Konfidencial &mdash; vetm&#235;m p&#235;r menaxhim</div>
+    <td style="vertical-align:top;" width="60%">
+      <p style="margin:0 0 8px 0;font-size:9px;font-weight:bold;color:#c9a84c;letter-spacing:3px;font-family:Arial,sans-serif;text-transform:uppercase;">FLOWER HOTELS &amp; RESORTS &nbsp;&#183;&nbsp; GOLEM, SHQIPERI</p>
+      <p style="margin:0 0 6px 0;font-size:26px;font-weight:bold;color:#ffffff;line-height:1.1;font-family:Arial,sans-serif;">Raport Mujor</p>
+      <p style="margin:0 0 5px 0;font-size:24px;font-weight:bold;color:#c9a84c;line-height:1;font-family:Arial,sans-serif;">${periodLabel}</p>
+      <p style="margin:0;font-size:10px;color:#4a6888;font-family:Arial,sans-serif;">${dateShort} &nbsp;&#183;&nbsp; Konfidencial</p>
     </td>
-    <td style="text-align:right;vertical-align:top;padding-left:16px;">
-      <div style="display:inline-block;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);border-radius:8px;padding:10px 16px;text-align:center;">
-        <div style="font-size:9px;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">NOP</div>
-        <div style="font-size:26px;font-weight:800;color:${prfOk?'#4caf7d':'#e05252'};line-height:1;">${fK(kpis.prf)}</div>
-        <div style="font-size:9px;color:#6b8aab;margin-top:4px;">Fitimi Neto</div>
-      </div>
+    <td style="vertical-align:top;text-align:right;" width="40%">
+      <table border="0" cellpadding="0" cellspacing="0" align="right">
+      <tr><td bgcolor="#0c1e38" style="padding:14px 18px;text-align:center;border:1px solid #2a5070;">
+        <p style="margin:0 0 3px 0;font-size:8px;font-weight:bold;color:#c9a84c;letter-spacing:2.5px;font-family:Arial,sans-serif;text-transform:uppercase;">FITIMI NETO &middot; NOP</p>
+        <p style="margin:0 0 3px 0;font-size:26px;font-weight:bold;line-height:1;font-family:Arial,sans-serif;${prfOk?'color:#4caf7d;':'color:#e05252;'}">${fK(kpis.prf)}</p>
+        <p style="margin:0;font-size:9px;color:#4a6888;font-family:Arial,sans-serif;">Buxheti ${fK(kpis.budPrf)}</p>
+      </td></tr>
+      </table>
     </td>
   </tr>
   </table>
 </td></tr>
 
-<!--=== 3 BIG KPI HERO ===-->
-<tr><td style="background:#071629;padding:0 0 2px;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;">
-<table width="100%" cellpadding="0" cellspacing="0">
-<tr>
-  <td width="33%" style="padding:20px 12px 20px 24px;border-right:1px solid #1a3a5c;">
-    <div style="font-size:9px;color:#6b8aab;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px;">T&Euml; ARDHURAT</div>
-    <div style="font-size:28px;font-weight:800;color:#4caf7d;line-height:1;">${fK(kpis.rev)}</div>
-    <div style="font-size:11px;color:#6b8aab;margin-top:5px;">Buxheti ${fK(kpis.budRev)}</div>
-    ${revPct!=null?pBar(revPct,'#4caf7d'):''}
-    <div style="font-size:10px;margin-top:4px;"><span style="color:${arrowCol(kpis.rev,kpis.budRev,false)}">${diffStr(kpis.rev,kpis.budRev,false)} buxh.</span> &nbsp;<span style="color:${arrowCol(kpis.rev,kpis.lyRev,false)}">${arrow(kpis.rev,kpis.lyRev)} VK</span></div>
-  </td>
-  <td width="33%" style="padding:20px 12px;border-right:1px solid #1a3a5c;">
-    <div style="font-size:9px;color:#6b8aab;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px;">SHPENZIMET</div>
-    <div style="font-size:28px;font-weight:800;color:#e05252;line-height:1;">${fK(kpis.exp)}</div>
-    <div style="font-size:11px;color:#6b8aab;margin-top:5px;">Buxheti ${fK(kpis.budExp)}</div>
-    ${expPct!=null?pBar(Math.min(expPct,130),'#e05252'):''}
-    <div style="font-size:10px;margin-top:4px;"><span style="color:${arrowCol(kpis.exp,kpis.budExp,true)}">${diffStr(kpis.exp,kpis.budExp,true)} buxh.</span> &nbsp;<span style="color:#8fa3c0;">${arrow(kpis.exp,kpis.lyExp)} VK</span></div>
-  </td>
-  <td width="34%" style="padding:20px 24px 20px 12px;">
-    <div style="font-size:9px;color:#6b8aab;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:6px;">OKUPANCA</div>
-    <div style="font-size:28px;font-weight:800;color:#c9a84c;line-height:1;">${fP(kpis.occ)}</div>
-    <div style="font-size:11px;color:#6b8aab;margin-top:5px;">VK ${fP(kpis.lyOcc)}</div>
-    ${kpis.occ!=null?pBar(kpis.occ,'#c9a84c'):''}
-    <div style="font-size:10px;margin-top:4px;color:${arrowCol(kpis.occ,kpis.lyOcc,false)};">${arrow(kpis.occ,kpis.lyOcc)} ndaj VK</div>
-  </td>
-</tr>
-</table>
+<!--== GOLD STRIPE ==-->
+<tr><td bgcolor="#c9a84c" height="2" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+<!--== 3 HERO KPIs (nested inner table) ==-->
+<tr><td bgcolor="#071629" style="padding:0;border-left:2px solid #1a3a5c;border-right:2px solid #1a3a5c;border-bottom:1px solid #0d2040;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td bgcolor="#071629" width="33%" style="padding:18px 12px 18px 20px;vertical-align:top;border-right:1px solid #0d2040;">
+      <p style="margin:0 0 4px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">TE ARDHURAT</p>
+      <p style="margin:0 0 3px 0;font-size:24px;font-weight:bold;color:#4caf7d;line-height:1;font-family:Arial,sans-serif;">${fK(kpis.rev)}</p>
+      <p style="margin:0 0 3px 0;font-size:10px;color:#4a6888;font-family:Arial,sans-serif;">Buxheti ${fK(kpis.budRev)}</p>
+      ${revPct!=null?pBar(revPct,'#4caf7d'):''}
+      <p style="margin:3px 0 0;font-size:10px;font-family:Arial,sans-serif;">${diffStr(kpis.rev,kpis.budRev,false)} vs buxh. &nbsp;<font color="${arrowCol(kpis.rev,kpis.lyRev,false)}">${arrowTxt(kpis.rev,kpis.lyRev)} VK</font></p>
+    </td>
+    <td bgcolor="#060f1c" width="33%" style="padding:18px 12px;vertical-align:top;border-right:1px solid #0d2040;">
+      <p style="margin:0 0 4px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">SHPENZIMET</p>
+      <p style="margin:0 0 3px 0;font-size:24px;font-weight:bold;color:#e05252;line-height:1;font-family:Arial,sans-serif;">${fK(kpis.exp)}</p>
+      <p style="margin:0 0 3px 0;font-size:10px;color:#4a6888;font-family:Arial,sans-serif;">Buxheti ${fK(kpis.budExp)}</p>
+      ${expPct!=null?pBar(Math.min(expPct,120),'#e05252'):''}
+      <p style="margin:3px 0 0;font-size:10px;font-family:Arial,sans-serif;">${diffStr(kpis.exp,kpis.budExp,true)} vs buxh. &nbsp;<font color="${arrowCol(kpis.exp,kpis.lyExp,true)}">${arrowTxt(kpis.exp,kpis.lyExp)} VK</font></p>
+    </td>
+    <td bgcolor="#071629" width="34%" style="padding:18px 20px 18px 12px;vertical-align:top;">
+      <p style="margin:0 0 4px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">OKUPANCA</p>
+      <p style="margin:0 0 3px 0;font-size:24px;font-weight:bold;color:#c9a84c;line-height:1;font-family:Arial,sans-serif;">${fP(kpis.occ)}</p>
+      <p style="margin:0 0 3px 0;font-size:10px;color:#4a6888;font-family:Arial,sans-serif;">VK ${fP(kpis.lyOcc)}</p>
+      ${kpis.occ!=null?pBar(kpis.occ,'#c9a84c'):''}
+      <p style="margin:3px 0 0;font-size:10px;font-family:Arial,sans-serif;"><font color="${arrowCol(kpis.occ,kpis.lyOcc,false)}">${arrowTxt(kpis.occ,kpis.lyOcc)} VK</font> &nbsp;<font color="#4a6888;">&#183; ${fN(kpis.rn)} nete</font></p>
+    </td>
+  </tr>
+  </table>
 </td></tr>
 
-<!--=== 3 SECONDARY KPIs ===-->
-<tr><td style="background:#060f1c;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;border-top:1px solid #112240;">
-<table width="100%" cellpadding="0" cellspacing="0">
-<tr>
-  <td width="33%" style="padding:14px 12px 14px 24px;border-right:1px solid #112240;">
-    <div style="font-size:9px;color:#6b8aab;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">ADR</div>
-    <div style="font-size:20px;font-weight:800;color:#c9a84c;">${fE(kpis.adr)}</div>
-    <div style="font-size:10px;color:${arrowCol(kpis.adr,kpis.lyAdr,false)};margin-top:3px;">${arrow(kpis.adr,kpis.lyAdr)} &nbsp;<span style="color:#6b8aab;">VK ${fE(kpis.lyAdr)}</span></div>
-  </td>
-  <td width="33%" style="padding:14px 12px;border-right:1px solid #112240;">
-    <div style="font-size:9px;color:#6b8aab;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">NETE T&Euml; SHITURA</div>
-    <div style="font-size:20px;font-weight:800;color:#3b82f6;">${fN(kpis.rn)}</div>
-    <div style="font-size:10px;color:${arrowCol(kpis.rn,kpis.lyRn,false)};margin-top:3px;">${arrow(kpis.rn,kpis.lyRn)} &nbsp;<span style="color:#6b8aab;">VK ${fN(kpis.lyRn)}</span></div>
-  </td>
-  <td width="34%" style="padding:14px 24px 14px 12px;">
-    <div style="font-size:9px;color:#6b8aab;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">CASH IN</div>
-    <div style="font-size:20px;font-weight:800;color:#4caf7d;">${kpis.cfHyrje26!=null?fK(kpis.cfHyrje26):'—'}</div>
-    <div style="font-size:10px;color:#6b8aab;margin-top:3px;">EUR ${kpis.cfHyrjeEUR_eur!=null?fE(kpis.cfHyrjeEUR_eur):'—'}</div>
-  </td>
-</tr>
-</table>
+<!--== 3 SECONDARY KPIs (nested inner table) ==-->
+<tr><td bgcolor="#050d1a" style="padding:0;border-left:2px solid #1a3a5c;border-right:2px solid #1a3a5c;border-bottom:1px solid #0d2040;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td bgcolor="#050d1a" width="33%" style="padding:12px 12px 12px 20px;vertical-align:top;border-right:1px solid #0d2040;">
+      <p style="margin:0 0 2px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">ADR</p>
+      <p style="margin:0 0 2px 0;font-size:18px;font-weight:bold;color:#c9a84c;font-family:Arial,sans-serif;">${fE(kpis.adr)}</p>
+      <p style="margin:0;font-size:9px;font-family:Arial,sans-serif;"><font color="${arrowCol(kpis.adr,kpis.lyAdr,false)}">${arrowTxt(kpis.adr,kpis.lyAdr)}</font> <font color="#4a6888;">VK ${fE(kpis.lyAdr)}</font></p>
+    </td>
+    <td bgcolor="#040c18" width="33%" style="padding:12px;vertical-align:top;border-right:1px solid #0d2040;">
+      <p style="margin:0 0 2px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">NETE TE SHITURA</p>
+      <p style="margin:0 0 2px 0;font-size:18px;font-weight:bold;color:#3b82f6;font-family:Arial,sans-serif;">${fN(kpis.rn)}</p>
+      <p style="margin:0;font-size:9px;font-family:Arial,sans-serif;"><font color="${arrowCol(kpis.rn,kpis.lyRn,false)}">${arrowTxt(kpis.rn,kpis.lyRn)}</font> <font color="#4a6888;">VK ${fN(kpis.lyRn)}</font></p>
+    </td>
+    <td bgcolor="#050d1a" width="34%" style="padding:12px 20px 12px 12px;vertical-align:top;">
+      <p style="margin:0 0 2px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">REVPAR</p>
+      <p style="margin:0 0 2px 0;font-size:18px;font-weight:bold;color:#8b5cf6;font-family:Arial,sans-serif;">${fE(kpis.revpar)}</p>
+      <p style="margin:0;font-size:9px;color:#4a6888;font-family:Arial,sans-serif;">ADR ${fE(kpis.adr)} &middot; Occ ${fP(kpis.occ)}</p>
+    </td>
+  </tr>
+  </table>
 </td></tr>
 
-<!--=== DIVIDER ===-->
-<tr><td style="background:#c9a84c;padding:2px 0;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;"></td></tr>
+<!--== CASH FLOW (nested inner table) ==-->
+<tr><td bgcolor="#040a17" style="padding:0;border-left:2px solid #1a3a5c;border-right:2px solid #1a3a5c;border-bottom:1px solid #0d2040;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td bgcolor="#040a17" colspan="2" style="padding:14px 20px 6px;">
+      <p style="margin:0;font-size:8px;font-weight:bold;color:#c9a84c;letter-spacing:2.5px;font-family:Arial,sans-serif;text-transform:uppercase;">CASH FLOW (Muaji)</p>
+    </td>
+  </tr>
+  <tr>
+    <td bgcolor="#071629" width="50%" style="padding:10px 12px 12px 20px;vertical-align:top;border-right:1px solid #0d2040;">
+      <p style="margin:0 0 2px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">CASH IN</p>
+      <p style="margin:0 0 2px 0;font-size:20px;font-weight:bold;color:#4caf7d;font-family:Arial,sans-serif;">${kpis.cfHyrje26!=null?fK(kpis.cfHyrje26):'&mdash;'}</p>
+      <p style="margin:0;font-size:9px;color:#4a6888;font-family:Arial,sans-serif;">EUR ${kpis.cfHyrjeEUR_eur!=null?fE(kpis.cfHyrjeEUR_eur):'&mdash;'}</p>
+    </td>
+    <td bgcolor="#060f1c" width="50%" style="padding:10px 20px 12px 12px;vertical-align:top;">
+      <p style="margin:0 0 2px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">CASH OUT</p>
+      <p style="margin:0 0 2px 0;font-size:20px;font-weight:bold;color:#e05252;font-family:Arial,sans-serif;">${kpis.cfDalje26!=null?fK(kpis.cfDalje26):'&mdash;'}</p>
+      <p style="margin:0;font-size:9px;color:#4a6888;font-family:Arial,sans-serif;">${kpis.cfDalje26!=null&&kpis.cfHyrje26!=null?'Net: '+fK(kpis.cfHyrje26-kpis.cfDalje26):'Te dhena ne pritje'}</p>
+    </td>
+  </tr>
+  </table>
+</td></tr>
 
-<!--=== CHANNEL TABLE ===-->
-<tr><td style="background:#071629;padding:24px;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;">
-  <div style="font-size:9px;color:#c9a84c;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:16px;">MIXI I KANALEVE &nbsp;&mdash;&nbsp; T&Euml; ARDHURA DHOMASH</div>
-  <table width="100%" cellpadding="0" cellspacing="0">
-  <tr style="border-bottom:1px solid #112240;">
-    <th style="text-align:left;font-size:9px;color:#3a5270;letter-spacing:1.5px;text-transform:uppercase;padding:0 0 8px;font-weight:700;">KANALI</th>
-    <th style="text-align:right;font-size:9px;color:#3a5270;letter-spacing:1.5px;text-transform:uppercase;padding:0 0 8px;font-weight:700;">T&Euml; ARDHURA</th>
-    <th style="text-align:right;font-size:9px;color:#3a5270;letter-spacing:1.5px;text-transform:uppercase;padding:0 50px 8px 0;font-weight:700;">PJESA</th>
+<!--== GOLD DIVIDER ==-->
+<tr><td bgcolor="#c9a84c" height="3" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+<!--== CHANNEL MIX ==-->
+<tr><td bgcolor="#071629" style="padding:22px 26px;border-left:2px solid #1a3a5c;border-right:2px solid #1a3a5c;">
+  <p style="margin:0 0 14px 0;font-size:9px;font-weight:bold;color:#c9a84c;letter-spacing:3px;font-family:Arial,sans-serif;text-transform:uppercase;">MIXI I KANALEVE &mdash; TE ARDHURA DHOMASH</p>
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td width="38%" style="padding:0 0 8px;border-bottom:1px solid #102030;"><p style="margin:0;font-size:8px;font-weight:bold;color:#2a4860;letter-spacing:1.5px;font-family:Arial,sans-serif;text-transform:uppercase;">KANALI</p></td>
+    <td width="26%" style="padding:0 0 8px;border-bottom:1px solid #102030;text-align:right;"><p style="margin:0;font-size:8px;font-weight:bold;color:#2a4860;letter-spacing:1.5px;font-family:Arial,sans-serif;text-transform:uppercase;">TE ARDHURA</p></td>
+    <td width="36%" style="padding:0 0 8px 14px;border-bottom:1px solid #102030;"><p style="margin:0;font-size:8px;font-weight:bold;color:#2a4860;letter-spacing:1.5px;font-family:Arial,sans-serif;text-transform:uppercase;">PJESA</p></td>
   </tr>
   ${chTop.map((x,i)=>{
     const pct = chTotal>0 ? (x.v/chTotal*100) : 0;
     const col = chColors[i]||'#6b8aab';
-    const barW = Math.round(pct);
+    const barW = Math.max(2,Math.round(pct));
+    const barR = 100 - barW;
     return `<tr>
-    <td style="padding:10px 0;border-bottom:1px solid #0d1f35;">
-      <div style="display:inline-block;width:8px;height:8px;background:${col};border-radius:2px;margin-right:8px;vertical-align:middle;"></div>
-      <span style="color:#c8d4e8;font-size:13px;font-weight:600;">${x.l}</span>
-    </td>
-    <td style="padding:10px 0;text-align:right;border-bottom:1px solid #0d1f35;">
-      <span style="color:#e8eaf6;font-size:13px;font-weight:700;">${fE(x.v)}</span>
-    </td>
-    <td style="padding:10px 0 10px 16px;border-bottom:1px solid #0d1f35;">
-      <table width="100%" cellpadding="0" cellspacing="0"><tr>
-        <td style="width:80px;">
-          <div style="background:#112240;border-radius:3px;height:5px;"><div style="background:${col};height:5px;width:${barW}%;border-radius:3px;min-width:3px;"></div></div>
+    <td style="padding:8px 0;border-bottom:1px solid #0a1c2e;"><font color="#c8d4e8" style="font-size:11px;font-weight:bold;font-family:Arial,sans-serif;">&#9646; ${x.l}</font></td>
+    <td style="padding:8px 0;border-bottom:1px solid #0a1c2e;text-align:right;"><font color="#ffffff" style="font-size:11px;font-weight:bold;font-family:Arial,sans-serif;">${fE(x.v)}</font></td>
+    <td style="padding:8px 0 8px 14px;border-bottom:1px solid #0a1c2e;">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+        <td width="72%" style="vertical-align:middle;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+            <td bgcolor="${col}" width="${barW}%" height="5" style="font-size:0;line-height:0;">&nbsp;</td>
+            ${barR>0?'<td bgcolor="#0d2040" width="'+barR+'%" height="5" style="font-size:0;line-height:0;">&nbsp;</td>':''}
+          </tr></table>
         </td>
-        <td style="padding-left:8px;text-align:right;white-space:nowrap;">
-          <span style="color:${col};font-size:11px;font-weight:700;">${pct.toFixed(1)}%</span>
-        </td>
+        <td width="28%" style="padding-left:6px;white-space:nowrap;vertical-align:middle;"><font color="${col}" style="font-size:11px;font-weight:bold;font-family:Arial,sans-serif;">${pct.toFixed(1)}%</font></td>
       </tr></table>
     </td>
     </tr>`;
   }).join('')}
-  ${chTotal>0?`<tr><td colspan="3" style="padding:10px 0 0;"><span style="font-size:11px;color:#3a5270;">Total te ardhurat dhomash: </span><span style="color:#c9a84c;font-weight:700;font-size:13px;">${fE(chTotal)}</span></td></tr>`:''}
+  ${chTotal>0?`<tr><td colspan="3" style="padding:10px 0 0;"><font color="#4a6888" style="font-size:10px;font-family:Arial,sans-serif;">Total: </font><font color="#c9a84c" style="font-size:12px;font-weight:bold;font-family:Arial,sans-serif;">${fE(chTotal)}</font></td></tr>`:''}
   </table>
 </td></tr>
 
-<!--=== DIVIDER ===-->
-<tr><td style="background:#1a3a5c;padding:1px 0;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;"></td></tr>
+<!--== NAVY DIVIDER ==-->
+<tr><td bgcolor="#1a3a5c" height="1" style="font-size:0;line-height:0;">&nbsp;</td></tr>
 
-<!--=== KONKLUZIONE MENAXHERIALE ===-->
-<tr><td style="background:#060f1c;padding:24px;border-left:1px solid #1a3a5c;border-right:1px solid #1a3a5c;">
-  <div style="font-size:9px;color:#c9a84c;letter-spacing:3px;text-transform:uppercase;font-weight:700;margin-bottom:18px;">KONKLUZIONE MENAXHERIALE &nbsp;&mdash;&nbsp; ${periodLabel}</div>
-  ${(insights||[]).map(box=>{
-    const c   = insColor[box.type]||'#c9a84c';
-    const bg  = insBg[box.type]||'#0d1a10';
-    const bd  = insBd[box.type]||'#0f3318';
-    const ico = insIcon[box.type]||'i';
-    const titleClean = (box.title||'').replace(/[✓⚑ℹ⚠◆•►▶]/g,'').trim();
-    const bullets = (box.para||'').split('\n').filter(Boolean);
-    return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+<!--== KONKLUZIONE MENAXHERIALE — 4 paragraphs ==-->
+<tr><td bgcolor="#060f1c" style="padding:22px 26px;border-left:2px solid #1a3a5c;border-right:2px solid #1a3a5c;">
+  <p style="margin:0 0 16px 0;font-size:9px;font-weight:bold;color:#c9a84c;letter-spacing:3px;font-family:Arial,sans-serif;text-transform:uppercase;">KONKLUZIONE MENAXHERIALE &mdash; ${periodLabel}</p>
+  ${insSections.map(s=>{
+    const text = insData[s.key] || '';
+    if(!text) return '';
+    return `<table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:12px;">
     <tr>
-      <td style="background:${bg};border:1px solid ${bd};border-left:4px solid ${c};border-radius:8px;padding:16px 18px;">
-        <div style="font-size:11px;font-weight:800;color:${c};text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">${titleClean}</div>
-        ${bullets.map(line=>{
-          const clean = line.replace(/^[•\-\s]*/,'').replace(/[✓⚑ℹ⚠◆]/g,'').trim();
-          return `<div style="font-size:12px;color:#9ab0cc;line-height:1.65;margin-bottom:6px;padding-left:12px;border-left:1px solid ${bd};">${clean}</div>`;
-        }).join('')}
+      <td bgcolor="${s.bg}" style="border:1px solid ${s.bd};padding:0;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tr>
+          <td bgcolor="${s.c}" width="4" style="font-size:0;line-height:0;">&nbsp;</td>
+          <td style="padding:13px 15px;">
+            <p style="margin:0 0 8px 0;font-size:8px;font-weight:bold;color:${s.c};letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">${s.label}</p>
+            <p style="margin:0;font-size:12px;color:#9ab8d0;line-height:1.7;font-family:Arial,sans-serif;">${text}</p>
+          </td>
+        </tr>
+        </table>
       </td>
     </tr>
     </table>`;
   }).join('')}
 </td></tr>
 
-<!--=== FOOTER ===-->
-<tr><td style="background:#c9a84c;padding:3px 0;border-radius:0 0 12px 12px;"></td></tr>
-<tr><td style="padding:16px 0 4px;text-align:center;">
-  <div style="font-size:11px;color:#c9a84c;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;">FLOWER HOTELS &amp; RESORTS &middot; FLOW Dashboard</div>
-  <div style="font-size:10px;color:#3a5270;">Gjeneruar automatikisht &middot; ${nowStr} &nbsp;&middot;&nbsp; Konfidencial</div>
+<!--== GOLD BOTTOM BAR ==-->
+<tr><td bgcolor="#c9a84c" height="4" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+
+<!--== FOOTER ==-->
+<tr><td bgcolor="#040a14" style="padding:14px 0;text-align:center;">
+  <p style="margin:0 0 4px 0;font-size:10px;font-weight:bold;color:#c9a84c;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">FLOWER HOTELS &amp; RESORTS &nbsp;&#183;&nbsp; FLOW Dashboard</p>
+  <p style="margin:0;font-size:9px;color:#2a4460;font-family:Arial,sans-serif;">Gjeneruar automatikisht &nbsp;&#183;&nbsp; ${nowStr} &nbsp;&#183;&nbsp; Konfidencial</p>
 </td></tr>
 
-</table>
+</table><!-- /CARD -->
 </td></tr>
-</table>
+</table><!-- /OUTER -->
 </body></html>`;
 
  const nodemailer = require('nodemailer');

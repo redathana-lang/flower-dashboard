@@ -296,11 +296,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 }
 
 @media(max-width:480px){
- /* Very small phones: KPI 1 column */
- .adm-g6{grid-template-columns:1fr!important;}
- .adm-g4,#adm-cf-kpis{grid-template-columns:1fr!important;}
+ /* Very small phones: keep 2 col for KPIs (not 1) */
+ .adm-g6{grid-template-columns:1fr 1fr!important;}
+ .adm-kpi-val{font-size:18px!important;}
+ .adm-kpi{padding:12px 10px!important;}
+ .adm-g4,#adm-cf-kpis{grid-template-columns:1fr 1fr!important;}
  #sec_admin_panel canvas{max-height:180px;}
 }
+
+/* ── MOBILE TOPBAR & GENERAL (≤ 560px) ── */
+@media(max-width:560px){
+ /* Topbar: hide daily-report button & role badge to free space */
+ #btnSendReport{display:none!important;}
+ #tbRole{display:none!important;}
+ .btn-refresh{padding:5px 8px!important;font-size:11px!important;}
+ .btn-logout{padding:5px 8px!important;font-size:11px!important;}
+ .tb-info h1{font-size:13px!important;}
+ .tb-info p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;}
+ #topbar{padding:8px 12px!important;gap:8px!important;}
+
+ /* Date bar compact */
+ .date-bar{flex-wrap:wrap!important;gap:6px!important;padding:8px 10px!important;}
+ .date-bar input[type="date"]{font-size:11px!important;padding:4px 6px!important;}
+ #btnSot,#btnApply{padding:5px 10px!important;font-size:11px!important;}
+
+ /* KPI values smaller */
+ .kpi-val{font-size:22px!important;}
+ .yoy-curr{font-size:12px!important;}
+ .yoy-prev{font-size:11px!important;}
+}
+
+/* ── Revenue / budget tables: force scroll on mobile ── */
+#adm-rev-table-wrap table{min-width:440px;}
+#adm-bud-wrap table,
+#adm-exp-table-wrap table{min-width:440px;}
+
+/* ── Tab bar: fade indicator on right ── */
+#navTabs{-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+#navTabs::-webkit-scrollbar{display:none;}
+
 .sr-spin{animation:sr-spin .8s linear infinite;display:inline-block;}
 #srToast{position:fixed;bottom:24px;right:24px;background:#0f2040;border:1px solid #1e3a5f;border-radius:10px;padding:12px 18px;font-size:13px;color:#93c5fd;z-index:9999;opacity:0;transform:translateY(8px);pointer-events:none;transition:all .25s;max-width:320px;}
 #srToast.show{opacity:1;transform:translateY(0);}
@@ -2194,123 +2228,38 @@ var ADM_DATA = {
  }
 };
 
-// Insights — updated with corrected P&L data (all depts, Apr confirmed from sheet)
+// Insights — 4 paragraphs per period: pozitive / problematika / sugjerime / planifikim
 var ADM_INS = {
- all:[
- {type:'warn',title:'⚑ Të Ardhurat kundrejt Buxhetit',items:[
- 'Të ardhurat YTD <span>€815k</span> — vetëm <span>3% poshtë</span> buxhetit 4-mujor prej <span>€843k</span> — performancë solide',
- 'Prilli tejkaloi buxhetin: <span>€283k aktuale kundrejt €273k buxhet</span> (+<span>4%</span>) — sezoni i Pashkëve ishte i suksesshëm',
- 'Shkurti muaji më i dobët: <span>€152k kundrejt €180k buxhet</span> (−16%) — ndikim i kapacitetit të reduktuar',
- 'Kanali Direkt me <span>€298k</span> të ardhura dhome — OTA-të po aktivizohen gradualisht'
- ]},
- {type:'danger',title:'⚠ Shpenzimet kundrejt Buxhetit — Problem Strukturor',items:[
- 'Shpenzimet YTD <span>€957k</span> tejkalojnë buxhetin <span>€810k</span> me <span>+€147k (+18%)</span> — tejkalim i vazhdueshëm',
- 'Të gjithë 4 muajt mbi buxhet — Janar +€40k, Shkurt +€38k, Mars +€32k, Prill +€36k',
- 'Marketing total <span>€42,959</span> YTD përfshirë House Use <span>€20,186</span> — shpenzim i kontrolluar',
- 'Kostot e pagave <span>zëri më i madh i shpenzimeve</span> — nevojitet rishikim para rampës verore'
- ]},
- {type:'good',title:'✓ Arritjet Operacionale',items:[
- 'Okupanca <span>31%</span> YTD kundrejt LY <span>18%</span> — rritje e ndjeshme e volumit (+13 pikë përqindjeje)',
- 'Nete të Shitura <span>4,107</span> YTD — <span>+71%</span> ndaj të njëjtës periudhë të vitit të kaluar (<span>2,408</span>)',
- 'ADR mesatar YTD <span>€100.5</span> — Shkurti ADR më i lartë me <span>€105.30</span>; Prilli <span>€99.40</span>',
- 'NOP Prill <span>+€28,746</span> — muaji i parë fitimprurës i vitit 2026'
- ]},
- {type:'info',title:'ℹ Parashikim & Prioritete',items:[
- 'Trajektoria e të ardhurave në përmirësim të vazhdueshëm — sezoni i pikut Maj–Gusht është vendimtar për objektivin vjetor',
- 'Alotimet ITAKA nuk kanë gjeneruar ende të ardhura (€0 Jan–Prill) — ndjek aktivizimin',
- 'Kanali Direkt mbetet dominant — forco programin e besnikërisë dhe fushatat e rikthimit për verë',
- 'ROI Marketing: <span>5.5%</span> e totalit të ardhurave YTD (shpenzim cash neto vetëm <span>€22,773</span>)'
- ]}
- ],
- jan:[
- {type:'warn',title:'⚑ Janari — Të Ardhura Mbi Plan, Shpenzime Jashtë Kontrollit',items:[
- 'Të ardhurat <span>€193.9k</span> kundrejt buxhetit <span>€185k</span> — <span>+5% mbi</span> objektiv — rezultat pozitiv',
- 'NOP <span>-€35.8k</span> kundrejt buxhetit <span>-€3.97k</span> — shpenzimet tejkaluan planin me <span>€40k (+21%)</span>'
- ]},
- {type:'danger',title:'⚠ Shpenzimet e Janarit — Tejkalim i Ndjeshëm',items:[
- 'Shpenzimet <span>€229k</span> tejkaluan buxhetin <span>€189k</span> me €40k (+21%) — prioritet rishikimi',
- 'Shpenzimet Jan-25 ishin <span>€171k</span> — kostot 2026 rriten +34% vit mbi vit',
- 'Shpenzim marketingu <span>€8,985</span> përfshirë House Use (Meta Ads: €2,275)'
- ]},
- {type:'good',title:'✓ Pikët Pozitive të Janarit',items:[
- 'Të ardhurat tejkaluan buxhetin me <span>+€8.9k (+5%)</span> — rezervime të forta nëpërmjet kanalit Direkt',
- 'ADR <span>€100.27</span> (10,027 ALL) kundrejt Janar 2025 <span>€82.00</span> — rritje <span>+22%</span>',
- 'Nete të Shitura <span>936</span> kundrejt <span>653</span> në Janar 2025 — <span>+43%</span>',
- 'Okupanca <span>27%</span> kundrejt <span>19%</span> në Janar 2025 — rritje e qartë e kërkesës'
- ]},
- {type:'info',title:'ℹ Vërejtje & Hapat e Ardhshëm',items:[
- 'Rritja e të ardhurave e fortë (+35% kundrejt LY) — vëmendja duhet të kthehet tek kontrolli i shpenzimeve',
- 'Të ardhura MICE <span>€27,160</span> — biznes grupor premtues jashtë sezonit',
- 'Kanali Direkt <span>€52,990</span> — vazhdo shtytjen e programit të besnikërisë për muajin e Shkurtit'
- ]}
- ],
- feb:[
- {type:'danger',title:'⚠ Shkurti — Muaji më i Vështirë YTD',items:[
- 'Të ardhurat <span>€152k</span> nuk arritën buxhetin <span>€180k</span> — mungesë <span>-€28k (-16%)</span>',
- 'NOP <span>-€79.8k</span> — rezultati më i dobët YTD, larg buxhetit <span>-€13.3k</span>',
- 'Shpenzimet <span>€232k</span> tejkaluan buxhetin <span>€194k</span> me <span>€38k (+20%)</span>'
- ]},
- {type:'warn',title:'⚑ Shpenzimet e Shkurtit — Kapacitet i Reduktuar',items:[
- 'Shpenzimet Shk-25 ishin <span>€171k</span> kundrejt 2026 <span>€232k</span> — rritje +35% vit mbi vit',
- 'Dhoma të disponueshme në Shkurt u reduktuan në <span>3,080</span> — një pjesë e inventarit jashtë shërbimit',
- 'Marketing <span>€10,869</span> përfshirë €1,825 Reklama Media/Panaire — muaji me investimin më të lartë marketing'
- ]},
- {type:'good',title:'✓ Pikët Pozitive të Shkurtit',items:[
- 'ADR <span>€105.30</span> (10,530 ALL) — çmimi mesatar më i lartë i regjistruar YTD',
- 'Nete të Shitura <span>670</span> kundrejt <span>436</span> në Shkurt 2025 — rritje <span>+54%</span>',
- 'Okupanca <span>22%</span> kundrejt <span>14%</span> në Shkurt 2025 — <span>+8 pikë përqindjeje</span>'
- ]},
- {type:'info',title:'ℹ Vërejtje & Rekomandime',items:[
- 'Të ardhurat +<span>40%</span> kundrejt LY (€152k vs €109k) — dinamikë e fortë vit mbi vit pavarësisht kapacitetit',
- 'Kanali Direkt <span>€65,210</span> dominant; OTA-të (Booking €1,155 + Expedia €2,196) ende minimale',
- 'Rekomandohet planifikim i targetuar i promovimeve për Shkurtin e vitit tjetër'
- ]}
- ],
- mar:[
- {type:'warn',title:'⚑ Marsi — Nën Buxhet, por Rritje e Fortë vit mbi vit',items:[
- 'Të ardhurat <span>€186k</span> nën buxhetin <span>€205k</span> — mungesë <span>-€19k (-9%)</span>',
- 'NOP <span>-€55.5k</span> kundrejt buxhetit <span>-€4.5k</span> — shpenzimet tejkaluan planin me <span>€33k</span>'
- ]},
- {type:'danger',title:'⚠ Shpenzimet e Marsit — Trend i Vazhdueshëm Mbi Plan',items:[
- 'Shpenzimet <span>€242k</span> tejkaluan buxhetin <span>€209k</span> me <span>€33k (+16%)</span>',
- 'Shpenzimet Mar-25 ishin <span>€182k</span> — kostot 2026 rriten +33% vit mbi vit',
- 'Rezervimet e Pashkëve me gjasë u zhvendosën në Prill — ndikim në të ardhurat e Marsit'
- ]},
- {type:'good',title:'✓ Pikët Pozitive të Marsit',items:[
- 'Të ardhurat <span>+57%</span> kundrejt LY (€186k vs €118k) — rritja më e lartë vit mbi vit e gjithë periudhës',
- 'Okupanca <span>25%</span> kundrejt <span>15%</span> në Mars 2025 — <span>+10 pikë përqindjeje</span>',
- 'Nete të Shitura <span>848</span> kundrejt <span>518</span> në Mars 2025 — <span>+64%</span>',
- 'ADR <span>€98.90</span> (9,890 ALL) kundrejt Mars 2025 <span>€83.30</span> — <span>+19%</span>'
- ]},
- {type:'info',title:'ℹ Parashikim & Hapat e Ardhshëm',items:[
- 'MICE <span>€7,550</span> — kanal në rritje, moment i mirë për zhvillim të mëtejshëm para pranverës',
- 'Prilli pritet të jetë i fortë duke parë volumin e rezervimeve dhe trajektoren e Marsit',
- 'Aktivizimi OTA po rritet (Booking €3,077 + Hotelbeds €1,478) — vazhdo presionin e tarifave'
- ]}
- ],
- apr:[
- {type:'good',title:'✓ Prilli — Tejkaloi Buxhetin & Fitimi i Parë i Vitit',items:[
- 'Të ardhurat <span>€283k</span> tejkaluan buxhetin <span>€273k</span> me <span>+€10k (+4%)</span> — Pashkët performuan mbi pritje',
- 'NOP <span>+€28,746</span> — muaji i parë fitimprurës i vitit 2026 (buxheti parashikonte: +€54k)',
- 'Të ardhurat totale +<span>72%</span> kundrejt LY Prill 2025 (<span>€165k</span>) — rritje e jashtëzakonshme'
- ]},
- {type:'warn',title:'⚑ Shpenzimet e Prillit — Kosto e Lartë Sezoni',items:[
- 'Shpenzimet <span>€254k</span> tejkaluan buxhetin <span>€218k</span> me <span>+€36k (+16%)</span>',
- 'Shpenzimet Pri-25 ishin <span>€198k</span> kundrejt 2026 <span>€254k</span> — kostot +28% vit mbi vit',
- 'Kosto e Shitjes F&B <span>€63.4k</span> — drejtues kryesor i shpenzimeve (volum i lartë aktivitetesh gjatë Pashkëve)'
- ]},
- {type:'good',title:'✓ Okupanca & ADR e Prillit — Kulmi i Periudhës',items:[
- 'Okupanca <span>50%</span> — muaji me performancën më të lartë YTD (1,653 dhoma / 3,300 të disponueshme), kundrejt <span>24%</span> vitit të kaluar',
- 'Nete të Shitura <span>1,653</span> — rekord YTD (<span>+106%</span> kundrejt LY 801)',
- 'ADR <span>€99.40</span> (9,940 ALL) kundrejt Prill 2025 <span>€94.00</span> — rritje <span>+6%</span>',
- 'RevPAR Prill: <span>4,979 ALL</span> (€49.79) — tregues i shëndetshëm operacional'
- ]},
- {type:'info',title:'ℹ Parashikim & Prioritete pas Pashkëve',items:[
- 'Prilli i fortë krijon momentum pozitiv drejt sezonit të pikut Maj–Gusht',
- 'Aktivizo alotimet ITAKA dhe të gjitha kontratat me shumicë — çelësi i rritjes verore',
- 'Kontributi i të ardhurave F&B i konfirmuar — zgjero kapacitetin e shërbimit për pikun veror'
- ]}
- ]
+ all:{
+  pozitive:'Të ardhurat YTD <span>€815k</span> — vetëm <span>3% poshtë</span> buxhetit 4-mujor prej <span>€843k</span>, performancë solide duke marrë parasysh rampën e ngadaltë të sezonit. Prilli tejkaloi buxhetin: <span>€283k kundrejt €273k</span> (+4%) — sezoni i Pashkëve ishte i suksesshëm. Okupanca YTD arriti <span>31%</span> kundrejt LY <span>18%</span> — rritje e ndjeshme e volumit (+13 pikë përqindjeje). Nete të Shitura <span>4,107</span> YTD — <span>+71%</span> ndaj të njëjtës periudhë LY (<span>2,408</span>). NOP Prill <span>+€28,746</span> — muaji i parë fitimprurës i vitit 2026.',
+  problematika:'Shpenzimet YTD <span>€957k</span> tejkalojnë buxhetin <span>€810k</span> me <span>+€147k (+18%)</span> — tejkalim i vazhdueshëm i dokumentuar në të gjithë muajt: Janar +€40k, Shkurt +€38k, Mars +€32k, Prill +€36k mbi plan. Shkurti muaji më i vështirë: <span>€152k kundrejt €180k buxhet</span> (−16%) — ndikim i kapacitetit të reduktuar. Kostot e pagave mbeten <span>zëri më i madh i shpenzimeve</span> dhe nevojitet rishikim strukturor para rampës verore.',
+  sugjerime:'Forco kanalin Direkt me <span>€298k</span> të ardhura dhome YTD — shtyp programin e besnikërisë dhe fushatat e rikthimit për verën. Aktivizo alotimet ITAKA që kanë gjeneruar <span>€0</span> Jan–Prill — prioritet urgjent. Rishiko strukturën e kostove duke u fokusuar tek pagat dhe F&B Cost of Sale si drejtues kryesor të tejkalimeve. ROI Marketing <span>5.5%</span> e totalit (shpenzim cash neto vetëm <span>€22,773</span>) — ka hapësirë për rritje strategjike investimi.',
+  planifikim:'Sezoni i pikut Maj–Gusht është vendimtar për objektivin vjetor — trajektoria e të ardhurave është në përmirësim të vazhdueshëm. Shtyp aktivizimin e OTA-ve (Booking, Expedia, Hotelbeds) për disponueshmërinë verore. Rishiko dhe syno tejkalim shpenzimesh nën 10% për sezonin e ardhshëm. Konsolidimi i kanaleve dhe kontrolli rigoroz i kostove do të jetë çelësi i NOP pozitiv për Q3 2026.'
+ },
+ jan:{
+  pozitive:'Të ardhurat <span>€193.9k</span> tejkaluan buxhetin <span>€185k</span> me <span>+€8.9k (+5%)</span> — rezervime të forta nëpërmjet kanalit Direkt (<span>€52,990</span>). ADR <span>€100.27</span> kundrejt Janar 2025 <span>€82.00</span> — rritje <span>+22%</span>. Nete të Shitura <span>936</span> kundrejt <span>653</span> në Janar 2025 — <span>+43%</span>. Okupanca <span>27%</span> kundrejt <span>19%</span> LY — rritje e qartë e kërkesës. Të ardhura MICE <span>€27,160</span> — biznes grupor premtues jashtë sezonit.',
+  problematika:'NOP <span>-€35.8k</span> kundrejt buxhetit <span>-€3.97k</span> — shpenzimet tejkaluan planin me <span>€40k (+21%)</span>. Shpenzimet <span>€229k</span> tejkaluan buxhetin <span>€189k</span>, me rritje <span>+34%</span> vit mbi vit kundrejt <span>€171k</span> Jan 2025. Tejkalimi strukturor i shpenzimeve operacionale është çështja kryesore e identifikuar.',
+  sugjerime:'Rritja e të ardhurave +35% kundrejt LY është pozitive — vëmendja duhet të kthehet tek kontrolli i shpenzimeve operacionale. Zhvillo kanalin MICE si burim premtues jashtë sezonit. Vazhdo shtytjen e programit të besnikërisë duke shfrytëzuar dominancën e kanalit Direkt.',
+  planifikim:'Rishiko buxhetin e shpenzimeve për muajt pasues duke synuar qëndrueshmëri nën plan. Aktivizo kanale shtesë OTA për të shpërndarë rrezikun e koncentrimit. Planifiko fushatat e pranverës me kohë — marketing <span>€8,985</span> (Meta Ads: €2,275) duhet të rritet strategjikisht para Pashkëve.'
+ },
+ feb:{
+  pozitive:'ADR <span>€105.30</span> (10,530 ALL) — çmimi mesatar më i lartë i regjistruar YTD, tregon forcë çmimi edhe në muaj të dobët. Nete të Shitura <span>670</span> kundrejt <span>436</span> në Shkurt 2025 — rritje <span>+54%</span>. Të ardhurat <span>+40%</span> kundrejt LY (€152k vs €109k) — dinamikë e fortë vit mbi vit pavarësisht kapacitetit. Okupanca <span>22%</span> kundrejt <span>14%</span> LY — <span>+8 pikë përqindjeje</span>.',
+  problematika:'Të ardhurat <span>€152k</span> nuk arritën buxhetin <span>€180k</span> — mungesë <span>-€28k (-16%)</span>. NOP <span>-€79.8k</span> — rezultati më i dobët YTD, larg buxhetit <span>-€13.3k</span>. Shpenzimet <span>€232k</span> tejkaluan buxhetin <span>€194k</span> me <span>€38k (+20%)</span> — rritje +35% vit mbi vit. Dhoma të disponueshme u reduktuan në <span>3,080</span> duke kufizuar potencialin e të ardhurave.',
+  sugjerime:'Kanali Direkt <span>€65,210</span> dominant — aktivizo OTA-të (Booking €1,155 + Expedia €2,196 ende minimale). Rishiko nëse dhomat jashtë shërbimit mund të aktivizohen për të rritur kapacitetin. Marketing <span>€10,869</span> (investimi më i lartë mujor) — vlerëso ROI-n e fushatave dhe rioriento drejt kanaleve me konvertim.',
+  planifikim:'Planifiko aktivizim kapaciteti shtesë nëse dhomat jashtë shërbimit mund të rikthehen. Fokusohu tek mbushja e muajve të dobët me paketa të integruara (SPA, MICE, grupore). Shtyj rezervimet e hershme për Prill–Qershor 2026 nëpërmjet ofertave speciale dhe promovimeve të drejtpërdrejta.'
+ },
+ mar:{
+  pozitive:'Të ardhurat <span>+57%</span> kundrejt LY (€186k vs €118k) — rritja më e lartë vit mbi vit e gjithë periudhës YTD. Okupanca <span>25%</span> kundrejt <span>15%</span> LY — <span>+10 pikë përqindjeje</span>. Nete të Shitura <span>848</span> kundrejt <span>518</span> LY — <span>+64%</span>. ADR <span>€98.90</span> kundrejt Mars 2025 <span>€83.30</span> — <span>+19%</span>. MICE <span>€7,550</span> — kanal në rritje me potencial të qartë zhvillimi.',
+  problematika:'Të ardhurat <span>€186k</span> nën buxhetin <span>€205k</span> — mungesë <span>-€19k (-9%)</span>, ndikuar nga zhvendosja e rezervimeve të Pashkëve drejt Prillit. NOP <span>-€55.5k</span> kundrejt buxhetit <span>-€4.5k</span> — shpenzimet tejkaluan planin me <span>€33k (+16%)</span>. Kostot 2026 rriten +33% vit mbi vit kundrejt <span>€182k</span> Mar 2025.',
+  sugjerime:'Shtyp aktivizimin OTA — Booking €3,077 + Hotelbeds €1,478 tregon rritje pozitive, vazhdo presionin e tarifave. Zhvillo produktet grupore dhe MICE para pranverës si burim i qëndrueshëm të ardhurash jashtë sezonit. Vlerëso nëse disa kosto mund të optimizohen pa cënuar cilësinë e shërbimit.',
+  planifikim:'Aprili pritet i fortë — përgatit operacionin për kapacitet të plotë dhe staf të mjaftueshëm. Aktivizo të gjitha kontratat e akomodimit dhe alotimet për sezonin veror. Planifiko stafin dhe burimet bazuar në parashikimin e rritjes nga periudha e Pashkëve dhe sezoni i pikut Maj–Gusht.'
+ },
+ apr:{
+  pozitive:'Të ardhurat <span>€283k</span> tejkaluan buxhetin <span>€273k</span> me <span>+€10k (+4%)</span> — Pashkët performuan mbi pritje. NOP <span>+€28,746</span> — muaji i parë fitimprurës i vitit 2026. Të ardhurat totale +<span>72%</span> kundrejt LY Prill 2025 (<span>€165k</span>). Okupanca <span>50%</span> — kulmi YTD (kundrejt <span>24%</span> LY). Nete të Shitura <span>1,653</span> — rekord YTD (<span>+106%</span> kundrejt LY 801). ADR <span>€99.40</span> — <span>+6%</span> kundrejt Prill 2025.',
+  problematika:'Shpenzimet <span>€254k</span> tejkaluan buxhetin <span>€218k</span> me <span>+€36k (+16%)</span>. Kosto e Shitjes F&B <span>€63.4k</span> — drejtues kryesor shpenzimeve gjatë volumit të lartë të Pashkëve. Kostot +28% vit mbi vit kundrejt <span>€198k</span> Prill 2025. NOP mbeti nën buxhetin e parashikuar <span>+€54k</span> — rritja e shpenzimeve i uli eficiencën.',
+  sugjerime:'Kontributi i F&B i konfirmuar — zgjero kapacitetin e shërbimit dhe kontrollo Food Cost nën 30% të të ardhurave F&B. Aktivizo të gjitha alotimet ITAKA dhe kontratat me shumicë — çelësi i rritjes verore. ADR <span>€99.40</span> ka hapësirë rritjeje — synoji <span>€110+</span> për muajt Qershor–Gusht.',
+  planifikim:'Impulsi i fortë i Prillit krijon momentum pozitiv — synoj NOP pozitiv çdo muaj deri në fund të sezonit. Planifiko kontrollin rigoroz të kostove F&B dhe pagave. Fokusohu tek RevPAR <span>€49.79</span> — rriti drejt <span>€65+</span> për muajt e pikut. Aktivizo të gjitha kanalet e shitjes dhe forco praninë dixhitale para sezonit kulmor Qershor–Gusht.'
+ }
 };
 
 var admCurKey='all', admCharts={}, admInited=false;
@@ -2437,11 +2386,18 @@ function admUpdateInsights(){
  var ins=ADM_INS[admCurKey]||ADM_INS.all;
  var el=document.getElementById('adm-insights');
  if(!el) return;
- el.innerHTML=ins.map(function(box){
- return '<div class="insight-box '+box.type+'">'
- +'<div class="insight-title '+box.type+'">'+box.title+'</div>'
- +box.items.map(function(i){return '<div class="insight-item">'+i+'</div>';}).join('')
- +'</div>';
+ var sections=[
+  {key:'pozitive',   label:'✓ Çfarë shkoi mirë', cls:'good'},
+  {key:'problematika',label:'⚠ Ku u vunë re problematika', cls:'danger'},
+  {key:'sugjerime',  label:'💡 Sugjerime për përmirësim', cls:'warn'},
+  {key:'planifikim', label:'📋 Masa & Planifikim', cls:'info'}
+ ];
+ el.innerHTML=sections.map(function(s){
+  var text=ins[s.key]||'';
+  return '<div class="insight-box '+s.cls+'">'
+   +'<div class="insight-title '+s.cls+'">'+s.label+'</div>'
+   +'<div class="insight-item" style="line-height:1.75;">'+text+'</div>'
+   +'</div>';
  }).join('');
 }
 
@@ -3731,13 +3687,13 @@ window.sendMonthlyReport = function(){
 
  var chData = d.chData || null;
 
- var ins = (ADM_INS[key] || ADM_INS.all || []).map(function(box){
- return {
- type: box.type,
- title: stripHtml(box.title),
- para: box.items.map(function(i){ return '• ' + stripHtml(i); }).join('\n')
+ var insObj = ADM_INS[key] || ADM_INS.all || {};
+ var ins = {
+  pozitive:    stripHtml(insObj.pozitive     || ''),
+  problematika:stripHtml(insObj.problematika || ''),
+  sugjerime:   stripHtml(insObj.sugjerime    || ''),
+  planifikim:  stripHtml(insObj.planifikim   || '')
  };
- });
 
  var toastTimer;
  function showToast(msg, type){
