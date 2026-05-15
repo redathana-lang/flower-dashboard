@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const webpush = require('web-push');
-const { sendDailyReport } = require('./emailService');
+const { sendDailyReport, buildEmailHTML } = require('./emailService');
 // Load .env if present (local dev — production uses platform env vars)
 try { require('dotenv').config(); } catch(_) {}
 
@@ -1486,6 +1486,21 @@ app.post('/api/send-report', async function(req, res) {
  const lySpaLek = spa_yoy.revenues || 0;
  const lyTotalRevLek = lyHotelLek + lyFlowerLek + lyBrutalLek + lyPoolBarLek + lyPoolGardenLek + lyBeachBarLek + lyHouseUseLek + lySpaLek;
  const prevDayRevLek = ((fo_prev.revenue_eur||0)*EH) + (fnb_prev.flower||0) + (fnb_prev.brutal||0) + (fnb_prev.pool_bar||0) + (fnb_prev.pool_garden||0) + (fnb_prev.beach_bar||0) + (fnb_prev.house_use||0);
+ // ── MTD aggregation (1st of month → date) ────────────────────────────────
+ const startOfMonth = date.slice(0,8) + '01';
+ const fo_mtd  = aggregateRange(parseFO,      cache.fo,      startOfMonth, date);
+ const fnb_mtd = aggregateRange(parseFNB,     cache.fnb,     startOfMonth, date);
+ const spa_mtd = aggregateRange(parseSPA,     cache.spa,     startOfMonth, date);
+ const fin_mtd = aggregateRange(parseFinance, cache.finance, startOfMonth, date);
+ const mtdHotelLek      = (fo_mtd.revenue_eur||0) * EH;
+ const mtdFlowerLek     = fnb_mtd.flower      || 0;
+ const mtdBrutalLek     = fnb_mtd.brutal      || 0;
+ const mtdPoolBarLek    = fnb_mtd.pool_bar    || 0;
+ const mtdPoolGardenLek = fnb_mtd.pool_garden || 0;
+ const mtdBeachBarLek   = fnb_mtd.beach_bar   || 0;
+ const mtdHouseUseLek   = fnb_mtd.house_use   || 0;
+ const mtdSpaLek        = spa_mtd.revenues    || 0;
+ const mtdTotalRevLek   = mtdHotelLek + mtdFlowerLek + mtdBrutalLek + mtdPoolBarLek + mtdPoolGardenLek + mtdBeachBarLek + mtdHouseUseLek + mtdSpaLek;
  const ark = cf.arketimet || {};
  const pag = cf.pagesat || {};
  function nv(v){ return Number(v)||0; }
@@ -1503,22 +1518,22 @@ app.post('/api/send-report', async function(req, res) {
  const lyAdr = (fo_yoy.rooms_occupied||0) > 0 ? Math.round(lyHotelLek / (fo_yoy.rooms_occupied||1)) : 0;
  const lyRevpar = Math.round(lyHotelLek / TR);
  const expItems = [
- { name:'Beach Bar', lek: nv(fin.beach_bar) },
- { name:'Flower Restorant', lek: nv(fin.flower) },
- { name:'Pool Bar', lek: nv(fin.pool_bar) },
- { name:'Brutal', lek: nv(fin.brutal) },
- { name:'Pool Bar Garden', lek: nv(fin.pool_garden) },
- { name:'Overheads F&B', lek: nv(fin.overheads_fnb) },
- { name:'Magazina Qendrore', lek: nv(fin.mag_qendrore) },
- { name:'Operacionale Mikse', lek: nv(fin.operacionale) },
- { name:'SPA', lek: nv(fin.spa) },
- { name:'Mirëmbajtje & Riparime', lek: nv(fin.mirembajtje) },
- { name:'Marketing', lek: nv(fin.marketing) },
- { name:'Familja', lek: nv(fin.familja) },
- { name:'Shpenzime Hoteli', lek: nv(fin.hoteli) },
- { name:'Magazina GARDEN (Invest.)', lek: nv(fin.mag_garden) },
- { name:'Paga & Utilitete', lek: nv(fin.paga_util) },
- ].filter(function(i){ return i.lek !== 0; });
+ { name:'Beach Bar', lek: nv(fin.beach_bar), mtdLek: nv(fin_mtd.beach_bar) },
+ { name:'Flower Restorant', lek: nv(fin.flower), mtdLek: nv(fin_mtd.flower) },
+ { name:'Pool Bar', lek: nv(fin.pool_bar), mtdLek: nv(fin_mtd.pool_bar) },
+ { name:'Brutal', lek: nv(fin.brutal), mtdLek: nv(fin_mtd.brutal) },
+ { name:'Pool Bar Garden', lek: nv(fin.pool_garden), mtdLek: nv(fin_mtd.pool_garden) },
+ { name:'Overheads F&B', lek: nv(fin.overheads_fnb), mtdLek: nv(fin_mtd.overheads_fnb) },
+ { name:'Magazina Qendrore', lek: nv(fin.mag_qendrore), mtdLek: nv(fin_mtd.mag_qendrore) },
+ { name:'Operacionale Mikse', lek: nv(fin.operacionale), mtdLek: nv(fin_mtd.operacionale) },
+ { name:'SPA', lek: nv(fin.spa), mtdLek: nv(fin_mtd.spa) },
+ { name:'Mirëmbajtje & Riparime', lek: nv(fin.mirembajtje), mtdLek: nv(fin_mtd.mirembajtje) },
+ { name:'Marketing', lek: nv(fin.marketing), mtdLek: nv(fin_mtd.marketing) },
+ { name:'Familja', lek: nv(fin.familja), mtdLek: nv(fin_mtd.familja) },
+ { name:'Shpenzime Hoteli', lek: nv(fin.hoteli), mtdLek: nv(fin_mtd.hoteli) },
+ { name:'Magazina GARDEN (Invest.)', lek: nv(fin.mag_garden), mtdLek: nv(fin_mtd.mag_garden) },
+ { name:'Paga & Utilitete', lek: nv(fin.paga_util), mtdLek: nv(fin_mtd.paga_util) },
+ ].filter(function(i){ return i.lek !== 0 || i.mtdLek !== 0; });
  const expTotal = nv(fin.total) || expItems.reduce(function(s,i){ return s+i.lek; }, 0);
  var salesSection = null;
  try {
@@ -1558,17 +1573,18 @@ app.post('/api/send-report', async function(req, res) {
  } catch(salesErr) { console.warn('[EMAIL] Sales data unavailable:', salesErr.message); }
  const data = {
  totalRevenueLek: totalRevLek, totalRevenueEur: Math.round(totalRevLek/EH),
+ mtdTotalRevenueLek: mtdTotalRevLek,
  occupancyPct: occ, roomsOccupied: rooms, totalRooms: TR,
  prevDayRevenueLek: prevDayRevLek,
  departments: [
- { name:'Hotel (€×100)', revenueLek: hotelLek, lyLek: lyHotelLek },
- { name:'Brutal Garden', revenueLek: brutalLek, lyLek: lyBrutalLek },
- { name:'Flower Rest.', revenueLek: flowerRestLek, lyLek: lyFlowerLek },
- { name:'Beach Bar', revenueLek: beachBarLek, lyLek: lyBeachBarLek },
- { name:'Pool Bar', revenueLek: poolBarLek, lyLek: lyPoolBarLek },
- { name:'Pool Bar Garden', revenueLek: poolGardenLek, lyLek: lyPoolGardenLek },
- { name:'House Use', revenueLek: houseUseLek, lyLek: lyHouseUseLek },
- { name:'SPA', revenueLek: spaLek, lyLek: lySpaLek },
+ { name:'Hotel (€×100)', revenueLek: hotelLek, lyLek: lyHotelLek, mtdLek: mtdHotelLek },
+ { name:'Brutal Garden', revenueLek: brutalLek, lyLek: lyBrutalLek, mtdLek: mtdBrutalLek },
+ { name:'Flower Rest.', revenueLek: flowerRestLek, lyLek: lyFlowerLek, mtdLek: mtdFlowerLek },
+ { name:'Beach Bar', revenueLek: beachBarLek, lyLek: lyBeachBarLek, mtdLek: mtdBeachBarLek },
+ { name:'Pool Bar', revenueLek: poolBarLek, lyLek: lyPoolBarLek, mtdLek: mtdPoolBarLek },
+ { name:'Pool Bar Garden', revenueLek: poolGardenLek, lyLek: lyPoolGardenLek, mtdLek: mtdPoolGardenLek },
+ { name:'House Use', revenueLek: houseUseLek, lyLek: lyHouseUseLek, mtdLek: mtdHouseUseLek },
+ { name:'SPA', revenueLek: spaLek, lyLek: lySpaLek, mtdLek: mtdSpaLek },
  ],
  fo: { adr, revpar, occ },
  cashFlow: {

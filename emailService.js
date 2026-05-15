@@ -80,7 +80,7 @@ function tr2(a, b, bold) {
 }
 
 // ── Bar row (dept / CF) ───────────────────────────────────────
-function barRow(name, lek, lyLek, color, maxLek) {
+function barRow(name, lek, lyLek, color, maxLek, mtdLek) {
   var isNeg = lek < 0;
   var pctW  = maxLek > 0 ? Math.min(Math.abs(lek) / maxLek * 100, 100) : 0;
   var vCol  = isNeg ? '#ef4444' : '#e2e8f0';
@@ -94,11 +94,12 @@ function barRow(name, lek, lyLek, color, maxLek) {
     lyD = '<span style="color:' + c2 + ';font-size:10px;">' + (p2 >= 0 ? '\u25b2' : '\u25bc') + Math.abs(p2).toFixed(0) + '%</span>';
   }
   return '<tr>'
-    + '<td style="padding:4px 6px 4px 10px;font-size:11px;color:#94a3b8;width:24%;">' + name + '</td>'
-    + '<td style="padding:4px 4px;width:34%;">' + bar + '</td>'
-    + '<td style="padding:4px 4px;font-size:11px;color:' + vCol + ';text-align:right;width:20%;font-weight:600;white-space:nowrap;">' + fL(lek) + ' L</td>'
-    + '<td style="padding:4px 4px;font-size:10px;color:#3d5070;text-align:right;width:14%;white-space:nowrap;">' + (lyLek != null ? fL(lyLek) + ' L' : '') + '</td>'
-    + '<td style="padding:4px 4px 4px 0;text-align:right;width:8%;">' + lyD + '</td>'
+    + '<td style="padding:4px 6px 4px 10px;font-size:11px;color:#94a3b8;width:18%;">' + name + '</td>'
+    + '<td style="padding:4px 4px;width:28%;">' + bar + '</td>'
+    + '<td style="padding:4px 4px;font-size:11px;color:' + vCol + ';text-align:right;width:14%;font-weight:600;white-space:nowrap;">' + fL(lek) + ' L</td>'
+    + '<td style="padding:4px 4px;font-size:10px;color:#3d5070;text-align:right;width:12%;white-space:nowrap;">' + (lyLek != null ? fL(lyLek) + ' L' : '') + '</td>'
+    + '<td style="padding:4px 4px;text-align:right;width:8%;">' + lyD + '</td>'
+    + '<td style="padding:4px 8px 4px 4px;font-size:11px;color:#e2e8f0;text-align:right;width:20%;font-weight:600;white-space:nowrap;">' + (mtdLek != null ? fL(mtdLek) + ' L' : '') + '</td>'
     + '</tr>';
 }
 
@@ -144,6 +145,7 @@ function buildEmailHTML(date, d, p) {
   var totalLek   = d.totalRevenueLek || 0;
   var totalEur   = d.totalRevenueEur || 0;
   var lyTotalLek = p.totalRevenueLek || 0;
+  var mtdTotalLek = d.mtdTotalRevenueLek || 0;
   var occCol     = occ >= 80 ? '#22c55e' : occ >= 50 ? '#f59e0b' : '#ef4444';
 
   // ── Departments ───────────────────────────────────────────────
@@ -159,14 +161,20 @@ function buildEmailHTML(date, d, p) {
   var maxD = 1;
   DEPTS.forEach(function(dep){ var m=dMap[dep.name]; if(m){ var v=Math.abs(n(m.revenueLek)); if(v>maxD) maxD=v; } });
   var deptRows = DEPTS.map(function(dep){
-    var m = dMap[dep.name]||{}; return barRow(dep.name, n(m.revenueLek), m.lyLek!=null?n(m.lyLek):null, dep.color, maxD);
+    var m = dMap[dep.name]||{}; return barRow(dep.name, n(m.revenueLek), m.lyLek!=null?n(m.lyLek):null, dep.color, maxD, m.mtdLek!=null?n(m.mtdLek):null);
   }).join('');
 
   // ── Expenses ──────────────────────────────────────────────────
   var exp     = d.expenses || {};
   var expT    = n(exp.totalLek);
-  var expRows = (exp.items||[]).filter(function(i){ return n(i.lek)!==0; })
-    .map(function(i){ return tr2(i.name||i.category||'—', fL(n(i.lek))+' L'); }).join('');
+  var expRows = (exp.items||[]).filter(function(i){ return n(i.lek)!==0 || n(i.mtdLek)!==0; })
+    .map(function(i){
+      return '<tr>'
+        + '<td style="padding:4px 8px 4px 0;font-size:12px;color:#94a3b8;">' + (i.name||i.category||'—') + '</td>'
+        + '<td style="padding:4px 8px 4px 0;font-size:12px;color:#e2e8f0;text-align:right;white-space:nowrap;">' + fL(n(i.lek)) + ' L</td>'
+        + '<td style="padding:4px 0;font-size:12px;color:#e2e8f0;text-align:right;white-space:nowrap;">' + fL(n(i.mtdLek)) + ' L</td>'
+        + '</tr>';
+    }).join('');
 
   // ── Cash Flow ─────────────────────────────────────────────────
   var cf       = d.cashFlow || {};
@@ -254,20 +262,22 @@ function buildEmailHTML(date, d, p) {
     + '<div ' + TDIV + '>'
     + '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">'
     + '<tr style="border-bottom:1px solid #1a2d45;">'
-    + '<td colspan="5" style="padding:7px 10px 5px 10px;font-size:9px;color:#3d5070;text-transform:uppercase;letter-spacing:.07em;">T\u00eb Ardhurat sipas Departamentit &nbsp;\u00b7&nbsp; <span style="color:#4a6fa5;">' + date + '</span></td></tr>'
+    + '<td colspan="6" style="padding:7px 10px 5px 10px;font-size:9px;color:#3d5070;text-transform:uppercase;letter-spacing:.07em;">T\u00eb Ardhurat sipas Departamentit &nbsp;\u00b7&nbsp; <span style="color:#4a6fa5;">' + date + '</span></td></tr>'
     + '<tr style="border-bottom:1px solid #1a2d45;">'
-    + '<td style="padding:3px 6px 3px 10px;font-size:9px;color:#3d5070;width:24%;">Departamenti</td>'
-    + '<td style="padding:3px 4px;font-size:9px;color:#3d5070;width:34%;">Shp\u00ebrndarja</td>'
-    + '<td style="padding:3px 4px;font-size:9px;color:#3d5070;text-align:right;width:20%;">Sot</td>'
-    + '<td style="padding:3px 4px;font-size:9px;color:#3d5070;text-align:right;width:14%;">LY</td>'
-    + '<td style="padding:3px 4px;font-size:9px;color:#3d5070;text-align:right;width:8%;">\u0394%</td></tr>'
+    + '<td style="padding:3px 6px 3px 10px;font-size:9px;color:#3d5070;width:18%;">Departamenti</td>'
+    + '<td style="padding:3px 4px;font-size:9px;color:#3d5070;width:28%;">Shp\u00ebrndarja</td>'
+    + '<td style="padding:3px 4px;font-size:9px;color:#3d5070;text-align:right;width:14%;">Sot</td>'
+    + '<td style="padding:3px 4px;font-size:9px;color:#3d5070;text-align:right;width:12%;">LY</td>'
+    + '<td style="padding:3px 4px;font-size:9px;color:#3d5070;text-align:right;width:8%;">\u0394%</td>'
+    + '<td style="padding:3px 8px 3px 4px;font-size:9px;color:#3d5070;text-align:right;width:20%;">MTD</td></tr>'
     + deptRows
     + '<tr style="border-top:1px solid #1e3a5f;">'
     + '<td style="padding:6px 6px 6px 10px;font-size:12px;color:#f0c040;font-weight:700;">TOTAL</td>'
     + '<td style="padding:6px 4px;"><div style="background:#111e30;border-radius:3px;height:12px;overflow:hidden;"><div style="background:#f0c040;height:12px;width:100%;border-radius:3px;"></div></div></td>'
     + '<td style="padding:6px 4px;font-size:12px;color:#f0c040;text-align:right;font-weight:700;">' + fL(totalLek) + ' L</td>'
     + '<td style="padding:6px 4px;font-size:11px;color:#8a7020;text-align:right;">' + fL(lyTotalLek) + ' L</td>'
-    + '<td style="padding:6px 4px;text-align:right;">' + pct(totalLek,lyTotalLek) + '</td></tr>'
+    + '<td style="padding:6px 4px;text-align:right;">' + pct(totalLek,lyTotalLek) + '</td>'
+    + '<td style="padding:6px 8px 6px 4px;font-size:12px;color:#f0c040;text-align:right;font-weight:700;white-space:nowrap;">' + fL(mtdTotalLek) + ' L</td></tr>'
     + '</table></div>'
     + '</td></tr>' + HR;
 
@@ -280,7 +290,8 @@ function buildEmailHTML(date, d, p) {
     + '</tr></table>'
     + inner('<table width="100%" cellpadding="0" cellspacing="0">'
         + '<tr><td style="font-size:9px;color:#92400e;text-transform:uppercase;padding-bottom:6px;">Kategoria</td>'
-        + '<td style="font-size:9px;color:#92400e;text-transform:uppercase;padding-bottom:6px;text-align:right;">Shuma</td></tr>'
+        + '<td style="font-size:9px;color:#92400e;text-transform:uppercase;padding-bottom:6px;text-align:right;padding-right:8px;">Shuma</td>'
+        + '<td style="font-size:9px;color:#92400e;text-transform:uppercase;padding-bottom:6px;text-align:right;">MTD</td></tr>'
         + expRows + '</table>', 10)
     + '</td></tr>' + HR;
 
@@ -347,7 +358,7 @@ function buildEmailHTML(date, d, p) {
 
   // ── 05 SALES REPORT ──────────────────────────────────────────
   html += '<tr><td style="' + SEC + '">'
-    + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:3px;">05 \u2014 Daily Pick Up \u00b7 Prill \u2013 Tetor ' + year + '</div>';
+    + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:3px;">05 \u2014 Daily Pick Up \u2014 Vjetor</div>';
 
   if (!sr) {
     html += '<div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px;font-size:11px;color:#475569;text-align:center;margin-top:8px;">Nuk ka t\u00eb dh\u00ebna Sales \u2014 ngarko Excel-in n\u00eb dashboard.</div>';
