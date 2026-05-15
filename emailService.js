@@ -231,7 +231,7 @@ function buildEmailHTML(date, d, p) {
   html += '<tr><td style="background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:10px;border:1px solid #d0d9e8;">'
     + '<div style="font-size:14px;font-weight:700;color:#1a2a4a;">\uD83D\uDCCB FLOW \u2014 Raport Ditor ' + date + '</div>'
     + '<div style="font-size:11px;color:#8a96a8;margin-top:3px;">'
-    + 'P\u00ebr: redathana@gmail.com, ernestcaci@gmail.com &nbsp;\u00b7&nbsp; ' + dateLabel
+    + dateLabel
     + '</div></td></tr><tr><td style="height:8px;"></td></tr>';
 
   // Email table
