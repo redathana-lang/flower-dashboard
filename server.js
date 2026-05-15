@@ -1154,8 +1154,23 @@ app.post('/api/send-monthly-report', async function(req, res) {
  return res.status(403).json({ error: 'Nuk keni leje.' });
  }
 
- const { periodLabel, kpis, channels, insights } = req.body || {};
+ const { periodLabel, kpis, channels, insights: rawInsights } = req.body || {};
  if (!periodLabel || !kpis) return res.status(400).json({ error: 'Të dhëna mungojnë.' });
+ // Normalise insights — accept both old array [{type,title,para}] and new {pozitive,problematika,sugjerime,planifikim}
+ let insights;
+ if (Array.isArray(rawInsights)) {
+   const m = { pozitive:'', problematika:'', sugjerime:'', planifikim:'' };
+   (rawInsights || []).forEach(box => {
+     const txt = (box.para || '').replace(/^[•\-\s]*/gm,'').trim();
+     if(box.type==='good')   m.pozitive     += (m.pozitive?'  ':'')+txt;
+     else if(box.type==='danger') m.problematika += (m.problematika?'  ':'')+txt;
+     else if(box.type==='warn')   m.sugjerime    += (m.sugjerime?'  ':'')+txt;
+     else if(box.type==='info')   m.planifikim   += (m.planifikim?'  ':'')+txt;
+   });
+   insights = m;
+ } else {
+   insights = rawInsights || {};
+ }
 
  try {
  // ── Helpers ────────────────────────────────────────────────────────────────
