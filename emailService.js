@@ -167,6 +167,7 @@ function buildEmailHTML(date, d, p) {
   // ── Expenses ──────────────────────────────────────────────────
   var exp     = d.expenses || {};
   var expT    = n(exp.totalLek);
+  var expMtdT = (exp.items||[]).reduce(function(s,i){ return s + n(i.mtdLek); }, 0);
   var expRows = (exp.items||[]).filter(function(i){ return n(i.lek)!==0 || n(i.mtdLek)!==0; })
     .map(function(i){
       return '<tr>'
@@ -292,7 +293,13 @@ function buildEmailHTML(date, d, p) {
         + '<tr><td style="font-size:9px;color:#92400e;text-transform:uppercase;padding-bottom:6px;">Kategoria</td>'
         + '<td style="font-size:9px;color:#92400e;text-transform:uppercase;padding-bottom:6px;text-align:right;padding-right:8px;">Sot</td>'
         + '<td style="font-size:9px;color:#92400e;text-transform:uppercase;padding-bottom:6px;text-align:right;">MTD</td></tr>'
-        + expRows + '</table>', 10)
+        + expRows
+        + '<tr style="border-top:1px solid #1e3a5f;">'
+        + '<td style="padding:6px 8px 6px 0;font-size:12px;color:#f0c040;font-weight:700;">TOTAL</td>'
+        + '<td style="padding:6px 8px 6px 0;font-size:12px;color:#f0c040;text-align:right;font-weight:700;white-space:nowrap;">' + fL(expT) + ' L</td>'
+        + '<td style="padding:6px 0;font-size:12px;color:#f0c040;text-align:right;font-weight:700;white-space:nowrap;">' + fL(expMtdT) + ' L</td>'
+        + '</tr>'
+        + '</table>', 10)
     + '</td></tr>' + HR;
 
   // ── 03 CASH FLOW ─────────────────────────────────────────────
