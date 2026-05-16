@@ -402,7 +402,7 @@ function buildEmailHTML(date, d, p) {
         + '<div style="font-size:13px;color:' + dC2 + ';margin-top:3px;font-weight:600;">' + (diff2>=0?'\u25b2':'\u25bc') + ' ' + Math.abs(diffP).toFixed(1) + '%</div>'
         + '</div></td>'
         + '<td width="50%"><div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px 10px;text-align:center;">'
-        + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Aktual \u00b7 ' + (sr.seasonLabel||'Sezoni') + '</div>'
+        + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Shitje vjetore hotel</div>'
         + '<div style="font-size:22px;font-weight:700;color:#38bdf8;">' + fE(sr.totalRev||0) + '</div>'
         + '<div style="font-size:10px;color:#334155;margin-top:4px;">' + (sr.totalNights||0).toLocaleString('en-US') + ' net\u00eb \u00b7 ADR ' + fE(adrT) + '</div>'
         + '</div></td></tr></table>';
