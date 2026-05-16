@@ -1620,8 +1620,9 @@ app.post('/api/send-report', async function(req, res) {
  totalRevenueLek: lyTotalRevLek, occupancyPct: lyOcc,
  fo: { adr: lyAdr, revpar: lyRevpar, occ: lyOcc, roomsOccupied: fo_yoy.rooms_occupied||0 },
  };
- await sendDailyReport(date, data, prevData);
- res.json({ success: true, message: 'Raporti u dërgua me sukses për datën ' + date + ' → redathana@gmail.com, ernestcaci@gmail.com' });
+ const testTo = req.body && req.body.testTo;
+ await sendDailyReport(date, data, prevData, testTo);
+ res.json({ success: true, message: 'Raporti u dërgua me sukses për datën ' + date + (testTo ? ' → ' + testTo + ' (TEST)' : ' → redathana@gmail.com, ernestcaci@gmail.com') });
  } catch(err) {
  console.error('[EMAIL] Error:', err.message);
  res.status(500).json({ error: 'Emaili nuk u dërgua: ' + err.message });

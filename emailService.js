@@ -485,19 +485,21 @@ function buildEmailHTML(date, d, p) {
 }
 
 // ================================================================
-async function sendDailyReport(date, data, prevData) {
+async function sendDailyReport(date, data, prevData, testTo) {
   var transporter = createTransport();
   var html        = buildEmailHTML(date, data, prevData);
+  var to          = testTo || process.env.EMAIL_TO || RECIPIENTS;
+  var subject     = (testTo ? '[TEST] ' : '') + '\uD83D\uDCCB FLOW \u2014 Raport Ditor ' + date;
   var info = await transporter.sendMail({
     from   : '"FLOW Dashboard" <' + process.env.EMAIL_USER + '>',
-    to     : process.env.EMAIL_TO || RECIPIENTS,
-    subject: '\uD83D\uDCCB FLOW \u2014 Raport Ditor ' + date,
+    to     : to,
+    subject: subject,
     html   : html,
     headers: {
       'X-Entity-Ref-ID': 'flow-report-' + date + '-' + Date.now(),
     },
   });
-  console.log('[EMAIL] Sent for', date, '\u2192', info.messageId);
+  console.log('[EMAIL] Sent for', date, '\u2192', info.messageId, testTo ? '(TEST to ' + testTo + ')' : '');
   return info;
 }
 
