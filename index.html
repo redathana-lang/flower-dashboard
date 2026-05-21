@@ -1215,7 +1215,7 @@ function rCF(cf){
 // ─── FINANCE / SHPENZIME ──────────────────────────────────────────────────────
 function rFin(fin){
  const el=document.getElementById('c_finance'); if(!el)return;
- const tot=n(fin.total)||[fin.beach_bar,fin.flower,fin.pool_bar,fin.brutal,fin.pool_garden,fin.overheads_fnb,fin.mag_qendrore,fin.operacionale,fin.spa,fin.mirembajtje,fin.marketing,fin.familja,fin.hoteli,fin.mag_garden,fin.paga_util].reduce((a,v)=>a+n(v),0);
+ const tot=n(fin.total)||[fin.beach_bar,fin.flower,fin.pool_bar,fin.brutal,fin.pool_garden,fin.bufe,fin.overheads_fnb,fin.mag_qendrore,fin.operacionale,fin.spa,fin.mirembajtje,fin.marketing,fin.familja,fin.hoteli,fin.mag_garden,fin.paga_util].reduce((a,v)=>a+n(v),0);
  const row=(l,v)=>`<tr><td>${l}</td><td class="v">${fL(n(v))}</td></tr>`;
  el.innerHTML=`
  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
@@ -1230,6 +1230,7 @@ function rFin(fin){
  ${row(' Pool Bar',fin.pool_bar)}
  ${row(' Brutal',fin.brutal)}
  ${row(' Pool Bar Garden',fin.pool_garden)}
+ ${row(' Bufe',fin.bufe)}
  ${row(' Overheads F&B',fin.overheads_fnb)}
  ${row(' Magazina Qendrore',fin.mag_qendrore)}
  ${row('⚙ Operacionale Mikse',fin.operacionale)}
@@ -1277,7 +1278,7 @@ async function exportFin(){
  const rows=[['SHPENZIME DITORE',fromDate],[''],
  ['Beach Bar',n(fin.beach_bar)],['Flower Restorant',n(fin.flower)],
  ['Pool Bar',n(fin.pool_bar)],['Brutal',n(fin.brutal)],
- ['Pool Bar Garden',n(fin.pool_garden)],['Overheads F&B',n(fin.overheads_fnb)],
+ ['Pool Bar Garden',n(fin.pool_garden)],['Bufe',n(fin.bufe)],['Overheads F&B',n(fin.overheads_fnb)],
  ['Magazina Qendrore',n(fin.mag_qendrore)],['Operacionale Mikse',n(fin.operacionale)],
  ['SPA',n(fin.spa)],['Mirembajtje & Riparime',n(fin.mirembajtje)],
  ['Marketing',n(fin.marketing)],['Familja',n(fin.familja)],

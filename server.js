@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const webpush = require('web-push');
-const { sendDailyReport } = require('./emailService');
+const { sendDailyReport, buildEmailHTML } = require('./emailService');
 // Load .env if present (local dev — production uses platform env vars)
 try { require('dotenv').config(); } catch(_) {}
 
@@ -193,17 +193,18 @@ function parseFinance(rows, date) {
  pool_bar: n(r[3]),
  brutal: n(r[4]),
  pool_garden: n(r[5]),
- overheads_fnb: n(r[6]),
- mag_qendrore: n(r[7]),
- operacionale: n(r[8]),
- spa: n(r[9]),
- mirembajtje: n(r[10]),
- marketing: n(r[11]),
- familja: n(r[12]),
- hoteli: n(r[13]),
- mag_garden: n(r[14]),
- paga_util: n(r[15]),
- total: n(r[16]),
+ bufe: n(r[6]),
+ overheads_fnb: n(r[7]),
+ mag_qendrore: n(r[8]),
+ operacionale: n(r[9]),
+ spa: n(r[10]),
+ mirembajtje: n(r[11]),
+ marketing: n(r[12]),
+ familja: n(r[13]),
+ hoteli: n(r[14]),
+ mag_garden: n(r[15]),
+ paga_util: n(r[16]),
+ total: n(r[17]),
  };
 }
 
@@ -1522,6 +1523,7 @@ app.post('/api/send-report', async function(req, res) {
  { name:'Pool Bar',                   lek: nv(fin.pool_bar),     mtdLek: nv(fin_mtd.pool_bar) },
  { name:'Brutal',                     lek: nv(fin.brutal),       mtdLek: nv(fin_mtd.brutal) },
  { name:'Pool Bar Garden',            lek: nv(fin.pool_garden),  mtdLek: nv(fin_mtd.pool_garden) },
+ { name:'Bufe',                       lek: nv(fin.bufe),         mtdLek: nv(fin_mtd.bufe) },
  { name:'Overheads F&B',              lek: nv(fin.overheads_fnb),mtdLek: nv(fin_mtd.overheads_fnb) },
  { name:'Magazina Qendrore',          lek: nv(fin.mag_qendrore), mtdLek: nv(fin_mtd.mag_qendrore) },
  { name:'Operacionale Mikse',         lek: nv(fin.operacionale), mtdLek: nv(fin_mtd.operacionale) },
@@ -1620,6 +1622,11 @@ app.post('/api/send-report', async function(req, res) {
  totalRevenueLek: lyTotalRevLek, occupancyPct: lyOcc,
  fo: { adr: lyAdr, revpar: lyRevpar, occ: lyOcc, roomsOccupied: fo_yoy.rooms_occupied||0 },
  };
+ if (req.body && req.body.preview) {
+ const html = buildEmailHTML(date, data, prevData);
+ res.setHeader('Content-Type', 'text/html; charset=utf-8');
+ return res.send(html);
+ }
  const testTo = req.body && req.body.testTo;
  await sendDailyReport(date, data, prevData, testTo);
  res.json({ success: true, message: 'Raporti u dërgua me sukses për datën ' + date + (testTo ? ' → ' + testTo + ' (TEST)' : ' → redathana@gmail.com, ernestcaci@gmail.com') });
