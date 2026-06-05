@@ -1296,7 +1296,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catc
 function rng(a,b){return Array.from({length:b-a+1},(_,i)=>String(a+i));}
 function grng(a,b){return Array.from({length:b-a+1},(_,i)=>'G '+(a+i));}
 const HMS_INV={
- flower:{'Kati 1':rng(101,124),'Kati 2':rng(201,224),'Kati 3':rng(301,324),'Kati 4':rng(401,424),'Kati 5':rng(501,524),'Vilat':['VILA 1','VILA 2']},
+ flower:{'Kati 1':rng(101,124),'Kati 2':rng(201,224),'Kati 3':rng(301,324),'Kati 4':rng(401,424),'Kati 5':rng(501,513).concat(rng(515,524)),'Vilat':['VILA 1','VILA 2']},
  garden:{'Kati 1':['G101','G102','G103','G104','G105','G106','G107','G108','G109','G110','G111','G112','G114','G115'],'Kati 2':['G201','G202','G203','G204','G205','G206','G207','G208','G209','G210','G211','G212','G214','G215'],'Kati 3':['G301','G302','G303','G304','G305','G306','G307','G308','G309','G310','G311','G312','G314','G315']}
 };
 let hmsBld='flower',hmsRooms={};
