@@ -1296,7 +1296,7 @@ if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catc
 function rng(a,b){return Array.from({length:b-a+1},(_,i)=>String(a+i));}
 function grng(a,b){return Array.from({length:b-a+1},(_,i)=>'G '+(a+i));}
 const HMS_INV={
- flower:{'Kati 1':['101','102','103','104','105','106','107','108','109','110','111','112','113','114'],'Kati 2':['201','202','203','204','205','206','207','208','209','210','211','212','213','214'],'Kati 3':['301','302','303','304','305','306','307','308','309','310','311','312','313','314'],'Kati 4':['401','402','403','404','405','406','407','408','409','410','411','412','413','414'],'Kati 5':['501','502','503','504','505','506','507','508','509','510','511','512','513'],'Vilat':['VILA 1','VILA 2']},
+ flower:{'Kati 1':rng(101,124),'Kati 2':rng(201,224),'Kati 3':rng(301,324),'Kati 4':rng(401,424),'Kati 5':rng(501,524),'Vilat':['VILA 1','VILA 2']},
  garden:{'Kati 1':['G101','G102','G103','G104','G105','G106','G107','G108','G109','G110','G111','G112','G114','G115'],'Kati 2':['G201','G202','G203','G204','G205','G206','G207','G208','G209','G210','G211','G212','G214','G215'],'Kati 3':['G301','G302','G303','G304','G305','G306','G307','G308','G309','G310','G311','G312','G314','G315']}
 };
 let hmsBld='flower',hmsRooms={};
@@ -1419,21 +1419,47 @@ function hmsParseXML(xmlText){
  const SS='urn:schemas-microsoft-com:office:spreadsheet';
  const rows=Array.from(doc.getElementsByTagNameNS(SS,'Row'));
  const out=[];
+ const fd=function(iso){if(!iso)return'';const p=String(iso).split('T')[0].split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:'';};
+ const toISO=function(s){return s?String(s).split('T')[0]:'';};
+ const td=new Date();
+ const todayISO=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(td.getDate()).padStart(2,'0');
  for(let i=1;i<rows.length;i++){
- const cells=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
- const v=cells.map(function(c){const d=c.getElementsByTagNameNS(SS,'Data')[0];return d?(d.textContent||'').trim():'';});
- const cat=v[1]||'',rawNum=v[2]||'';
- if(!['Ardhjet','Largimet','Qëndrimet'].includes(cat)||!rawNum)continue;
- const num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE)$/i,'').replace(/^(G)\s+(\d)/,'$1$2').replace(/\s+[A-Z]$/i,'').trim();
- const status={Ardhjet:'ardhje',Largimet:'ikje',Qëndrimet:'qendrim'}[cat];
- const fd=function(iso){if(!iso)return'';const p=iso.split('T')[0].split('-');return p[2]+'/'+p[1]+'/'+p[0];};
- out.push({num:num,status:status,persons:v[5]||'',checkin:fd(v[6]),checkout:fd(v[7]),notes:v[8]||''});
+ // Build the value array respecting ss:Index (empty cells are omitted in the export)
+ const cellEls=Array.from(rows[i].getElementsByTagNameNS(SS,'Cell'));
+ const v=[]; let idx=0;
+ for(const c of cellEls){
+ const ix=c.getAttributeNS(SS,'Index');
+ if(ix) idx=parseInt(ix,10)-1;
+ const d=c.getElementsByTagNameNS(SS,'Data')[0];
+ v[idx]=d?(d.textContent||'').trim():'';
+ idx++;
+ }
+ // The export has a leading empty column A (room lands at v[1]); fall back to v[0] if not.
+ const off=(v[0]===''||v[0]==null)&&v[1] ? 1 : 0;
+ const rawNum=(v[off]||'').trim();
+ if(!rawNum)continue;
+ // Skip divider / junk rows (e.g. ": Qëndrimet")
+ if(/^\s*:/.test(rawNum)||/^(Ardhjet|Largimet|Qëndrimet)\b/i.test(rawNum))continue;
+ // Normalise room number: strip the room-type suffix (incl. new-room CL/LS), collapse "G 114"→"G114", "VILA2"→"VILA 2"
+ let num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE|CL|LS)\s*$/i,'').replace(/^(G)\s+(\d)/,'$1$2').replace(/^VILA\s*0*(\d)/i,'VILA $1').trim();
+ if(!num)continue;
+ const ci=toISO(v[off+4]),co=toISO(v[off+5]);
+ // A real reservation row must carry at least one date — skip footer/summary rows
+ if(!ci&&!co)continue;
+ // Derive reservation status from dates: leaving today=ikje, arriving today=ardhje, otherwise staying
+ let status='qendrim';
+ if(co&&co===todayISO) status='ikje';
+ else if(ci&&ci===todayISO) status='ardhje';
+ // Clean status from "Gjëndja Dhomës": "E Pa Pastruar"=dirty, "Pastruar"=clean
+ const cs=(v[off+7]||'').toLowerCase();
+ const cln=/pa\s*pastruar/.test(cs)?'piseet':/pastruar/.test(cs)?'paster':null;
+ out.push({num:num,status:status,persons:v[off+3]||'',checkin:fd(v[off+4]),checkout:fd(v[off+5]),notes:v[off+6]||'',clean:cln});
  }
  return out;
 }
 
 function hmsApplyUpload(parsed){
- // Reset ONLY reservation fields — clean status set by cleaners is preserved
+ // Reset reservation fields for every room; clean status is refreshed per-room from the report below
  Object.values(hmsRooms).forEach(function(r){r.status='liree';r.persons='';r.checkin='';r.checkout='';});
  parsed.forEach(function(d){
  for(let bi=0;bi<['flower','garden'].length;bi++){
@@ -1444,6 +1470,8 @@ function hmsApplyUpload(parsed){
  hmsRooms[k].checkin=d.checkin;
  hmsRooms[k].checkout=d.checkout;
  if(d.notes&&!hmsRooms[k].notes) hmsRooms[k].notes=d.notes;
+ // Fill clean/dirty from the report so the /hk staff view is populated on upload
+ if(d.clean){ hmsRooms[k].clean=d.clean; if(d.clean==='paster') hmsRooms[k].ts=hmsNowHM(); }
  break;
  }
  }
