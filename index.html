@@ -1356,11 +1356,15 @@ function hmsRenderFO(){
  const co=room.checkout?'<span style="color:#f87171;font-weight:600">'+room.checkout+'</span>':'<span style="color:#374151">–</span>';
  const flags=['vip','rom','dec','wp','bc'];
  if(isViewer){
- // READ-ONLY for FO
+ // FO: reservation status + cleaning are read-only, but VIP/ROM/DEC/WP/BC and Shënime are editable
  const slLbl=slLabels[room.status]||room.status;
  const slClr=slColors[room.status]||'#6b7fa3';
- const flagCells=flags.map(function(f){return'<td style="text-align:center">'+(room.flags[f]?'<span style="color:var(--gold)">✓</span>':'<span style="color:#374151">–</span>')+'</td>';}).join('');
- out+='<tr class="'+rc+'"><td class="hms-td-nr">'+num+'</td><td class="hms-td-ps">'+(room.persons||'–')+'</td><td class="hms-td-dt">'+ck+'</td><td class="hms-td-dt">'+co+'</td><td><span style="font-size:12px;font-weight:600;color:'+slClr+'">'+slLbl+'</span></td><td><span class="hms-badge '+bc+'" style="cursor:default;pointer-events:none">'+bt+'</span></td>'+flagCells+'<td style="font-size:11px;color:var(--muted)">'+(room.notes||'')+'</td></tr>';
+ let flagCells='';
+ for(let fi=0;fi<flags.length;fi++){
+ const f=flags[fi];
+ flagCells+='<td style="text-align:center"><input type="checkbox" class="hms-fcb" '+(room.flags[f]?'checked':'')+' onchange="hmsSetFlag(\''+k+'\',\''+f+'\',this.checked)"></td>';
+ }
+ out+='<tr class="'+rc+'"><td class="hms-td-nr">'+num+'</td><td class="hms-td-ps">'+(room.persons||'–')+'</td><td class="hms-td-dt">'+ck+'</td><td class="hms-td-dt">'+co+'</td><td><span style="font-size:12px;font-weight:600;color:'+slClr+'">'+slLbl+'</span></td><td><span class="hms-badge '+bc+'" style="cursor:default;pointer-events:none">'+bt+'</span></td>'+flagCells+'<td><input class="hms-ni" value="'+(room.notes||'').replace(/"/g,'&quot;')+'" placeholder="Shënim…" onchange="hmsSetNotes(\''+k+'\',this.value)"></td></tr>';
  }else{
  // EDITABLE for admin/manager — original format
  let flagCells='';
