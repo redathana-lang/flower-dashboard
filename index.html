@@ -1712,9 +1712,27 @@ function salesAggregate(rows){
  if(r.nat) nat[r.nat]=(nat[r.nat]||0)+1;
  var s=r.source||'N/A';
 
- // No month-splitting: the "Ditët qëndrimit" column already holds the nights of stay
- // for the reporting period, so attribute them whole to the check-in month.
+ // Split the stay's nights across the months actually consumed, so each month's
+ // occupancy reflects nights slept that month (28 Jun + 5 nights = 3 in Jun, 2 in Jul).
+ if(r.nights>1 && r.din){
+ var yr=r.din.yr, mon=r.din.mo, day=r.din.day||1;
+ var remaining=r.nights, first=true, safety=0;
+ while(remaining>0 && safety<24){
+ safety++;
+ var dim=daysInMonth(yr,mon);
+ // nights in this month = days from check-in day to end of month
+ var inThisMo=Math.min(remaining, dim-day+1);
+ if(inThisMo<=0) inThisMo=remaining; // safety
+ var revShare=r.rev*(inThisMo/r.nights);
+ addMo(yr,mon,inThisMo,revShare,r.room,s,first);
+ first=false;
+ remaining-=inThisMo;
+ day=1; mon++;
+ if(mon>12){mon=1;yr++;}
+ }
+ } else {
  addMo(r.yr,r.mo,r.nights,r.rev,r.room,s,true);
+ }
  });
  return {mo:mo,src:src,nat:nat,tN:tN,tR:tR,tRes:tRes,fN:fN,fR:fR,gN:gN,gR:gR};
 }
