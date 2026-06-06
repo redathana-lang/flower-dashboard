@@ -1453,7 +1453,7 @@ function hmsParseXML(xmlText){
  for(let j=ciIdx-2;j>=0;j--){ if(looksRoom(v[j])){ rawNum=v[j].trim(); break; } }
  if(!rawNum) continue;
  // Normalise room number: strip the room-type suffix (incl. new-room CL/LS), "G 114"→"G114", "VILA2"→"VILA 2"
- let num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE|CL|LS)\s*$/i,'').replace(/^(G)\s+(\d)/,'$1$2').replace(/^VILA\s*0*(\d)/i,'VILA $1').trim();
+ let num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE|CL|LS|J)\s*$/i,'').replace(/^(G)\s+(\d)/,'$1$2').replace(/^VILA\s*0*(\d)/i,'VILA $1').trim();
  if(!num)continue;
  // Status: prefer an explicit category cell (Ardhjet/Largimet/Qëndrimet); else derive from dates vs today.
  let status;
