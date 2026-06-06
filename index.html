@@ -1438,26 +1438,35 @@ function hmsParseXML(xmlText){
  v[idx]=d?(d.textContent||'').trim():'';
  idx++;
  }
- // The export has a leading empty column A (room lands at v[1]); fall back to v[0] if not.
- const off=(v[0]===''||v[0]==null)&&v[1] ? 1 : 0;
- const rawNum=(v[off]||'').trim();
- if(!rawNum)continue;
- // Skip divider / junk rows (e.g. ": Qëndrimet")
- if(/^\s*:/.test(rawNum)||/^(Ardhjet|Largimet|Qëndrimet)\b/i.test(rawNum))continue;
- // Normalise room number: strip the room-type suffix (incl. new-room CL/LS), collapse "G 114"→"G114", "VILA2"→"VILA 2"
+ // ── Content-based extraction (robust to both report layouts: "Raporti i Pastrimit"
+ //    with a leading empty column, and the Arrivals/Stays/Departures report with the
+ //    category in column 0 and the notes column omitted). Anchor on the date cells. ──
+ const dateIdx=[];
+ for(let j=0;j<v.length;j++){ if(/^\d{4}-\d{2}-\d{2}T/.test(v[j]||'')) dateIdx.push(j); }
+ if(!dateIdx.length) continue; // no reservation dates → header / section / summary / empty row
+ const ciIdx=dateIdx[0], coIdx=(dateIdx[1]!=null?dateIdx[1]:null);
+ const ci=toISO(v[ciIdx]), co=(coIdx!=null?toISO(v[coIdx]):'');
+ // Persons sits immediately before check-in; room is the room-like cell before persons.
+ const persons=(v[ciIdx-1]||'').trim();
+ const looksRoom=function(s){s=(s||'').trim();return /^(G\s*)?\d{2,4}(\s*[A-Za-z]{1,5})?$/.test(s)||/^VILA/i.test(s);};
+ let rawNum='';
+ for(let j=ciIdx-2;j>=0;j--){ if(looksRoom(v[j])){ rawNum=v[j].trim(); break; } }
+ if(!rawNum) continue;
+ // Normalise room number: strip the room-type suffix (incl. new-room CL/LS), "G 114"→"G114", "VILA2"→"VILA 2"
  let num=rawNum.replace(/\s+(TR|SD|FR|SU|FM|DX|SB|Sdb|SUITE|CL|LS)\s*$/i,'').replace(/^(G)\s+(\d)/,'$1$2').replace(/^VILA\s*0*(\d)/i,'VILA $1').trim();
  if(!num)continue;
- const ci=toISO(v[off+4]),co=toISO(v[off+5]);
- // A real reservation row must carry at least one date — skip footer/summary rows
- if(!ci&&!co)continue;
- // Derive reservation status from dates: leaving today=ikje, arriving today=ardhje, otherwise staying
- let status='qendrim';
- if(co&&co===todayISO) status='ikje';
- else if(ci&&ci===todayISO) status='ardhje';
- // Clean status from "Gjëndja Dhomës": "E Pa Pastruar"=dirty, "Pastruar"=clean
- const cs=(v[off+7]||'').toLowerCase();
- const cln=/pa\s*pastruar/.test(cs)?'piseet':/pastruar/.test(cs)?'paster':null;
- out.push({num:num,status:status,persons:v[off+3]||'',checkin:fd(v[off+4]),checkout:fd(v[off+5]),notes:v[off+6]||'',clean:cln});
+ // Status: prefer an explicit category cell (Ardhjet/Largimet/Qëndrimet); else derive from dates vs today.
+ let status;
+ const catCell=v.find(function(x){return /^(Ardhjet|Largimet|Qëndrimet)$/i.test((x||'').trim());});
+ if(catCell){ const c=catCell.trim().toLowerCase(); status=(c==='ardhjet')?'ardhje':(c==='largimet')?'ikje':'qendrim'; }
+ else { status='qendrim'; if(co&&co===todayISO) status='ikje'; else if(ci&&ci===todayISO) status='ardhje'; }
+ // Clean status: the cell containing "Pastruar" ("E Pa Pastruar"=dirty, "Pastruar"=clean).
+ const csCell=v.find(function(x){return /pastruar/i.test(x||'');})||'';
+ const cln=/pa\s*pastruar/i.test(csCell)?'piseet':(/pastruar/i.test(csCell)?'paster':null);
+ // Notes: the House Keeping note cell right after checkout, if present (not the clean state, not breakfast).
+ const noteCell=(coIdx!=null?v[coIdx+1]:'')||'';
+ const notes=(/pastruar/i.test(noteCell)||/^\d+$/.test(noteCell.trim()))?'':noteCell.trim();
+ out.push({num:num,status:status,persons:persons,checkin:fd(v[ciIdx]),checkout:(coIdx!=null?fd(v[coIdx]):''),notes:notes,clean:cln});
  }
  return out;
 }
