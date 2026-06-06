@@ -499,8 +499,9 @@ function sumDeep(a, b) {
 }
 
 function aggregateRange(parseFn, rows, fromDate, toDate) {
- let result = {}, cur = new Date(fromDate + 'T00:00:00');
- const end = new Date(toDate + 'T00:00:00');
+ // Iterate in UTC ('Z') so the date keys never shift with the host machine's timezone.
+ let result = {}, cur = new Date(fromDate + 'T00:00:00Z');
+ const end = new Date(toDate + 'T00:00:00Z');
  while (cur <= end) {
  const d = cur.toISOString().split('T')[0];
  result = sumDeep(result, parseFn(rows, d));
@@ -1510,13 +1511,18 @@ app.post('/api/send-report', async function(req, res) {
  + nv(pag.furnitore_bank_lek) + nv(pag.investime_banke_lek) + nv(pag.investime_cash)
  + (nv(pag.loan_euro) + nv(pag.furnitore_bank_euro) + nv(pag.investime_banke_euro)) * EC;
  const cfNetLek = cfInLek - cfOutLek;
- const occ = fo.occupancy_pct || 0;
- const lyOcc = fo_yoy.occupancy_pct || 0;
+ // Available rooms for the day come from the FO sheet "Nights Available" column
+ // (per-day; varies during June 2026). Occupancy is computed against it; fall back to
+ // 110 only when the column is empty. Other months keep 110 because that is their value.
+ const roomsAvail = fo.nights_available || TR;
+ const lyRoomsAvail = fo_yoy.nights_available || TR;
  const rooms = fo.rooms_occupied || 0;
+ const occ = roomsAvail ? Math.round((rooms / roomsAvail) * 1000) / 10 : (fo.occupancy_pct || 0);
+ const lyOcc = lyRoomsAvail ? Math.round(((fo_yoy.rooms_occupied || 0) / lyRoomsAvail) * 1000) / 10 : (fo_yoy.occupancy_pct || 0);
  const adr = rooms > 0 ? Math.round(hotelLek / rooms) : 0;
- const revpar = Math.round(hotelLek / TR);
+ const revpar = Math.round(hotelLek / roomsAvail);
  const lyAdr = (fo_yoy.rooms_occupied||0) > 0 ? Math.round(lyHotelLek / (fo_yoy.rooms_occupied||1)) : 0;
- const lyRevpar = Math.round(lyHotelLek / TR);
+ const lyRevpar = Math.round(lyHotelLek / lyRoomsAvail);
  const expItems = [
  { name:'Beach Bar',                  lek: nv(fin.beach_bar),    mtdLek: nv(fin_mtd.beach_bar) },
  { name:'Flower Restorant',           lek: nv(fin.flower),       mtdLek: nv(fin_mtd.flower) },
@@ -1575,7 +1581,7 @@ app.post('/api/send-report', async function(req, res) {
  const data = {
  totalRevenueLek: totalRevLek, totalRevenueEur: Math.round(totalRevLek/EH),
  mtdTotalRevenueLek: mtdTotalRevLek,
- occupancyPct: occ, roomsOccupied: rooms, totalRooms: TR,
+ occupancyPct: occ, roomsOccupied: rooms, totalRooms: roomsAvail,
  prevDayRevenueLek: prevDayRevLek,
  departments: [
  { name:'Hotel (€×100)',  revenueLek: hotelLek,      lyLek: lyHotelLek,      mtdLek: mtdHotelLek },
@@ -1619,7 +1625,7 @@ app.post('/api/send-report', async function(req, res) {
  salesReport: salesSection,
  };
  const prevData = {
- totalRevenueLek: lyTotalRevLek, occupancyPct: lyOcc,
+ totalRevenueLek: lyTotalRevLek, occupancyPct: lyOcc, totalRooms: lyRoomsAvail,
  fo: { adr: lyAdr, revpar: lyRevpar, occ: lyOcc, roomsOccupied: fo_yoy.rooms_occupied||0 },
  };
  if (req.body && req.body.preview) {

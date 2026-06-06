@@ -334,7 +334,7 @@ function buildEmailHTML(date, d, p) {
     + '<td style="text-align:center;width:8%;"><div style="width:1px;height:40px;background:#1e3a5f;margin:0 auto;"></div></td>'
     + '<td style="text-align:center;width:46%;"><div style="font-size:9px;color:#334155;margin-bottom:3px;">LY</div>'
     + '<div style="font-size:17px;font-weight:700;color:#475569;">' + fL(lyOcc,1) + '%</div>'
-    + '<div style="font-size:9px;color:#334155;margin-top:1px;">' + (lyRooms||'—') + '/110</div>'
+    + '<div style="font-size:9px;color:#334155;margin-top:1px;">' + (lyRooms||'—') + '/' + (p.totalRooms||110) + '</div>'
     + '<div style="margin-top:2px;">' + pp(occ,lyOcc) + '</div></td>'
     + '</tr></table></div></td>'
     // ADR
