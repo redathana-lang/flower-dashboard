@@ -426,7 +426,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
  <div>
  <div style="font-size:18px;font-weight:700;color:var(--gold)">Daily Pick Up & Season Snapshot 2026</div>
- <div id="salesLastUpdate" style="font-size:11px;color:var(--muted);margin-top:2px">Rezervimet · Flower Hotels &amp; Resorts (Pa Vila 1, Vila 2, Dhoma 313)</div>
+ <div id="salesLastUpdate" style="font-size:11px;color:var(--muted);margin-top:2px">Rezervimet · Flower Hotels &amp; Resorts (Pa Caci, Jasht Pune, Bllok, SAISTOURS)</div>
  </div>
  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
  <div id="salesFileInfo" style="font-size:11px;color:var(--muted);font-style:italic"></div>
@@ -1565,8 +1565,10 @@ var ROOMS=110;
 var MDAYS={1:31,2:28,3:31,4:30,5:31,6:30,7:31,8:31,9:30,10:31,11:30,12:31};
 var MAL={1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',
  7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
-var EX_ROOMS=new Set(['VILA 1','VILA 2','VILA1','VILA2','313']);
-var EX_CLI=['jasht pune','jashte pune'];
+// Bookings to EXCLUDE from nights sold — matched against the client name (col 5) OR the
+// source/Burimi (col 21). Covers owner/internal rooms (Caci, Jasht Pune, Bllok) and the
+// SAISTOURS block. NOTE: ITAKA (incl. Poloni/Hungari) is NOT excluded — it counts as sold.
+var EXCL_NAMES=['olti caci','ahmet caci','ernest caci','jashte pune','jasht pune','bllok','saistours'];
 
 function normRoom(r){
  return (r||'').trim()
@@ -1575,10 +1577,15 @@ function normRoom(r){
  .replace(/\s+[A-Z]$/i,'').trim();
 }
 function isGarden(r){return /^G\d/i.test(r);}
-function isExcl(room,cli){
- if(EX_ROOMS.has(room)||/^VILA/i.test(room)) return true;
- var c=(cli||'').toLowerCase().trim();
- return EX_CLI.some(function(x){return c===x||c.startsWith(x);});
+function isExcl(client,source){
+ // Collapse repeated spaces so e.g. "OLTI  CACI" still matches "olti caci".
+ // Match each name as a WHOLE WORD so "bllok" (block booking) does not catch the
+ // surname "Blloku" (e.g. real guests "Kamela Blloku", "Reland blloku").
+ var c=(client||'').toLowerCase().replace(/\s+/g,' ').trim(), s=(source||'').toLowerCase().replace(/\s+/g,' ').trim();
+ return EXCL_NAMES.some(function(x){
+ var re=new RegExp('\\b'+x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b');
+ return re.test(c)||re.test(s);
+ });
 }
 function parseDate(s){
  if(!s) return null; s=s.trim(); var m;
@@ -1644,7 +1651,7 @@ function salesParseCSV(csv){
  var v=csvLine(lines[i]);
  if(v.length<12) continue;
  var room=normRoom(v[2]||'');
- if(isExcl(room,v[5]||'')) continue;
+ if(isExcl(v[5]||'', v[21]||'')) continue;
  var d=parseDate(v[3]); if(!d) continue;
  var nights=parseNum(v[10]); if(nights<=0) nights=1;
  var rev=parseNum(v[11]);
@@ -1672,7 +1679,7 @@ function salesParseXML(xmlStr){
  }
  for(var x=0;x<35;x++) if(!v[x]) v[x]='';
  var room=normRoom(v[2]||'');
- if(isExcl(room,v[5]||'')) continue;
+ if(isExcl(v[5]||'', v[21]||'')) continue;
  var d=parseDate(v[3]); if(!d) continue;
  var nights=parseNum(v[10]); if(nights<=0) nights=1;
  var rev=parseNum(v[11]);
@@ -1705,41 +1712,29 @@ function salesAggregate(rows){
  if(r.nat) nat[r.nat]=(nat[r.nat]||0)+1;
  var s=r.source||'N/A';
 
- // Split nights across months if stay > 1 month
- if(r.nights>1 && r.din){
- var yr=r.din.yr, mon=r.din.mo, day=r.din.day||1;
- var remaining=r.nights;
- var first=true;
- var safety=0;
- while(remaining>0 && safety<24){
- safety++;
- var dim=daysInMonth(yr,mon);
- // nights in this month = days from check-in day to end of month
- var inThisMo=Math.min(remaining, dim-day+1);
- if(inThisMo<=0) inThisMo=remaining; // safety
- var revShare=r.rev*(inThisMo/r.nights);
- addMo(yr,mon,inThisMo,revShare,r.room,s,first);
- first=false;
- remaining-=inThisMo;
- day=1;
- mon++;
- if(mon>12){mon=1;yr++;}
- }
- } else {
+ // No month-splitting: the "Ditët qëndrimit" column already holds the nights of stay
+ // for the reporting period, so attribute them whole to the check-in month.
  addMo(r.yr,r.mo,r.nights,r.rev,r.room,s,true);
- }
  });
  return {mo:mo,src:src,nat:nat,tN:tN,tR:tR,tRes:tRes,fN:fN,fR:fR,gN:gN,gR:gR};
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
-function avail(yr,mo){return ROOMS*(MDAYS[mo]||30);}
+// Available room-nights per month for 2026 — from the FO sheet "Nights Available" column
+// (capacity grows through the year as Garden rooms come online). Total = 50,252.
+// Other years fall back to the flat 110 rooms × days-in-month.
+var AVAIL_2026={1:3410,2:3080,3:3407,4:3270,5:3405,6:4240,7:4960,8:4960,9:4800,10:4960,11:4800,12:4960};
+function avail(yr,mo){
+ if(yr===2026 && AVAIL_2026[mo]!=null) return AVAIL_2026[mo];
+ return ROOMS*(MDAYS[mo]||30);
+}
 function euro(v){return '\u20ac'+Math.round(v).toLocaleString('de-DE');}
 function pct(v){return (v*100).toFixed(1)+'%';}
 
 function salesRender(agg){
  var tN=agg.tN,tR=agg.tR,tRes=agg.tRes;
- var tAv=0; Object.values(agg.mo).forEach(function(m){tAv+=avail(m.yr,m.mo);});
+ // Total available = full 2026 capacity (all 12 months, incl. months with no bookings yet) = 50,252.
+ var tAv=0; for(var _am=1;_am<=12;_am++) tAv+=avail(2026,_am);
  var occ=tAv>0?tN/tAv:0, adr=tN>0?tR/tN:0;
  document.getElementById('sv_occ').textContent=pct(occ);
  document.getElementById('sv_occ_sub').textContent=tN.toLocaleString()+' net\u00eb / '+tAv.toLocaleString()+' disponueshme';
@@ -1812,7 +1807,7 @@ function salesSetTs(label){
  var now=new Date();
  var ts=now.toLocaleDateString('sq-AL')+' '+now.toLocaleTimeString('sq-AL',{hour:'2-digit',minute:'2-digit'});
  var el=document.getElementById('salesLastUpdate');
- if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+label+' \u00b7 '+ts;
+ if(el) el.textContent='Rezervimet \u00b7 Pa Caci/Jasht Pune/Bllok/SAISTOURS | '+label+' \u00b7 '+ts;
 }
 
 // ── Load from server (called on tab open) ────────────────────────────────────
@@ -1826,12 +1821,12 @@ function salesAutoLoad(){
  if(rows.length){
  salesRender(salesAggregate(rows));
  var el=document.getElementById('salesLastUpdate');
- if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
+ if(el) el.textContent='Rezervimet \u00b7 Pa Caci/Jasht Pune/Bllok/SAISTOURS | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
  }
  } else if(j.data.agg){
  salesRender(j.data.agg);
  var el=document.getElementById('salesLastUpdate');
- if(el) el.textContent='Rezervimet \u00b7 Pa Vila 1/2, Dhoma 313, Jasht Pune | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
+ if(el) el.textContent='Rezervimet \u00b7 Pa Caci/Jasht Pune/Bllok/SAISTOURS | '+j.data.filename+' \u00b7 '+new Date(j.data.ts).toLocaleDateString('sq-AL');
  }
  })
  .catch(function(){});
