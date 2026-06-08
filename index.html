@@ -1591,11 +1591,13 @@ function parseDate(s){
  if(!s) return null; s=s.trim(); var m;
  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return {yr:+m[1],mo:+m[2],day:+m[3]};
  m=s.match(/^(\d{1,2})-(\d{1,2})-(\d{2,4})/); if(m){var y=+m[3];if(y<100)y+=2000;return{yr:y,mo:+m[2],day:+m[1]};}
- m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m){var a=+m[1],b=+m[2];return a>12?{yr:+m[3],mo:b,day:a}:{yr:+m[3],mo:a,day:b};}
- m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if(m) return {yr:+m[3],mo:+m[2]};
+ // Trinosoft / Google Sheets dates are European DD/MM/YYYY (e.g. 14/06/2026, 1/11/2026).
+ // Always day-first; keep the day so the consumed-month revenue/nights split is correct.
+ m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if(m) return {yr:+m[3],mo:+m[2],day:+m[1]};
+ m=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/); if(m) return {yr:+m[3],mo:+m[2],day:+m[1]};
  var MM={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
  m=s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(\d{1,2})\s+(\d{4})/i);
- if(m) return {yr:+m[3],mo:MM[m[1].toLowerCase().slice(0,3)]};
+ if(m) return {yr:+m[3],mo:MM[m[1].toLowerCase().slice(0,3)],day:+m[2]};
  var d=new Date(s); if(!isNaN(d.getTime())) return {yr:d.getFullYear(),mo:d.getMonth()+1,day:d.getDate()};
  return null;
 }
