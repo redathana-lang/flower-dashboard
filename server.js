@@ -239,18 +239,49 @@ function indexByMonth(rows, headerRows = 1) {
  return map;
 }
 
+// ─── CANONICAL MONTH LIST (managerial year 2026; LY = 2025) ────────────────────
+// Single source of truth: every parser and /api/admin iterate this list, so a
+// newly-filled month in the sheet (e.g. May-26) flows through automatically with
+// no per-month code edits. ay = current-year label, ly = last-year label.
+const MON_DEFS = [
+ { key:'jan', n:1,  ay:'Jan-26', ly:'Jan-25' },
+ { key:'feb', n:2,  ay:'Feb-26', ly:'Feb-25' },
+ { key:'mar', n:3,  ay:'Mar-26', ly:'Mar-25' },
+ { key:'apr', n:4,  ay:'Apr-26', ly:'Apr-25' },
+ { key:'may', n:5,  ay:'May-26', ly:'May-25' },
+ { key:'jun', n:6,  ay:'Jun-26', ly:'Jun-25' },
+ { key:'jul', n:7,  ay:'Jul-26', ly:'Jul-25' },
+ { key:'aug', n:8,  ay:'Aug-26', ly:'Aug-25' },
+ { key:'sep', n:9,  ay:'Sep-26', ly:'Sep-25' },
+ { key:'oct', n:10, ay:'Oct-26', ly:'Oct-25' },
+ { key:'nov', n:11, ay:'Nov-26', ly:'Nov-25' },
+ { key:'dec', n:12, ay:'Dec-26', ly:'Dec-25' },
+];
+const MON_AY  = Object.fromEntries(MON_DEFS.map(m => [m.key, m.ay]));
+const MON_LY  = Object.fromEntries(MON_DEFS.map(m => [m.key, m.ly]));
+const MON_NUM = Object.fromEntries(MON_DEFS.map(m => [m.key, m.n]));
+
+// Months that actually carry data in the Executive Summary (ROOMS SOLD > 0).
+// Drives the dynamic month list; empty future rows (e.g. blank Jun-26) are skipped.
+function activeMonthKeys(execRows) {
+ const idx = indexByMonth(execRows, 1);
+ return MON_DEFS.filter(m => {
+ const r = idx[m.ay];
+ return r && n(r[2]) > 0; // col 2 = ROOMS SOLD
+ }).map(m => m.key);
+}
+
 // Executive Summary sheet — all values already in EUR (€ prefix)
 // Cols: MONTH|RN AVAIL|RN SOLD|OCC|ADR|REVPAR|TREVPAR|DOF|ALOS|ROOMS REV|F&B REV|OTHER REV|
 // OP.REVENUES|ROOMS EXP|F&B EXP|OTHER EXP|DEPT EXP|UNDIST EXP|TOTAL EXP|
 // CPOR|GOP|EBITDA|NOP|LABOR COST|FTEs|AVG LABOR|AVG CHK FLOWER|AVG CHK BRUTAL|HOUSE USE
 function parseExecSummary(rows) {
  const idx = indexByMonth(rows, 1);
- const CUR = { jan:'Jan-26', feb:'Feb-26', mar:'Mar-26', apr:'Apr-26' };
- const PREV = { jan:'Jan-25', feb:'Feb-25', mar:'Mar-25', apr:'Apr-25' };
  const result = {};
- for (const key of Object.keys(CUR)) {
- const r = idx[CUR[key]];
- const ry = idx[PREV[key]];
+ for (const def of MON_DEFS) {
+ const key = def.key;
+ const r = idx[def.ay];
+ const ry = idx[def.ly];
  const parse = (row) => row ? {
  rnAvail: n(row[1]),
  rn: n(row[2]),
@@ -277,12 +308,11 @@ function parseExecSummary(rows) {
 // Cols: Date | Company | Revenue | BudgetRev | Expenses | BudgetExp | Profit | ProfitBudget
 function parsePLBudget(rows) {
  const idx = indexByMonth(rows, 1);
- const months = { jan:'Jan-26', feb:'Feb-26', mar:'Mar-26', apr:'Apr-26' };
  const result = {};
- for (const [key, label] of Object.entries(months)) {
- const r = idx[label];
- if (!r) { result[key] = null; continue; }
- result[key] = {
+ for (const def of MON_DEFS) {
+ const r = idx[def.ay];
+ if (!r) { result[def.key] = null; continue; }
+ result[def.key] = {
  budRev: Math.round(n(r[3]) / 100),
  budExp: Math.round(n(r[5]) / 100),
  budPrf: Math.round(n(r[7]) / 100),
@@ -295,10 +325,10 @@ function parsePLBudget(rows) {
 // Cols: Month|MetaAds|GoogleAds|Content|AdvCo|Events|Email|Guestflip|Cloudbeds|ZohoCRM|OtherSubs|MediaAds|GiftVoucher|HouseUse|MktCost|Revenue|%MktCost
 function parseMkt(rows) {
  const idx = indexByMonth(rows, 1);
- const months = { jan:'Jan-26', feb:'Feb-26', mar:'Mar-26', apr:'Apr-26' };
  const result = {};
- for (const [key, label] of Object.entries(months)) {
- const r = idx[label];
+ for (const def of MON_DEFS) {
+ const key = def.key;
+ const r = idx[def.ay];
  if (!r) { result[key] = null; continue; }
  const mktTotal = n(r[14]);
  const mktHU = n(r[13]);
@@ -345,8 +375,6 @@ function parseChannelPerf(rows) {
  'ITAKA': 'Other',
  'DEBITOR': 'Other',
  };
- const months    = { jan:'Jan-26', feb:'Feb-26', mar:'Mar-26', apr:'Apr-26' };
- const monthsLY  = { jan:'Jan-25', feb:'Feb-25', mar:'Mar-25', apr:'Apr-25' };
  const result = {};
 
  // Helper: aggregate one label from rows
@@ -372,9 +400,10 @@ function parseChannelPerf(rows) {
  .sort((a, b) => b.v - a.v);
  }
 
- for (const [key] of Object.entries(months)) {
- const ay = aggMonth(months[key]);
- const ly = aggMonth(monthsLY[key]);
+ for (const def of MON_DEFS) {
+ const key = def.key;
+ const ay = aggMonth(def.ay);
+ const ly = aggMonth(def.ly);
  // Return object with ay/ly arrays; ay array is also top-level for backward compat
  result[key] = ay.length > 0 ? ay : null;
  result[key+'_ly'] = ly.length > 0 ? ly : null;
@@ -382,7 +411,8 @@ function parseChannelPerf(rows) {
 
  // YTD 'all' — sum monthly arrays for both AY and LY
  const ytdAY = {}, ytdLY = {};
- for (const key of Object.keys(months)) {
+ for (const def of MON_DEFS) {
+ const key = def.key;
  if (result[key]) result[key].forEach(x => { ytdAY[x.l] = (ytdAY[x.l]||0) + x.v; });
  if (result[key+'_ly']) result[key+'_ly'].forEach(x => { ytdLY[x.l] = (ytdLY[x.l]||0) + x.v; });
  }
@@ -765,9 +795,8 @@ app.get('/api/admin', async (req, res) => {
  // Channel Performance: exact revenue per channel per month
  const ch = parseChannelPerf(cache.channels || []);
 
- const MONTH_NUMS = { jan:1, feb:2, mar:3, apr:4 };
- const MONTH_KEYS_AY = { jan:'Jan-26', feb:'Feb-26', mar:'Mar-26', apr:'Apr-26' };
- const MONTH_KEYS_LY = { jan:'Jan-25', feb:'Feb-25', mar:'Mar-25', apr:'Apr-25' };
+ // Dynamic: only months actually filled in the sheet (e.g. Jan–May once May lands).
+ const activeKeys = activeMonthKeys(cache.exec || []);
  const result = {};
 
  // Parse Revenues sheet once
@@ -778,15 +807,16 @@ app.get('/api/admin', async (req, res) => {
  const srcMap   = parseSrcMarketsWide(cache.srcmarkets || []);
  const boardMap = parseBoardWide(cache.boardmix   || []);
 
- for (const [key, m] of Object.entries(MONTH_NUMS)) {
+ for (const key of activeKeys) {
+ const m = MON_NUM[key];
  const e = es[key] || {};
  const ely = es[key+'_ly'] || {};
  const b = bud[key] || {};
  const k = mkt[key] || {};
  const cf = calcCFMonth(cache.cashflow || [], 2026, m) || {};
  // Expense categories from Expenses sheet (LEK)
- const expAY = expMap[MONTH_KEYS_AY[key]] || {};
- const expLY = expMap[MONTH_KEYS_LY[key]] || {};
+ const expAY = expMap[MON_AY[key]] || {};
+ const expLY = expMap[MON_LY[key]] || {};
  const expCatsLive = EXP_CATS.map(cat => ({
    l: cat.l,
    v: Math.round(expAY[cat.sheet] || 0),
@@ -832,7 +862,7 @@ app.get('/api/admin', async (req, res) => {
  mktCashPct: k.mktCashPct || null,
  mktRoi: k.mktRoi || null,
  // Revenue by outlet — ALL VALUES IN LEK, sourced from Revenues sheet
- revOutlets: revOutletsForKey(revMap, MONTH_KEYS_AY[key], MONTH_KEYS_LY[key]),
+ revOutlets: revOutletsForKey(revMap, MON_AY[key], MON_LY[key]),
  // Keep revCats for backward compat (channel/source charts still use lyRev)
  revCats: (e.roomsRev != null) ? [
  { l:'Rooms', v: Math.round(e.roomsRev || 0), lv: Math.round(ely.roomsRev || 0), c:'#14b8a6' },
@@ -845,9 +875,9 @@ app.get('/api/admin', async (req, res) => {
  chData: ch[key] || null,
  chDataLY: ch[key+'_ly'] || null,
  // Source Markets — country breakdown (EUR, AY + LY)
- srcData:   catArrayForKey(srcMap,   MONTH_KEYS_AY[key], MONTH_KEYS_LY[key], SRC_COLORS),
+ srcData:   catArrayForKey(srcMap,   MON_AY[key], MON_LY[key], SRC_COLORS),
  // Board Mix — board type revenue (EUR, AY + LY)
- boardData: catArrayForKey(boardMap, MONTH_KEYS_AY[key], MONTH_KEYS_LY[key], BOARD_COLORS),
+ boardData: catArrayForKey(boardMap, MON_AY[key], MON_LY[key], BOARD_COLORS),
  // Cash Flow — ALL from Daily Cash Flow sheet only
  cfHyrje26: cf.cfHyrje26 || null,
  cfDalje26: cf.cfDalje26 || null,
@@ -858,8 +888,8 @@ app.get('/api/admin', async (req, res) => {
  };
  }
 
- // YTD aggregates
- const keys = ['jan','feb','mar','apr'];
+ // YTD aggregates — over whatever months are active
+ const keys = activeKeys;
  const sum = (f) => keys.reduce((a,k) => a + (result[k][f] || 0), 0);
  const avg = (f) => {
  const v = keys.filter(k=>result[k][f]!=null).map(k=>result[k][f]);
@@ -939,6 +969,7 @@ app.get('/api/admin', async (req, res) => {
  cfLekPct: (allCfALL+allCfEUR) > 0 ? Math.round(allCfALL/(allCfALL+allCfEUR)*100) : null,
  };
 
+ result._months = activeKeys; // ordered list of months with data — drives the UI
  result._ts = new Date().toISOString();
  res.json(result);
  } catch(e) {

@@ -782,7 +782,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  </div>
  <div class="adm-g2-wider">
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
- <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Kategoritë Kryesore të Shpenzimeve — Jan–Prill 2026</div>
+ <div id="adm-expcat-title" style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Kategoritë Kryesore të Shpenzimeve — Jan–Prill 2026</div>
  <div style="font-size:10px;color:var(--muted);margin-bottom:12px">Burimi: Fleta Expenses · Lek (ALL) · renditur sipas shumës</div>
  <canvas id="adm-c-exp" height="260"></canvas>
  </div>
@@ -1946,11 +1946,13 @@ var ADM_DATA = {
  mExp:[229141,231738,241764,253873],
  mBudExp:[188968,193559,209440,218125],
  // Room Nights — EX. SUMMARY 2026 actuals / 2025 actuals / 2024 from report
- rnArr:[936,670,848,1653], rnLy:[653,436,518,801], rn24:[726,697,704,1128],
+ // 2024 arrays kept full-year (12) so the YTD chart has enough points for any
+ // number of active months; current-year/LY arrays are overwritten live by merge.
+ rnArr:[936,670,848,1653], rnLy:[653,436,518,801], rn24:[726,697,704,1128,1385,2421,3245,3355,2712,1121,666,594],
  // Occupancy % — EX. SUMMARY. Feb-26=21.75%→22. Apr-26=50.09%→50. Apr-25=24.27%→24
- occArr:[27,22,25,50], occLy:[19,14,15,24], occ24:[20,23,21,31],
+ occArr:[27,22,25,50], occLy:[19,14,15,24], occ24:[20,23,21,31,38,67,90,92,75,31,18,16],
  // ADR in ALL/Lek — EX. SUMMARY. Apr-26=9,940ALL confirmed. Feb-26=10,532ALL
- adrArr:[10027,10530,9890,9940], adrLy:[8200,9100,8330,9400], adr24:[9108,8725,9326,9053],
+ adrArr:[10027,10530,9890,9940], adrLy:[8200,9100,8330,9400], adr24:[9108,8725,9326,9053,10247,15162,17757,18735,14613,8750,9312,7916],
  // NOP — from P&L. Apr NOP = 282,619−253,873 = +28,746 (April profitable — Easter)
  nop26:[-35757,-79773,-55524,28746],
  nop25:[-27378,-62496,-63584,-33259],
@@ -2327,7 +2329,17 @@ var ADM_INS = {
 };
 
 var admCurKey='all', admCharts={}, admInited=false;
-var MON_LABELS=['Jan','Shk','Mar','Pri'];
+// ── Central month config (managerial year 2026) — single source of truth ───────
+// A newly-filled month in the sheet flows here via /api/admin _months, so the
+// dropdown, labels, arrays and charts all extend automatically (no per-month edits).
+var MON_ORDER=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+var MON_SHORT={jan:'Jan',feb:'Shk',mar:'Mar',apr:'Pri',may:'Maj',jun:'Qer',jul:'Kor',aug:'Gus',sep:'Sht',oct:'Tet',nov:'Nën',dec:'Dhj'};
+var MON_FULL={jan:'Janar',feb:'Shkurt',mar:'Mars',apr:'Prill',may:'Maj',jun:'Qershor',jul:'Korrik',aug:'Gusht',sep:'Shtator',oct:'Tetor',nov:'Nëntor',dec:'Dhjetor'};
+// Active months — overwritten by /api/admin _months at load; Jan–Apr fallback offline.
+var ADM_MONTHS=['jan','feb','mar','apr'];
+function admMonLabels(){ return ADM_MONTHS.map(function(k){ return MON_SHORT[k]; }); }
+function admYtdShort(){ return ADM_MONTHS.length ? (MON_SHORT[ADM_MONTHS[0]]+'–'+MON_SHORT[ADM_MONTHS[ADM_MONTHS.length-1]]) : ''; }
+function admPrevKey(key){ var i=ADM_MONTHS.indexOf(key); return i>0?ADM_MONTHS[i-1]:null; }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fEur(v){
@@ -2367,8 +2379,8 @@ function setStyle(id,prop,val){var e=document.getElementById(id);if(e)e.style[pr
 window.admSetMode=function(mode){
  var mo=document.getElementById('adm-month');
  if(mode==='mtd'){
- // Switch to last available month
- if(mo) mo.value='apr';
+ // Switch to last available month (dynamic — last entry in ADM_MONTHS)
+ if(mo) mo.value=ADM_MONTHS[ADM_MONTHS.length-1]||'all';
  } else {
  if(mo) mo.value='all';
  }
@@ -2384,9 +2396,11 @@ window.admApplyFilter=function(){
  admCurKey=mo?mo.value:'all';
  if(!ADM_DATA[admCurKey]) admCurKey='all';
  var d=ADM_DATA[admCurKey];
- var lbl={all:'YTD Jan–Prill 2026',jan:'Janar 2026',feb:'Shkurt 2026',mar:'Mars 2026',apr:'Prill 2026'};
  var flblEl=document.getElementById('adm-filter-lbl');
- if(flblEl) flblEl.textContent='Shfaqja: '+(lbl[admCurKey]||admCurKey);
+ var flblTxt=admCurKey==='all' ? ('YTD '+admYtdShort()+' 2026') : ((MON_FULL[admCurKey]||admCurKey)+' 2026');
+ if(flblEl) flblEl.textContent='Shfaqja: '+flblTxt;
+ var ecTitle=document.getElementById('adm-expcat-title');
+ if(ecTitle) ecTitle.textContent='Kategoritë Kryesore të Shpenzimeve — '+flblTxt;
  admUpdateKPIs(d);
  admUpdateBudget(d);
  admUpdateInsights();
@@ -2418,7 +2432,7 @@ function admUpdateKPIs(d){
 }
 
 // ── Budget Section ────────────────────────────────────────────────────────────
-function mLabel(key){return key==='all'?'Jan–Prill':{jan:'Janar',feb:'Shkurt',mar:'Mars',apr:'Prill'}[key]||key;}
+function mLabel(key){return key==='all'?admYtdShort():(MON_FULL[key]||key);}
 function admUpdateBudget(d){
  setTxt('adm-bm-rev', fEur(d.rev));
  setEl('adm-bm-rev-b','Buxheti: '+fEur(d.budRev)+' ('+mLabel(admCurKey)+')');
@@ -2625,9 +2639,9 @@ function admInitCharts(){
 
 function admInitBudCharts(d){
  var isAll = admCurKey==='all';
- var labels=isAll?MON_LABELS:[admCurKey.charAt(0).toUpperCase()+admCurKey.slice(1)];
+ var labels=isAll?admMonLabels():[MON_FULL[admCurKey]||admCurKey];
  // LY arrays — built from per-month scalars
- var _MK=['jan','feb','mar','apr'];
+ var _MK=ADM_MONTHS;
  var lyRevArr = isAll ? _MK.map(function(k){ return ADM_DATA[k]?ADM_DATA[k].lyRev||0:0; }) : [d.lyRev||0];
  var lyExpArr = isAll ? _MK.map(function(k){ return ADM_DATA[k]?ADM_DATA[k].lyExp||0:0; }) : [d.lyExp||0];
  var dlBar={
@@ -2670,7 +2684,7 @@ function admInitBudCharts(d){
 }
 
 function admInitUsaliCharts(d){
- var labels=admCurKey==='all'?MON_LABELS:[admCurKey.charAt(0).toUpperCase()+admCurKey.slice(1)];
+ var labels=admCurKey==='all'?admMonLabels():[MON_FULL[admCurKey]||admCurKey];
  var dlRN={
  display:true,anchor:'end',align:'end',
  color:'#c8d4e8',font:{size:10,weight:'600'},
@@ -2735,7 +2749,7 @@ function admInitUsaliCharts(d){
 }
 
 function admInitPLCharts(d){
- var labels=admCurKey==='all'?MON_LABELS:[admCurKey.charAt(0).toUpperCase()+admCurKey.slice(1)];
+ var labels=admCurKey==='all'?admMonLabels():[MON_FULL[admCurKey]||admCurKey];
  mk('adm-c-nop','bar',labels,[
  {label:'NOP 2026 (€)',data:d.nop26,
  backgroundColor:d.nop26.map(function(v){return v>=0?'rgba(76,175,125,.85)':'rgba(224,82,82,.85)';}),
@@ -2757,8 +2771,7 @@ function admInitPLCharts(d){
  }}
  });
  // Channel mix — horizontal grouped bar (2026 vs LY 2025 actual)
- var periodLabels = {all:'YTD Jan–Prill',jan:'Janar',feb:'Shkurt',mar:'Mars',apr:'Prill'};
- var chPeriod = periodLabels[admCurKey] || 'YTD';
+ var chPeriod = admCurKey==='all' ? ('YTD '+admYtdShort()) : (MON_FULL[admCurKey]||admCurKey);
  var isChYTD = (admCurKey === 'all');
  var chTitleEl = document.getElementById('adm-ch-title');
  var chSubEl = document.getElementById('adm-ch-sub');
@@ -2805,9 +2818,8 @@ function admInitPLCharts(d){
 function admInitSrcCharts(d){
  // ── Period label ──────────────────────────────────────────────────────────────
  var isAll = admCurKey==='all';
- var monNamesAlb = {jan:'Janar',feb:'Shkurt',mar:'Mars',apr:'Prill'};
- var periodLabel = isAll ? '2026 YTD' : ((monNamesAlb[admCurKey]||admCurKey.charAt(0).toUpperCase()+admCurKey.slice(1))+' 2026');
- var lyLabel     = isAll ? 'Vitin e Kaluar YTD' : ((monNamesAlb[admCurKey]||admCurKey.charAt(0).toUpperCase()+admCurKey.slice(1))+' 2025');
+ var periodLabel = isAll ? '2026 YTD' : ((MON_FULL[admCurKey]||admCurKey)+' 2026');
+ var lyLabel     = isAll ? 'Vitin e Kaluar YTD' : ((MON_FULL[admCurKey]||admCurKey)+' 2025');
 
  // ── Source Markets ────────────────────────────────────────────────────────────
  var srcEl = document.getElementById('adm-src-title');
@@ -3113,8 +3125,8 @@ function admGfRender(data){
 function admInitMktChart(d){
  // Marketing: Cash Spend bars + Meta Ads bars (left Y) | ROI line (right Y) | LY Revenue line (hidden Y)
  var isAll = admCurKey==='all';
- var labels=isAll?MON_LABELS:[admCurKey.charAt(0).toUpperCase()+admCurKey.slice(1)];
- var _MK=['jan','feb','mar','apr'];
+ var labels=isAll?admMonLabels():[MON_FULL[admCurKey]||admCurKey];
+ var _MK=ADM_MONTHS;
  var lyRevMkt = isAll ? _MK.map(function(k){ return ADM_DATA[k]?ADM_DATA[k].lyRev||0:0; }) : [d.lyRev||0];
  mk('adm-c-mkt','bar',labels,[
  {label:'Shpenzim Cash Mkt (€)',data:d.mktSpend,
@@ -3261,9 +3273,8 @@ function admInitExpChart(d){
 function admInitCFCharts(d){
  // Uses period-filtered data (d) so charts update when period changes
  var isAll = admCurKey==='all';
- var MON_KEYS = ['jan','feb','mar','apr'];
- var MON_FULL = {jan:'Janar',feb:'Shkurt',mar:'Mars',apr:'Prill'};
- var labels = isAll ? MON_LABELS : [MON_FULL[admCurKey]||admCurKey];
+ var MON_KEYS = ADM_MONTHS;
+ var labels = isAll ? admMonLabels() : [MON_FULL[admCurKey]||admCurKey];
 
  // Get current cash-in / cash-out (null = no data for this period)
  var h26 = d.cfHyrje26; // null OR array
@@ -3272,14 +3283,11 @@ function admInitCFCharts(d){
  var hasDa26 = da26 != null && (Array.isArray(da26) ? da26.some(function(v){return v>0;}) : da26>0);
 
  // Normalise to arrays
- var h26arr = h26 != null ? (Array.isArray(h26) ? h26 : [h26]) : (isAll?[0,0,0,0]:[0]);
- var da26arr = da26 != null ? (Array.isArray(da26) ? da26 : [da26]) : (isAll?[0,0,0,0]:[0]);
+ var h26arr = h26 != null ? (Array.isArray(h26) ? h26 : [h26]) : (isAll?ADM_MONTHS.map(function(){return 0;}):[0]);
+ var da26arr = da26 != null ? (Array.isArray(da26) ? da26 : [da26]) : (isAll?ADM_MONTHS.map(function(){return 0;}):[0]);
 
  // ── Previous Month comparison ─────────────────────────────────────────────────
- // Map each key → its previous key (jan has none)
- var PREV_KEY = {jan:null,feb:'jan',mar:'feb',apr:'mar'};
- var PREV_LABEL = {jan:'—',feb:'Janar',mar:'Shkurt',apr:'Mars'};
-
+ // Previous key derived dynamically from the active month list (first has none).
  // For monthly view: pull cfHyrje26 from the previous period's ADM_DATA
  var hPrevArr;
  var prevLabelStr;
@@ -3294,12 +3302,12 @@ function admInitCFCharts(d){
  });
  prevLabelStr = 'Muaji i kaluar';
  } else {
- var pk = PREV_KEY[admCurKey];
+ var pk = admPrevKey(admCurKey);
  var prevD = pk ? ADM_DATA[pk] : null;
  var pvRaw = prevD ? prevD.cfHyrje26 : null;
  var pvVal = pvRaw!=null ? ((Array.isArray(pvRaw)?pvRaw[0]:pvRaw)||0) : 0;
  hPrevArr = [pvVal];
- prevLabelStr = pk ? (PREV_LABEL[admCurKey]+' 2026') : 'Pa të dhëna paraprake';
+ prevLabelStr = pk ? ((MON_FULL[pk]||pk)+' 2026') : 'Pa të dhëna paraprake';
  }
 
  var totalH26 = h26arr.reduce(function(a,v){return a+(v||0);},0);
@@ -3318,7 +3326,7 @@ function admInitCFCharts(d){
  // ── KPI cards ─────────────────────────────────────────────────────────────────
  var cfKpi = document.getElementById('adm-cf-kpis');
  if(cfKpi){
- var periodLabel = isAll?'YTD Prill 2026':labels[0]+' 2026';
+ var periodLabel = isAll?('YTD '+admYtdShort()+' 2026'):labels[0]+' 2026';
  var hyrjeVal = hasH26 ? '€'+Math.round(totalH26/1000)+'k' : '—';
  var daljeVal = hasDa26 ? '€'+Math.round(totalD26/1000)+'k' : '—';
  var prevVal = totalPrev>0 ? '€'+Math.round(totalPrev/1000)+'k' : '€0';
@@ -3521,7 +3529,7 @@ function admMergeSheet(key, live) {
  }
  // Build 4-element array [jan,feb,mar,apr] from per-month data
  function arr4(field) {
- return ['jan','feb','mar','apr'].map(function(k){ return mo(k, field) || 0; });
+ return ADM_MONTHS.map(function(k){ return mo(k, field) || 0; });
  }
 
  // ── P&L scalars ─────────────────────────────────────────────────────────────
@@ -3531,6 +3539,10 @@ function admMergeSheet(key, live) {
  if (live.budExp != null) d.budExp = live.budExp;
  if (live.prf != null) d.prf = live.prf;
  if (live.budPrf != null) d.budPrf = live.budPrf;
+ // Last-year scalars — keep YoY KPI deltas aligned to the same month span
+ if (live.lyRev != null) d.lyRev = live.lyRev;
+ if (live.lyExp != null) d.lyExp = live.lyExp;
+ if (live.lyPrf != null) d.lyPrf = live.lyPrf;
 
  // ── P&L chart arrays (mRev, mBudRev, mExp, mBudExp) ────────────────────────
  if (live.rev != null) d.mRev = isAll ? arr4('mRev') : [live.rev];
@@ -3570,6 +3582,7 @@ function admMergeSheet(key, live) {
  d.adrLy = isAll ? arr4('adrLy') : [Math.round(live.lyAdr * 100)];
  }
  if (live.rnAvail != null) d.rnAvail = live.rnAvail;
+ if (live.revpar != null) d.revpar = live.revpar;
 
  // ── Marketing — arrays in 'all', single-element in monthly ──────────────────
  if (live.metaAds != null) {
@@ -3598,12 +3611,12 @@ function admMergeSheet(key, live) {
  // All CF data exclusively from Daily Cash Flow sheet; null for Jan/Feb/Mar (not entered)
  d.cfHyrje26 = (live.cfHyrje26 != null)
  ? (isAll
- ? ['jan','feb','mar','apr'].map(function(k){ var pv=ADM_DATA[k].cfHyrje26; return pv!=null?(Array.isArray(pv)?pv[0]:pv)||0:0; })
+ ? ADM_MONTHS.map(function(k){ var pv=ADM_DATA[k].cfHyrje26; return pv!=null?(Array.isArray(pv)?pv[0]:pv)||0:0; })
  : [live.cfHyrje26])
  : null;
  d.cfDalje26 = (live.cfDalje26 != null)
  ? (isAll
- ? ['jan','feb','mar','apr'].map(function(k){ var pv=ADM_DATA[k].cfDalje26; return pv!=null?(Array.isArray(pv)?pv[0]:pv)||0:0; })
+ ? ADM_MONTHS.map(function(k){ var pv=ADM_DATA[k].cfDalje26; return pv!=null?(Array.isArray(pv)?pv[0]:pv)||0:0; })
  : [live.cfDalje26])
  : null;
  // cfDaljeItems — breakdown array from pagesat (only available when CF sheet has data)
@@ -3611,7 +3624,7 @@ function admMergeSheet(key, live) {
  else if (!isAll) d.cfDaljeItems = null; // clear for months without CF data
  if (isAll) {
  var allItems = {};
- ['jan','feb','mar','apr'].forEach(function(k){
+ ADM_MONTHS.forEach(function(k){
  var items = ADM_DATA[k].cfDaljeItems;
  if (!items) return;
  items.forEach(function(x){ allItems[x.l] = (allItems[x.l]||0) + x.v; });
@@ -3633,7 +3646,7 @@ function admMergeSheet(key, live) {
  if (live.revCats != null) {
  if (isAll) {
  var rcMap = {};
- ['jan','feb','mar','apr'].forEach(function(k){
+ ADM_MONTHS.forEach(function(k){
  var rc = ADM_DATA[k].revCats;
  if (!rc) return;
  rc.forEach(function(item){ rcMap[item.l] = { v:(rcMap[item.l]?rcMap[item.l].v:0)+item.v, lv:(rcMap[item.l]?rcMap[item.l].lv:0)+item.lv, c:item.c }; });
@@ -3657,7 +3670,7 @@ function admMergeSheet(key, live) {
  // For 'all', live.mktSpend is the YTD sum; for monthly it's the single-month value
  if (live.mktSpend != null && d.expCats) {
  var mktSpendVal = isAll
- ? ['jan','feb','mar','apr'].reduce(function(s,k){ return s + ((ADM_DATA[k] && ADM_DATA[k].mktSpend) ? (Array.isArray(ADM_DATA[k].mktSpend) ? ADM_DATA[k].mktSpend[0] : ADM_DATA[k].mktSpend) : 0); }, 0)
+ ? ADM_MONTHS.reduce(function(s,k){ return s + ((ADM_DATA[k] && ADM_DATA[k].mktSpend) ? (Array.isArray(ADM_DATA[k].mktSpend) ? ADM_DATA[k].mktSpend[0] : ADM_DATA[k].mktSpend) : 0); }, 0)
  : live.mktSpend;
  for (var ci=0; ci<d.expCats.length; ci++) {
  if (d.expCats[ci].l && d.expCats[ci].l.toLowerCase().indexOf('market') !== -1) {
@@ -3668,6 +3681,40 @@ function admMergeSheet(key, live) {
  }
 }
 
+// Create a safe baseline object for any month not already in ADM_DATA (e.g. May+),
+// so the merge + chart functions never read undefined fields for a new month.
+function admEnsureMonthObjects(){
+ ADM_MONTHS.forEach(function(key){
+ if(ADM_DATA[key]) return;
+ ADM_DATA[key]={
+ lyLabel:(MON_FULL[key]||key)+' 2025',
+ rev:0,lyRev:0,budRev:0, exp:0,lyExp:0,budExp:0, prf:0,lyPrf:0,budPrf:0,
+ occ:0,lyOcc:0, rn:0,lyRn:0, adrEur:0,lyAdrEur:0, revpar:0,
+ mRev:[0],mBudRev:[0],mExp:[0],mBudExp:[0],
+ rnArr:[0],rnLy:[0],rn24:[0], occArr:[0],occLy:[0],occ24:[0],
+ adrArr:[0],adrLy:[0],adr24:[0], nop26:[0],nop25:[0],
+ revOutlets:null,revCats:null, chData:[],chDataLY:[], srcData:[],boardData:[],
+ repData:[null],revCounts:[0],
+ platLabels:['Google','Booking.com','TripAdvisor','Expedia'],
+ platRatings:[null,null,null,null],platReviews:[0,0,0,0],
+ mktRev:[0],mktSpend:[0],mktTotal:[0],mktHU:[0],metaAds:[0],mktPct:[0],mktCashPct:[0],mktRoi:[0],
+ cfHyrje26:null,cfDalje26:null,cfDaljeItems:null,cfLekPct:null,cfHyrjeALL_eur:null,cfHyrjeEUR_eur:null,
+ expCats:null
+ };
+ });
+}
+
+// Rebuild the month dropdown from ADM_MONTHS (drops the hardcoded disabled May).
+function admBuildMonthDropdown(){
+ var mo=document.getElementById('adm-month');
+ if(!mo) return;
+ var cur=mo.value;
+ var html='<option value="all">Të gjitha muajt (YTD '+admYtdShort()+')</option>';
+ ADM_MONTHS.forEach(function(k){ html+='<option value="'+k+'">'+(MON_FULL[k]||k)+' 2026</option>'; });
+ mo.innerHTML=html;
+ if(cur && (cur==='all'||ADM_MONTHS.indexOf(cur)>=0)) mo.value=cur; else mo.value='all';
+}
+
 function admLoadSheetData(callback) {
  var lbl = document.getElementById('adm-filter-lbl');
  var origLbl = lbl ? lbl.textContent : '';
@@ -3676,9 +3723,17 @@ function admLoadSheetData(callback) {
  fetch('/api/admin?t=' + Date.now())
  .then(function(r){ return r.json(); })
  .then(function(live){
- // Merge all periods
- ['jan','feb','mar','apr','all'].forEach(function(k){ admMergeSheet(k, live[k]); });
- if (lbl) lbl.textContent = origLbl + ' · ✓ live';
+ // Adopt the server's active month list, then merge every period
+ if (live && live._months && live._months.length) ADM_MONTHS = live._months.slice();
+ admEnsureMonthObjects();
+ ADM_MONTHS.concat('all').forEach(function(k){ admMergeSheet(k, live[k]); });
+ admBuildMonthDropdown();
+ // Keep the YTD last-year label in sync with the active month span (e.g. Jan–Maj 2025)
+ if (ADM_DATA.all) ADM_DATA.all.lyLabel = admYtdShort()+' 2025';
+ var liveLbl = admCurKey==='all' ? ('YTD '+admYtdShort()+' 2026') : ((MON_FULL[admCurKey]||admCurKey)+' 2026');
+ if (lbl) lbl.textContent = 'Shfaqja: '+liveLbl+' · ✓ live';
+ var ecTitle0=document.getElementById('adm-expcat-title');
+ if (ecTitle0) ecTitle0.textContent='Kategoritë Kryesore të Shpenzimeve — '+liveLbl;
  if (callback) callback();
  })
  .catch(function(e){
@@ -3712,9 +3767,8 @@ window.admLoadAll=function(){
 
 // ─── SEND MONTHLY MANAGEMENT REPORT (inside IIFE to access admCurKey/ADM_DATA/ADM_INS) ──
 window.sendMonthlyReport = function(){
- var periodLabels = {all:'YTD Jan–Prill 2026',jan:'Janar 2026',feb:'Shkurt 2026',mar:'Mars 2026',apr:'Prill 2026'};
  var key = admCurKey || 'all';
- var label = periodLabels[key] || key;
+ var label = key==='all' ? ('YTD '+admYtdShort()+' 2026') : ((MON_FULL[key]||key)+' 2026');
  var d = ADM_DATA[key] || {};
 
  if(!confirm('Dërgo Raportin Mujor Managerial për periudhën: ' + label + '?\n\nDestinatarë:\nredathana@gmail.com\nernestcaci@gmail.com\nFinanca@hotel-flower.com\ninfo@hotel-flower.com\npandiolakerthi@gmail.com\nrinacaci@gmail.com')) return;
