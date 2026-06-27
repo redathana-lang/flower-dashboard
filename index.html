@@ -1183,6 +1183,23 @@ function rPAX(boards,boardsY){
 }
 
 // ─── CASH FLOW ────────────────────────────────────────────────────────────────
+// Doughnut helper for the Cash Flow tab (Hyrje/Dalje breakdown pies).
+var cfTabCharts={};
+function cfTabPie(id,labels,values,colors){
+ if(cfTabCharts[id]){ try{cfTabCharts[id].destroy();}catch(e){} delete cfTabCharts[id]; }
+ var cv=document.getElementById(id); if(!cv||typeof Chart==='undefined') return;
+ var total=values.reduce(function(a,b){return a+(b||0);},0);
+ if(total<=0) return;
+ cfTabCharts[id]=new Chart(cv,{
+ type:'doughnut',
+ data:{labels:labels,datasets:[{data:values,backgroundColor:colors,borderColor:'#0a1628',borderWidth:2.5,hoverOffset:5}]},
+ options:{responsive:true,maintainAspectRatio:true,cutout:'58%',plugins:{
+ legend:{position:'bottom',labels:{color:'#a8bcda',font:{size:10.5},usePointStyle:true,pointStyleWidth:9,padding:10,
+ generateLabels:function(c){return c.data.labels.map(function(l,i){var val=c.data.datasets[0].data[i];var p=(val/total*100).toFixed(1);return{text:l+' ('+p+'%)',fillStyle:colors[i],strokeStyle:'#0a1628',lineWidth:1,pointStyle:'circle',index:i};});}}},
+ tooltip:{callbacks:{label:function(ctx){var v=ctx.raw;var p=(v/total*100).toFixed(1);return ' '+ctx.label+': '+fL(v)+' Lek ('+p+'%)';}}}
+ }}
+ });
+}
 function rCF(cf){
  const el=document.getElementById('c_cashflow'); if(!el)return;
  const ark=cf.arketimet||{}, pag=cf.pagesat||{};
@@ -1190,6 +1207,19 @@ function rCF(cf){
  (n(ark.non_cash_euro)+n(ark.reception_cash_euro)+n(ark.allotment)+n(ark.itaka)+n(ark.mice_euro))*EC;
  const tPag=n(pag.paga)+n(pag.taxes)+n(pag.loan_lek)+n(pag.house_use)+n(pag.furnitore_cash)+n(pag.furnitore_bank_lek)+n(pag.investime_banke_lek)+n(pag.investime_cash)+
  (n(pag.loan_euro)+n(pag.furnitore_bank_euro)+n(pag.investime_banke_euro))*EC;
+ // ── Splits (Lek-equivalent, so percentages match the Lek totals above) ────────
+ // Hyrje cash = Reception Cash Euro + Reception Cash Lek + F&B Lek; rest non-cash.
+ const inCashL = (n(ark.reception_cash_euro))*EC + n(ark.reception_cash_lek) + n(ark.fnb_cash_lek);
+ const inNonCashL = tArk - inCashL;
+ // Euro/Lek by header suffix
+ const inLekL = n(ark.non_cash_lek)+n(ark.reception_cash_lek)+n(ark.fnb_cash_lek)+n(ark.mice_lek);
+ const inEurL = (n(ark.non_cash_euro)+n(ark.reception_cash_euro)+n(ark.allotment)+n(ark.itaka)+n(ark.mice_euro))*EC;
+ // Dalje cash = Furnitore Cash + Investime Cash (both Lek); rest non-cash.
+ const outCashL = n(pag.furnitore_cash)+n(pag.investime_cash);
+ const outNonCashL = tPag - outCashL;
+ const outLekL = n(pag.paga)+n(pag.taxes)+n(pag.loan_lek)+n(pag.house_use)+n(pag.furnitore_cash)+n(pag.furnitore_bank_lek)+n(pag.investime_banke_lek)+n(pag.investime_cash);
+ const outEurL = (n(pag.loan_euro)+n(pag.furnitore_bank_euro)+n(pag.investime_banke_euro))*EC;
+ const CASHC=['#4caf7d','#6b7fa3'], CURC=['#c9a84c','#3b82f6'];
  const row=(l,v,e=false)=>`<tr><td>${l}${e?' <span style="color:var(--muted);font-size:11px">(€)</span>':''}</td><td class="v">${e?fE(v):fL(v)}</td></tr>`;
  el.innerHTML=`
  <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
@@ -1211,6 +1241,10 @@ function rCF(cf){
  ${row('MICE Lek',n(ark.mice_lek))}
  <tr class="tr"><td>TOTAL HYRJE (Lek)</td><td class="v g">${fL(tArk)}</td></tr>
  </table>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+ <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div><canvas id="cf-tab-in-cash" height="150"></canvas></div>
+ <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div><canvas id="cf-tab-in-cur" height="150"></canvas></div>
+ </div>
  </div>
  <div class="sec-card">
  <div class="sec-hdr2">❌ DALJE</div>
@@ -1229,6 +1263,10 @@ function rCF(cf){
  ${row('Investime Cash',n(pag.investime_cash))}
  <tr class="tr"><td>TOTAL DALJE (Lek)</td><td class="v g">${fL(tPag)}</td></tr>
  </table>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+ <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div><canvas id="cf-tab-out-cash" height="150"></canvas></div>
+ <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div><canvas id="cf-tab-out-cur" height="150"></canvas></div>
+ </div>
  <div style="padding:14px 16px;background:rgba(201,168,76,.06);border-top:1px solid var(--border)">
  <div style="display:flex;justify-content:space-between;align-items:center">
  <span style="font-weight:700;color:var(--gold)">BALANCA NETO</span>
@@ -1237,6 +1275,11 @@ function rCF(cf){
  </div>
  </div>
  </div>`;
+ // Render the breakdown pies (after the tables exist in the DOM)
+ cfTabPie('cf-tab-in-cash', ['Cash','Non-Cash'], [inCashL, inNonCashL], CASHC);
+ cfTabPie('cf-tab-in-cur',  ['Euro','Lek'],      [inEurL, inLekL], CURC);
+ cfTabPie('cf-tab-out-cash',['Cash','Non-Cash'], [outCashL, outNonCashL], CASHC);
+ cfTabPie('cf-tab-out-cur', ['Euro','Lek'],      [outEurL, outLekL], CURC);
 }
 
 // ─── FINANCE / SHPENZIME ──────────────────────────────────────────────────────
