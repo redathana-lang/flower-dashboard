@@ -458,6 +458,23 @@ function calcCFMonth(cfRows, year, month) {
  .sort((a, b) => b.v - a.v);
  const cfDalje26 = cfDaljeItems.reduce((s, x) => s + x.v, 0);
 
+ // ── Hyrje split: cash vs non-cash (EUR) ────────────────────────────────────
+ // Cash = Recepsion Cash Euro + Recepsion Cash Lek + F&B Lek; the rest is non-cash.
+ const inCash    = (a.reception_cash_euro||0) + (a.reception_cash_lek||0)/LEK_EUR + (a.fnb_cash_lek||0)/LEK_EUR;
+ const inNonCash = totalIn - inCash;
+
+ // ── Dalje split: currency (Euro/Lek) + cash vs non-cash (EUR) ──────────────
+ // Currency by header suffix: …Lek/Leke → Lek, …Euro → Euro.
+ const lekOutALL = (p.paga||0)+(p.taxes||0)+(p.loan_lek||0)+(p.house_use||0)
+                 + (p.furnitore_cash||0)+(p.furnitore_bank_lek||0)
+                 + (p.investime_banke_lek||0)+(p.investime_cash||0);
+ const eurOut    = (p.loan_euro||0)+(p.furnitore_bank_euro||0)+(p.investime_banke_euro||0);
+ const lekOutEUR = lekOutALL / LEK_EUR;
+ const totalOut  = lekOutEUR + eurOut;
+ // Cash = Furnitore Cash + Investime Cash (both Lek); the rest is non-cash.
+ const outCash    = ((p.furnitore_cash||0) + (p.investime_cash||0)) / LEK_EUR;
+ const outNonCash = totalOut - outCash;
+
  return {
  cfHyrjeALL_eur: Math.round(lekEUR),
  cfHyrjeEUR_eur: Math.round(eurEUR),
@@ -465,6 +482,14 @@ function calcCFMonth(cfRows, year, month) {
  cfLekPct: Math.round(lekEUR / totalIn * 100),
  cfDalje26: cfDalje26 > 0 ? cfDalje26 : null,
  cfDaljeItems: cfDaljeItems.length > 0 ? cfDaljeItems : null,
+ // Hyrje cash/non-cash split (EUR)
+ cfInCash: Math.round(inCash),
+ cfInNonCash: Math.round(inNonCash),
+ // Dalje currency split (EUR) + cash/non-cash split (EUR)
+ cfDaljeALL_eur: Math.round(lekOutEUR),
+ cfDaljeEUR_eur: Math.round(eurOut),
+ cfOutCash: Math.round(outCash),
+ cfOutNonCash: Math.round(outNonCash),
  };
 }
 
@@ -885,6 +910,13 @@ app.get('/api/admin', async (req, res) => {
  cfHyrjeALL_eur: cf.cfHyrjeALL_eur || null,
  cfHyrjeEUR_eur: cf.cfHyrjeEUR_eur || null,
  cfLekPct: cf.cfLekPct || null,
+ // Hyrje cash/non-cash + Dalje currency & cash/non-cash splits (EUR)
+ cfInCash: cf.cfInCash || null,
+ cfInNonCash: cf.cfInNonCash || null,
+ cfDaljeALL_eur: cf.cfDaljeALL_eur || null,
+ cfDaljeEUR_eur: cf.cfDaljeEUR_eur || null,
+ cfOutCash: cf.cfOutCash || null,
+ cfOutNonCash: cf.cfOutNonCash || null,
  };
  }
 
@@ -967,6 +999,13 @@ app.get('/api/admin', async (req, res) => {
  cfHyrjeALL_eur: allCfALL > 0 ? allCfALL : null,
  cfHyrjeEUR_eur: allCfEUR > 0 ? allCfEUR : null,
  cfLekPct: (allCfALL+allCfEUR) > 0 ? Math.round(allCfALL/(allCfALL+allCfEUR)*100) : null,
+ // Hyrje/Dalje cash & currency splits — YTD sums (EUR)
+ cfInCash: sum('cfInCash') || null,
+ cfInNonCash: sum('cfInNonCash') || null,
+ cfDaljeALL_eur: sum('cfDaljeALL_eur') || null,
+ cfDaljeEUR_eur: sum('cfDaljeEUR_eur') || null,
+ cfOutCash: sum('cfOutCash') || null,
+ cfOutNonCash: sum('cfOutNonCash') || null,
  };
 
  result._months = activeKeys; // ordered list of months with data — drives the UI
