@@ -807,11 +807,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Ditore</div>
  <canvas id="adm-c-cf-src" height="220"></canvas>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px">
- <div>
+ <div style="min-width:0">
  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div>
  <canvas id="adm-c-cf-in-cash" height="150"></canvas>
  </div>
- <div>
+ <div style="min-width:0">
  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div>
  <canvas id="adm-c-cf-in-cur" height="150"></canvas>
  </div>
@@ -822,11 +822,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Ditore · rreshtat pagesat</div>
  <canvas id="adm-c-cf-uses" height="220"></canvas>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px">
- <div>
+ <div style="min-width:0">
  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div>
  <canvas id="adm-c-cf-out-cash" height="150"></canvas>
  </div>
- <div>
+ <div style="min-width:0">
  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div>
  <canvas id="adm-c-cf-out-cur" height="150"></canvas>
  </div>
@@ -1242,8 +1242,8 @@ function rCF(cf){
  <tr class="tr"><td>TOTAL HYRJE (Lek)</td><td class="v g">${fL(tArk)}</td></tr>
  </table>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
- <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div><canvas id="cf-tab-in-cash" height="150"></canvas></div>
- <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div><canvas id="cf-tab-in-cur" height="150"></canvas></div>
+ <div style="min-width:0"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div><canvas id="cf-tab-in-cash" height="150"></canvas></div>
+ <div style="min-width:0"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div><canvas id="cf-tab-in-cur" height="150"></canvas></div>
  </div>
  </div>
  <div class="sec-card">
@@ -1264,8 +1264,8 @@ function rCF(cf){
  <tr class="tr"><td>TOTAL DALJE (Lek)</td><td class="v g">${fL(tPag)}</td></tr>
  </table>
  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
- <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div><canvas id="cf-tab-out-cash" height="150"></canvas></div>
- <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div><canvas id="cf-tab-out-cur" height="150"></canvas></div>
+ <div style="min-width:0"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div><canvas id="cf-tab-out-cash" height="150"></canvas></div>
+ <div style="min-width:0"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div><canvas id="cf-tab-out-cur" height="150"></canvas></div>
  </div>
  <div style="padding:14px 16px;background:rgba(201,168,76,.06);border-top:1px solid var(--border)">
  <div style="display:flex;justify-content:space-between;align-items:center">
