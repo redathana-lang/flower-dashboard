@@ -2563,7 +2563,7 @@ function admGenInsights(d){
  var pos=[];
  if(lyRev>0 && rev>=lyRev) pos.push('Të ardhurat '+sp(fEur(rev))+' — '+sp('+'+pc(rev,lyRev)+'%')+' kundrejt vitit të kaluar ('+fEur(lyRev)+').');
  if(budRev>0 && rev>=budRev) pos.push('Tejkaluan buxhetin '+sp(fEur(budRev))+' me '+sp('+'+fEur(rev-budRev))+'.');
- if(lyOcc>0 && occ>=lyOcc) pos.push('Okupanca '+sp(Math.round(occ)+'%')+' kundrejt '+sp(Math.round(lyOcc)+'%')+' LY ('+sp('+'+(occ-lyOcc).toFixed(0)+' pikë')+').');
+ if(lyOcc>0 && occ>=lyOcc) pos.push('Okupanca '+sp(occ+'%')+' kundrejt '+sp(lyOcc+'%')+' LY ('+sp('+'+(occ-lyOcc).toFixed(1)+' pikë')+').');
  if(lyRn>0 && rn>=lyRn) pos.push('Nete të Shitura '+sp(rn.toLocaleString())+' — '+sp('+'+pc(rn,lyRn)+'%')+' ndaj LY ('+lyRn.toLocaleString()+').');
  if(lyAdr>0 && adr>=lyAdr) pos.push('ADR '+sp('€'+adr.toFixed(1))+' — '+sp('+'+pc(adr,lyAdr)+'%')+' kundrejt LY (€'+lyAdr.toFixed(1)+').');
  if(isAll && Array.isArray(d.nop26)){
