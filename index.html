@@ -2545,8 +2545,61 @@ function admUpdateBudget(d){
 }
 
 // ── Insights ──────────────────────────────────────────────────────────────────
+// Build the management insights from live data so they refresh every month
+// instead of staying static. Falls back to ADM_INS only if data is missing.
+function admGenInsights(d){
+ if(!d) return null;
+ var isAll=(admCurKey==='all');
+ var sp=function(t){return '<span>'+t+'</span>';};
+ var pc=function(cur,base){return base?Math.round((cur-base)/Math.abs(base)*100):0;};
+ var rev=d.rev||0, budRev=d.budRev||0, lyRev=d.lyRev||0;
+ var exp=d.exp||0, budExp=d.budExp||0;
+ var prf=(d.prf!=null?d.prf:0), budPrf=(d.budPrf!=null?d.budPrf:0);
+ var occ=d.occ||0, lyOcc=d.lyOcc||0, rn=d.rn||0, lyRn=d.lyRn||0;
+ var adr=d.adrEur||0, lyAdr=d.lyAdrEur||0;
+ var periodTxt=isAll?('YTD '+admYtdShort()+' 2026'):((MON_FULL[admCurKey]||admCurKey)+' 2026');
+
+ // ── Çfarë shkoi mirë ──
+ var pos=[];
+ if(lyRev>0 && rev>=lyRev) pos.push('Të ardhurat '+sp(fEur(rev))+' — '+sp('+'+pc(rev,lyRev)+'%')+' kundrejt vitit të kaluar ('+fEur(lyRev)+').');
+ if(budRev>0 && rev>=budRev) pos.push('Tejkaluan buxhetin '+sp(fEur(budRev))+' me '+sp('+'+fEur(rev-budRev))+'.');
+ if(lyOcc>0 && occ>=lyOcc) pos.push('Okupanca '+sp(Math.round(occ)+'%')+' kundrejt '+sp(Math.round(lyOcc)+'%')+' LY ('+sp('+'+(occ-lyOcc).toFixed(0)+' pikë')+').');
+ if(lyRn>0 && rn>=lyRn) pos.push('Nete të Shitura '+sp(rn.toLocaleString())+' — '+sp('+'+pc(rn,lyRn)+'%')+' ndaj LY ('+lyRn.toLocaleString()+').');
+ if(lyAdr>0 && adr>=lyAdr) pos.push('ADR '+sp('€'+adr.toFixed(1))+' — '+sp('+'+pc(adr,lyAdr)+'%')+' kundrejt LY (€'+lyAdr.toFixed(1)+').');
+ if(isAll && Array.isArray(d.nop26)){
+ var pm=[]; d.nop26.forEach(function(v,i){ if(v>0 && ADM_MONTHS[i]) pm.push(MON_FULL[ADM_MONTHS[i]]); });
+ if(pm.length) pos.push('Muaj fitimprurës (NOP>0): '+sp(pm.join(', '))+'.');
+ } else if(!isAll && prf>0){ pos.push('NOP '+sp(fEur(prf))+' — muaj fitimprurës.'); }
+ if(!pos.length) pos.push('Të dhënat e '+periodTxt+' u regjistruan.');
+
+ // ── Ku u vunë re problematika ──
+ var prob=[];
+ if(budExp>0 && exp>budExp) prob.push('Shpenzimet '+sp(fEur(exp))+' tejkaluan buxhetin '+sp(fEur(budExp))+' me '+sp('+'+fEur(exp-budExp)+' (+'+pc(exp,budExp)+'%)')+'.');
+ if(prf<0) prob.push('Fitimi neto '+sp(fEur(prf))+' — në humbje'+(budPrf!=null?' (buxheti priste '+(budPrf>=0?'+':'')+fEur(budPrf)+')':'')+'.');
+ if(budRev>0 && rev<budRev) prob.push('Të ardhurat '+sp(fEur(rev))+' nën buxhetin '+sp(fEur(budRev))+' — mungesë '+sp(fEur(rev-budRev)+' ('+pc(rev,budRev)+'%)')+'.');
+ if(d.expCats && d.expCats.length){ var te=d.expCats.slice().sort(function(a,b){return b.v-a.v;})[0]; if(te) prob.push('Zëri më i madh i shpenzimeve: '+sp(te.l)+'.'); }
+ if(!prob.length) prob.push('Nuk u identifikuan problematika madhore për '+periodTxt+'.');
+
+ // ── Sugjerime për përmirësim ──
+ var sug=[];
+ if(d.chData && d.chData.length){ var tc=d.chData.slice().sort(function(a,b){return b.v-a.v;})[0]; if(tc) sug.push('Forco kanalin kryesor '+sp(tc.l)+' ('+fEur(tc.v)+') dhe diversifiko OTA-të.'); }
+ if(adr>0) sug.push('ADR '+sp('€'+adr.toFixed(1))+' — syno rritje çmimi drejt sezonit të pikut.');
+ if(d.expCats && d.expCats.length){ var te2=d.expCats.slice().sort(function(a,b){return b.v-a.v;})[0]; if(te2) sug.push('Rishiko strukturën e kostove duke u fokusuar tek '+sp(te2.l)+'.'); }
+ var roi=Array.isArray(d.mktRoi)?null:d.mktRoi; if(roi) sug.push('ROI Marketing '+sp(roi+'×')+' — ka hapësirë për investim strategjik.');
+ if(!sug.length) sug.push('Vazhdo monitorimin e kanaleve dhe kostove.');
+
+ // ── Masa & Planifikim ──
+ var plan=[];
+ plan.push('Periudha '+sp(periodTxt)+' — syno NOP pozitiv dhe tejkalim shpenzimesh nën 10%.');
+ plan.push('Aktivizo kanalet OTA (Booking, Expedia, Hotelbeds) dhe alotimet për disponueshmërinë verore Maj–Gusht.');
+ plan.push('Kontroll rigoroz i kostove (paga, F&B Cost of Sale) dhe konsolidim i kanaleve para sezonit kulmor.');
+
+ return { pozitive:pos.join(' '), problematika:prob.join(' '), sugjerime:sug.join(' '), planifikim:plan.join(' ') };
+}
+
 function admUpdateInsights(){
- var ins=ADM_INS[admCurKey]||ADM_INS.all;
+ var d=ADM_DATA[admCurKey]||ADM_DATA.all;
+ var ins=admGenInsights(d)||ADM_INS[admCurKey]||ADM_INS.all;
  var el=document.getElementById('adm-insights');
  if(!el) return;
  var sections=[
