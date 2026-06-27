@@ -1317,6 +1317,28 @@ async function exportFin(){
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
+// ── Auto-update: reload onto a new build (esp. for installed-app/PWA users) ────
+(function(){
+  var BUILD=null, reloading=false;
+  function check(){
+    fetch('/api/version',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
+      if(j&&j.v){
+        if(BUILD===null){ BUILD=j.v; return; }
+        if(j.v!==BUILD && !reloading){
+          reloading=true;
+          // refresh the service worker too, then hard-reload
+          if('serviceWorker' in navigator){ navigator.serviceWorker.getRegistration().then(function(reg){ if(reg) reg.update(); }).catch(function(){}); }
+          location.reload();
+        }
+      }
+    }).catch(function(){});
+  }
+  check();
+  // Re-check whenever the app is brought to the foreground (PWA reopen) + every 5 min
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) check(); });
+  setInterval(check, 5*60*1000);
+})();
+
 // ══ HMS HOUSEKEEPING MODULE ══════════════════════════════════════════════════
 (function(){
 'use strict';

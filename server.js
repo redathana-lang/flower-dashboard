@@ -21,6 +21,14 @@ app.get('/index.html', (req, res) => {
  res.setHeader('Expires', '0');
  res.sendFile(path.join(__dirname, 'index.html'));
 });
+// Build version = index.html mtime (changes every deploy). The PWA polls this
+// so installed-app users auto-reload onto the new build without manual refresh.
+app.get('/api/version', (req, res) => {
+ res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+ let v = 0;
+ try { v = require('fs').statSync(path.join(__dirname, 'index.html')).mtimeMs; } catch(_) {}
+ res.json({ v: Math.round(v) });
+});
 app.use(express.static(__dirname));
 
 // ─── GOOGLE SHEETS CONFIG ─────────────────────────────────────────────────────
