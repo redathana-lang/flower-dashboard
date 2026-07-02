@@ -1283,6 +1283,21 @@ function rCF(cf){
  cfTabPie('cf-tab-in-cur',  ['Euro','Lek'],      [inEurL, inLekL], CURC);
  cfTabPie('cf-tab-out-cash',['Cash','Non-Cash'], [outCashL, outNonCashL], CASHC);
  cfTabPie('cf-tab-out-cur', ['Euro','Lek'],      [outEurL, outLekL], CURC);
+ // If a side has no cash-flow data, show a clear message instead of empty space.
+ [['cf-tab-in-cash','cf-tab-in-cur'],['cf-tab-out-cash','cf-tab-out-cur']].forEach(function(pair){
+  var cv=document.getElementById(pair[0]); if(!cv) return;
+  var grid=cv.closest('.cf-pie-grid'); if(!grid) return;
+  var host=grid.parentElement, ph=host.querySelector('.cf-nodata');
+  var hasData=pair.some(function(id){return cfTabCharts[id];});
+  if(hasData){ grid.style.display=''; if(ph) ph.remove(); }
+  else{
+   grid.style.display='none';
+   if(!ph){ ph=document.createElement('div'); ph.className='cf-nodata';
+    ph.style.cssText='margin-top:14px;border-top:1px solid var(--border);padding:22px 12px;text-align:center;color:#6b7fa3;font-size:12px;font-style:italic;';
+    ph.textContent='Pa të dhëna Cash Flow për këtë datë — zgjidhni një datë me të dhëna.';
+    host.appendChild(ph); }
+  }
+ });
 }
 
 // ─── FINANCE / SHPENZIME ──────────────────────────────────────────────────────
