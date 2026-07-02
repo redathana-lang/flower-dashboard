@@ -128,6 +128,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* TWO COL GRID */
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+/* Cash Flow breakdown pies: side-by-side on desktop, stacked (full-width, larger) on phones */
+.cf-pie-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:600px){.cf-pie-grid{grid-template-columns:minmax(0,300px)!important;justify-content:center;gap:14px;}}
 
 /* ══ HMS HOUSEKEEPING ══════════════════════════════════════════════════════ */
 #sec_housekeeping{padding:0;}
@@ -806,7 +809,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px"> Hyrje (Cash In) — Muaji i kaluar vs Aktual</div>
  <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Ditore</div>
  <canvas id="adm-c-cf-src" height="220"></canvas>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px">
+ <div class="cf-pie-grid" style="margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px">
  <div style="min-width:0">
  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div>
  <canvas id="adm-c-cf-in-cash" height="150"></canvas>
@@ -821,7 +824,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px"> Dalje (Cash Out) — Sipas Kategorisë</div>
  <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Ditore · rreshtat pagesat</div>
  <canvas id="adm-c-cf-uses" height="220"></canvas>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px">
+ <div class="cf-pie-grid" style="margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px">
  <div style="min-width:0">
  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div>
  <canvas id="adm-c-cf-out-cash" height="150"></canvas>
@@ -1241,7 +1244,7 @@ function rCF(cf){
  ${row('MICE Lek',n(ark.mice_lek))}
  <tr class="tr"><td>TOTAL HYRJE (Lek)</td><td class="v g">${fL(tArk)}</td></tr>
  </table>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+ <div class="cf-pie-grid" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
  <div style="min-width:0"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div><canvas id="cf-tab-in-cash" height="150"></canvas></div>
  <div style="min-width:0"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div><canvas id="cf-tab-in-cur" height="150"></canvas></div>
  </div>
@@ -1263,7 +1266,7 @@ function rCF(cf){
  ${row('Investime Cash',n(pag.investime_cash))}
  <tr class="tr"><td>TOTAL DALJE (Lek)</td><td class="v g">${fL(tPag)}</td></tr>
  </table>
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
+ <div class="cf-pie-grid" style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">
  <div style="min-width:0"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div><canvas id="cf-tab-out-cash" height="150"></canvas></div>
  <div style="min-width:0"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Euro vs Lek</div><canvas id="cf-tab-out-cur" height="150"></canvas></div>
  </div>
