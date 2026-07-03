@@ -131,6 +131,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* Cash Flow breakdown pies: side-by-side on desktop, stacked (full-width, larger) on phones */
 .cf-pie-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:600px){.cf-pie-grid{grid-template-columns:minmax(0,300px)!important;justify-content:center;gap:14px;}}
+/* Cash Flow itemized breakdown list (category · € · % · mini-bar) */
+.cf-items{display:flex;flex-direction:column;gap:9px;margin-top:14px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px;}
+.cf-item{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;}
+.cf-item-top{display:flex;align-items:center;gap:8px;min-width:0;grid-column:1;}
+.cf-item-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+.cf-item-name{font-size:12px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cf-item-val{grid-column:2;text-align:right;font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;}
+.cf-item-pct{font-size:11px;color:var(--muted);font-weight:600;margin-left:4px;}
+.cf-item-track{grid-column:1/3;height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:2px;}
+.cf-item-fill{height:100%;border-radius:3px;transition:width .5s ease;}
+.cf-net-chip{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700;}
 
 /* ══ HMS HOUSEKEEPING ══════════════════════════════════════════════════════ */
 #sec_housekeeping{padding:0;}
@@ -798,7 +809,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <!-- CASH FLOW -->
  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px">
  <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">Cash Flow — Hyrje &amp; Dalje</span>
- <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Fleta e Cash Flow Ditore 2026</span>
+ <span style="background:rgba(232,162,58,.15);border:1px solid rgba(232,162,58,.3);color:#e8a23a;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Fleta Cash Flow Mujore 2026</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
  </div>
  <div id="adm-cf-kpis" class="adm-g4">
@@ -807,8 +818,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div class="adm-g2-cf">
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px"> Hyrje (Cash In) — Muaji i kaluar vs Aktual</div>
- <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Ditore</div>
+ <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Mujore</div>
  <canvas id="adm-c-cf-src" height="220"></canvas>
+ <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:12px">Hyrje sipas burimit</div>
+ <div class="cf-items" id="adm-cf-in-items" style="border-top:none;padding-top:10px;margin-top:8px"></div>
  <div class="cf-pie-grid" style="margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px">
  <div style="min-width:0">
  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;text-align:center">Cash vs Non-Cash</div>
@@ -822,7 +835,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  </div>
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
  <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px"> Dalje (Cash Out) — Sipas Kategorisë</div>
- <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Ditore · rreshtat pagesat</div>
+ <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">EUR · Fleta Cash Flow Mujore · rreshtat pagesat</div>
  <canvas id="adm-c-cf-uses" height="220"></canvas>
  <div class="cf-pie-grid" style="margin-top:16px;border-top:1px solid rgba(201,168,76,.12);padding-top:14px">
  <div style="min-width:0">
@@ -3486,22 +3499,33 @@ function admInitCFCharts(d){
  var periodLabel = isAll?('YTD '+admYtdShort()+' 2026'):labels[0]+' 2026';
  var hyrjeVal = hasH26 ? '€'+Math.round(totalH26/1000)+'k' : '—';
  var daljeVal = hasDa26 ? '€'+Math.round(totalD26/1000)+'k' : '—';
- var prevVal = totalPrev>0 ? '€'+Math.round(totalPrev/1000)+'k' : '€0';
  var lekVal = lekPct!=null ? lekPct+'%' : '—';
  var lekSrc = d.cfHyrjeALL_eur!=null ? '✓ real' : (lekPct!=null?'~ vlerësim':'N/A');
+ // MoM delta on Hyrje (single-month view only — 'all' has no clean prior period)
+ var momPct = (!isAll && hasH26 && totalPrev>0) ? Math.round((totalH26-totalPrev)/totalPrev*100) : null;
+ var hyrjeSub = momPct!=null
+ ? '<span class="adm-delta '+(momPct>=0?'up':'dn')+'">'+(momPct>=0?'↑':'↓')+' '+Math.abs(momPct)+'%</span> <span class="adm-ly">vs '+prevLabelStr+'</span>'
+ : (periodLabel+' · Cash In');
+ // Net cash flow (Hyrje − Dalje)
+ var net = totalH26 - totalD26;
+ var hasNet = hasH26 && hasDa26;
+ var netVal = hasNet ? (net<0?'-€':'€')+Math.abs(Math.round(net/1000))+'k' : '—';
+ var netSub = hasNet
+ ? (net>=0?'<span class="adm-delta up">Suficit</span>':'<span class="adm-delta dn">Deficit</span>')+' <span class="adm-ly">Hyrje − Dalje</span>'
+ : 'Të dhëna në pritje';
  cfKpi.innerHTML=
- '<div class="adm-kpi" data-color="green"><div class="adm-kpi-lbl"> Hyrje 2026</div>'
+ '<div class="adm-kpi" data-color="green"><div class="adm-kpi-lbl">Hyrje (Cash In)</div>'
  +'<div class="adm-kpi-val">'+hyrjeVal+'</div>'
- +'<div class="adm-kpi-sub">'+periodLabel+' · Cash In</div></div>'
- +'<div class="adm-kpi" data-color="teal"><div class="adm-kpi-lbl"> Hyrje Muaji i kaluar</div>'
- +'<div class="adm-kpi-val">'+prevVal+'</div>'
- +'<div class="adm-kpi-sub">'+prevLabelStr+'</div></div>'
- +'<div class="adm-kpi" data-color="red"><div class="adm-kpi-lbl"> Dalje 2026</div>'
+ +'<div class="adm-kpi-sub">'+hyrjeSub+'</div></div>'
+ +'<div class="adm-kpi" data-color="red"><div class="adm-kpi-lbl">Dalje (Cash Out)</div>'
  +'<div class="adm-kpi-val">'+daljeVal+'</div>'
  +'<div class="adm-kpi-sub">'+periodLabel+' · Cash Out</div></div>'
- +'<div class="adm-kpi" data-color="amber"><div class="adm-kpi-lbl"> Hyrje — % Lek</div>'
+ +'<div class="adm-kpi" data-color="'+(net>=0?'green':'red')+'"><div class="adm-kpi-lbl">Cash Flow Neto</div>'
+ +'<div class="adm-kpi-val" style="color:'+(net>=0?'#4caf7d':'#e05252')+'">'+netVal+'</div>'
+ +'<div class="adm-kpi-sub">'+netSub+'</div></div>'
+ +'<div class="adm-kpi" data-color="amber"><div class="adm-kpi-lbl">Hyrje — % Lek</div>'
  +'<div class="adm-kpi-val">'+lekVal+'</div>'
- +'<div class="adm-kpi-sub">'+lekSrc+' · Hyrje në ALL (lokale)</div></div>';
+ +'<div class="adm-kpi-sub">'+lekSrc+' · në ALL (lokale)</div></div>';
  }
 
  // ── Chart 1: Hyrje (Cash In) — Prev Month vs Current ─────────────────────────
@@ -3547,7 +3571,7 @@ function admInitCFCharts(d){
  var noDataDiv = document.createElement('div');
  noDataDiv.className='cf-no-data';
  noDataDiv.style.cssText='display:flex;align-items:center;justify-content:center;height:180px;color:#6b7fa3;font-size:13px;font-style:italic;';
- noDataDiv.textContent='Pa të dhëna Cash Out — Fleta e Cash Flow ditore nuk është plotësuar për këtë periudhë';
+ noDataDiv.textContent='Pa të dhëna Cash Out — Fleta Cash Flow mujore nuk është plotësuar për këtë periudhë';
  cfUsesParent.appendChild(noDataDiv);
  }
  } else {
@@ -3587,6 +3611,37 @@ function admInitCFCharts(d){
  // Dalje
  cfPie('adm-c-cf-out-cash',['Cash','Non-Cash'], [d.cfOutCash, d.cfOutNonCash], CASH_COLORS);
  cfPie('adm-c-cf-out-cur', ['Euro','Lek'],      [d.cfDaljeEUR_eur, d.cfDaljeALL_eur], CUR_COLORS);
+
+ // ── Hyrje source breakdown list (category · € · % · mini-bar) ────────────────
+ var CF_IN_COLORS = {
+ 'Non-Cash Bankë':'#6b7fa3','Recepsion Cash':'#4caf7d','Allotments':'#c9a84c',
+ 'Disbursim Kredi':'#8b5cf6','F&B':'#e8a23a','MICE':'#3b82f6'
+ };
+ renderCFItems('adm-cf-in-items', d.cfHyrjeItems, CF_IN_COLORS);
+}
+
+// Renders an itemized breakdown list: [dot] name … €value (pct%) with a mini-bar.
+function renderCFItems(elId, items, colorMap){
+ var el=document.getElementById(elId); if(!el) return;
+ if(!items || !items.length){
+ el.innerHTML='<div style="font-size:11px;color:#6b7fa3;font-style:italic;padding:6px 0">Pa të dhëna për këtë periudhë</div>';
+ return;
+ }
+ var total=items.reduce(function(a,x){return a+x.v;},0);
+ var max=items.reduce(function(m,x){return Math.max(m,x.v);},0)||1;
+ var html=items.map(function(x){
+ var pct=total>0?(x.v/total*100):0;
+ var c=(colorMap&&colorMap[x.l])||'#6b7fa3';
+ return '<div class="cf-item">'
+ +'<div class="cf-item-top"><span class="cf-item-dot" style="background:'+c+'"></span><span class="cf-item-name">'+x.l+'</span></div>'
+ +'<div class="cf-item-val">€'+(x.v/1000).toFixed(1)+'k<span class="cf-item-pct">'+pct.toFixed(1)+'%</span></div>'
+ +'<div class="cf-item-track"><div class="cf-item-fill" style="width:'+(x.v/max*100).toFixed(1)+'%;background:'+c+'"></div></div>'
+ +'</div>';
+ }).join('');
+ html+='<div class="cf-item" style="border-top:1px solid rgba(201,168,76,.14);padding-top:9px;margin-top:3px">'
+ +'<div class="cf-item-top"><span class="cf-item-name" style="font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.4px;font-size:11px">Gjithsej</span></div>'
+ +'<div class="cf-item-val" style="color:var(--gold)">€'+(total/1000).toFixed(1)+'k</div></div>';
+ el.innerHTML=html;
 }
 
 function admInitRevChart(d){
@@ -3803,6 +3858,19 @@ function admMergeSheet(key, live) {
  });
  var arr = Object.keys(allItems).filter(function(l){ return allItems[l]>0; }).map(function(l){ return {l:l,v:allItems[l]}; }).sort(function(a,b){return b.v-a.v;});
  d.cfDaljeItems = arr.length > 0 ? arr : null;
+ }
+ // cfHyrjeItems — Hyrje breakdown by source (mirrors cfDaljeItems handling)
+ if (live.cfHyrjeItems != null) d.cfHyrjeItems = live.cfHyrjeItems;
+ else if (!isAll) d.cfHyrjeItems = null;
+ if (isAll) {
+ var allInItems = {};
+ ADM_MONTHS.forEach(function(k){
+ var items = ADM_DATA[k].cfHyrjeItems;
+ if (!items) return;
+ items.forEach(function(x){ allInItems[x.l] = (allInItems[x.l]||0) + x.v; });
+ });
+ var arrIn = Object.keys(allInItems).filter(function(l){ return allInItems[l]>0; }).map(function(l){ return {l:l,v:allInItems[l]}; }).sort(function(a,b){return b.v-a.v;});
+ d.cfHyrjeItems = arrIn.length > 0 ? arrIn : null;
  }
  if (live.cfHyrjeALL_eur != null) d.cfHyrjeALL_eur = live.cfHyrjeALL_eur;
  if (live.cfHyrjeEUR_eur != null) d.cfHyrjeEUR_eur = live.cfHyrjeEUR_eur;

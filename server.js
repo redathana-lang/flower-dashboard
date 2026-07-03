@@ -539,6 +539,20 @@ function calcCFMonthly(rows, year, month) {
  const totalIn = lekEUR + eurEUR;
  if (totalIn === 0) return null;
 
+ // Hyrje breakdown by source (EUR) — mirrors cfDaljeItems on the Dalje side.
+ const inGroups = {
+ 'Non-Cash Bankë': Math.round(a.non_cash_euro + a.non_cash_lek/LEK_EUR),
+ 'Recepsion Cash': Math.round(a.reception_cash_euro + a.reception_cash_lek/LEK_EUR),
+ 'Allotments': Math.round(a.allotment),
+ 'Disbursim Kredi': Math.round(a.disbursim_kredi_euro),
+ 'F&B': Math.round(a.fnb_cash_lek/LEK_EUR),
+ 'MICE': Math.round(a.mice_euro + a.mice_lek/LEK_EUR),
+ };
+ const cfHyrjeItems = Object.entries(inGroups)
+ .filter(([, v]) => v > 0)
+ .map(([l, v]) => ({ l, v }))
+ .sort((a, b) => b.v - a.v);
+
  // ── Cash Out (Dalje) — all values converted to EUR ─────────────────────────
  const p = {
  paga: n(r[10]),
@@ -590,6 +604,7 @@ function calcCFMonthly(rows, year, month) {
  cfLekPct: Math.round(lekEUR / totalIn * 100),
  cfDalje26: cfDalje26 > 0 ? cfDalje26 : null,
  cfDaljeItems: cfDaljeItems.length > 0 ? cfDaljeItems : null,
+ cfHyrjeItems: cfHyrjeItems.length > 0 ? cfHyrjeItems : null,
  cfInCash: Math.round(inCash),
  cfInNonCash: Math.round(inNonCash),
  cfDaljeALL_eur: Math.round(lekOutEUR),
@@ -1015,6 +1030,7 @@ app.get('/api/admin', async (req, res) => {
  cfHyrje26: cf.cfHyrje26 || null,
  cfDalje26: cf.cfDalje26 || null,
  cfDaljeItems: cf.cfDaljeItems || null,
+ cfHyrjeItems: cf.cfHyrjeItems || null,
  cfHyrjeALL_eur: cf.cfHyrjeALL_eur || null,
  cfHyrjeEUR_eur: cf.cfHyrjeEUR_eur || null,
  cfLekPct: cf.cfLekPct || null,
@@ -1098,6 +1114,16 @@ app.get('/api/admin', async (req, res) => {
  const map = {};
  for (const k of keys) {
  const items = result[k].cfDaljeItems;
+ if (!items) continue;
+ for (const { l, v } of items) map[l] = (map[l]||0) + v;
+ }
+ const arr = Object.entries(map).filter(([,v])=>v>0).map(([l,v])=>({l,v})).sort((a,b)=>b.v-a.v);
+ return arr.length > 0 ? arr : null;
+ })(),
+ cfHyrjeItems: (() => {
+ const map = {};
+ for (const k of keys) {
+ const items = result[k].cfHyrjeItems;
  if (!items) continue;
  for (const { l, v } of items) map[l] = (map[l]||0) + v;
  }
