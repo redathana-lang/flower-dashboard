@@ -37,6 +37,7 @@ const GID = {
  fo: '398660926',
  fnb: '663170393',
  cashflow: '697395742',
+ cashflow_monthly: '513542516',
  finance: '261763722',
  channels: '954992085',
 };
@@ -501,18 +502,116 @@ function calcCFMonth(cfRows, year, month) {
  };
 }
 
+// Cash flow aggregation from the MONTHLY Cash Flow sheet (gid 513542516).
+// Each row is one month's manually-finalised totals ("April 2026" in col 0).
+// Returns the same field shape as calcCFMonth so the admin builder & front-end
+// need no other changes. Layout differs from the daily sheet in two columns:
+//   col 6  = Disbursim Kredi Euro   (EUR cash-IN, replaces daily's Itaka Euro)
+//   col 16 = Dalje Furnitore Cash Euro (EUR supplier cash-OUT, new)
+function calcCFMonthly(rows, year, month) {
+ if (!rows || rows.length < 2) return null;
+ const MFULL = ['','January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+ const want = `${MFULL[month]} ${year}`.toLowerCase();
+ let r = null;
+ for (let i = 1; i < rows.length; i++) {
+ if (String(rows[i][0] || '').trim().toLowerCase() === want) { r = rows[i]; break; }
+ }
+ if (!r) return null;
+
+ const LEK_EUR = 95; // 1 EUR = 95 LEK
+
+ // ── Cash In (Hyrje) ────────────────────────────────────────────────────────
+ const a = {
+ non_cash_lek: n(r[1]),
+ non_cash_euro: n(r[2]),
+ reception_cash_euro: n(r[3]),
+ reception_cash_lek: n(r[4]),
+ allotment: n(r[5]),
+ disbursim_kredi_euro: n(r[6]),
+ fnb_cash_lek: n(r[7]),
+ mice_euro: n(r[8]),
+ mice_lek: n(r[9]),
+ };
+ const lekALL = a.non_cash_lek + a.reception_cash_lek + a.fnb_cash_lek + a.mice_lek;
+ const eurEUR = a.non_cash_euro + a.reception_cash_euro + a.allotment + a.disbursim_kredi_euro + a.mice_euro;
+ const lekEUR = lekALL / LEK_EUR;
+ const totalIn = lekEUR + eurEUR;
+ if (totalIn === 0) return null;
+
+ // ── Cash Out (Dalje) — all values converted to EUR ─────────────────────────
+ const p = {
+ paga: n(r[10]),
+ taxes: n(r[11]),
+ loan_euro: n(r[12]),
+ loan_lek: n(r[13]),
+ house_use: n(r[14]),
+ furnitore_cash: n(r[15]),        // Lek
+ furnitore_cash_euro: n(r[16]),   // Euro (new)
+ furnitore_bank_lek: n(r[17]),
+ furnitore_bank_euro: n(r[18]),
+ investime_banke_euro: n(r[19]),
+ investime_banke_lek: n(r[20]),
+ investime_cash: n(r[21]),
+ };
+ const outGroups = {
+ 'Wages': Math.round(p.paga / LEK_EUR),
+ 'Taxes': Math.round(p.taxes / LEK_EUR),
+ 'Loan': Math.round(p.loan_lek/LEK_EUR + p.loan_euro),
+ 'House Use': Math.round(p.house_use / LEK_EUR),
+ 'Suppliers': Math.round(p.furnitore_cash/LEK_EUR + p.furnitore_bank_lek/LEK_EUR + p.furnitore_cash_euro + p.furnitore_bank_euro),
+ 'Investments': Math.round(p.investime_banke_lek/LEK_EUR + p.investime_cash/LEK_EUR + p.investime_banke_euro),
+ };
+ const cfDaljeItems = Object.entries(outGroups)
+ .filter(([, v]) => v > 0)
+ .map(([l, v]) => ({ l, v }))
+ .sort((a, b) => b.v - a.v);
+ const cfDalje26 = cfDaljeItems.reduce((s, x) => s + x.v, 0);
+
+ // ── Hyrje split: cash vs non-cash (EUR) ────────────────────────────────────
+ const inCash    = a.reception_cash_euro + a.reception_cash_lek/LEK_EUR + a.fnb_cash_lek/LEK_EUR;
+ const inNonCash = totalIn - inCash;
+
+ // ── Dalje split: currency (Euro/Lek) + cash vs non-cash (EUR) ──────────────
+ const lekOutALL = p.paga + p.taxes + p.loan_lek + p.house_use
+                 + p.furnitore_cash + p.furnitore_bank_lek
+                 + p.investime_banke_lek + p.investime_cash;
+ const eurOut    = p.loan_euro + p.furnitore_cash_euro + p.furnitore_bank_euro + p.investime_banke_euro;
+ const lekOutEUR = lekOutALL / LEK_EUR;
+ const totalOut  = lekOutEUR + eurOut;
+ // Cash = Furnitore Cash (Lek + Euro) + Investime Cash (Lek); the rest is non-cash.
+ const outCash    = (p.furnitore_cash + p.investime_cash)/LEK_EUR + p.furnitore_cash_euro;
+ const outNonCash = totalOut - outCash;
+
+ return {
+ cfHyrjeALL_eur: Math.round(lekEUR),
+ cfHyrjeEUR_eur: Math.round(eurEUR),
+ cfHyrje26: Math.round(totalIn),
+ cfLekPct: Math.round(lekEUR / totalIn * 100),
+ cfDalje26: cfDalje26 > 0 ? cfDalje26 : null,
+ cfDaljeItems: cfDaljeItems.length > 0 ? cfDaljeItems : null,
+ cfInCash: Math.round(inCash),
+ cfInNonCash: Math.round(inNonCash),
+ cfDaljeALL_eur: Math.round(lekOutEUR),
+ cfDaljeEUR_eur: Math.round(eurOut),
+ cfOutCash: Math.round(outCash),
+ cfOutNonCash: Math.round(outNonCash),
+ };
+}
+
 // ─── CACHE ────────────────────────────────────────────────────────────────────
-let cache = { fo:null, fnb:null, cashflow:null, finance:null, spa:null, boards:null, exec:null, pl:null, mkt:null, channels:null, revenues:null, expenses:null, srcmarkets:null, boardmix:null };
+let cache = { fo:null, fnb:null, cashflow:null, cashflow_monthly:null, finance:null, spa:null, boards:null, exec:null, pl:null, mkt:null, channels:null, revenues:null, expenses:null, srcmarkets:null, boardmix:null };
 let lastFetch = 0;
 const CACHE_TTL = 10 * 60 * 1000;
 
 async function refreshCache() {
  console.log('[FLOW] Refreshing Google Sheets...');
  try {
- const [foText, fnbText, cfText, finText, spaText, boardsText, execText, plText, mktText, chText, revText, expText, srcText, boardText] = await Promise.all([
+ const [foText, fnbText, cfText, cfMonText, finText, spaText, boardsText, execText, plText, mktText, chText, revText, expText, srcText, boardText] = await Promise.all([
  fetchCSV(GID.fo),
  fetchCSV(GID.fnb),
  fetchCSV(GID.cashflow),
+ fetchCSV(GID.cashflow_monthly),
  fetchCSV(GID.finance),
  fetchCSV(GID2.spa, SHEET_ID2),
  fetchCSV(GID2.boards, SHEET_ID2),
@@ -528,6 +627,7 @@ async function refreshCache() {
  cache.fo = parseCSV(foText);
  cache.fnb = parseCSV(fnbText);
  cache.cashflow = parseCSV(cfText);
+ cache.cashflow_monthly = parseCSV(cfMonText);
  cache.finance = parseCSV(finText);
  cache.spa = parseCSV(spaText);
  cache.boards = parseCSV(boardsText);
@@ -846,7 +946,7 @@ app.get('/api/admin', async (req, res) => {
  const ely = es[key+'_ly'] || {};
  const b = bud[key] || {};
  const k = mkt[key] || {};
- const cf = calcCFMonth(cache.cashflow || [], 2026, m) || {};
+ const cf = calcCFMonthly(cache.cashflow_monthly || [], 2026, m) || {};
  // Expense categories from Expenses sheet (LEK)
  const expAY = expMap[MON_AY[key]] || {};
  const expLY = expMap[MON_LY[key]] || {};
@@ -911,7 +1011,7 @@ app.get('/api/admin', async (req, res) => {
  srcData:   catArrayForKey(srcMap,   MON_AY[key], MON_LY[key], SRC_COLORS),
  // Board Mix — board type revenue (EUR, AY + LY)
  boardData: catArrayForKey(boardMap, MON_AY[key], MON_LY[key], BOARD_COLORS),
- // Cash Flow — ALL from Daily Cash Flow sheet only
+ // Cash Flow — ALL from the Monthly Cash Flow sheet (manually finalised per month)
  cfHyrje26: cf.cfHyrje26 || null,
  cfDalje26: cf.cfDalje26 || null,
  cfDaljeItems: cf.cfDaljeItems || null,
