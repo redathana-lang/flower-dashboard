@@ -4019,7 +4019,12 @@ window.sendMonthlyReport = function(){
  var label = key==='all' ? ('YTD '+admYtdShort()+' 2026') : ((MON_FULL[key]||key)+' 2026');
  var d = ADM_DATA[key] || {};
 
- if(!confirm('Dërgo Raportin Mujor Managerial për periudhën: ' + label + '?\n\nDestinatarë:\nredathana@gmail.com\nernestcaci@gmail.com\nFinanca@hotel-flower.com\ninfo@hotel-flower.com\npandiolakerthi@gmail.com\nrinacaci@gmail.com')) return;
+ // Guestflip reputation data (uploaded in the "Reputacioni Online" section, saved in localStorage)
+ var gfData = null;
+ try { gfData = JSON.parse(localStorage.getItem('adm_gf_data') || 'null'); } catch(e){ gfData = null; }
+ var gfNote = gfData ? ('✓ Përfshihet raporti Guestflip: ' + (gfData.period||'i ngarkuar')) : '⚠ Pa raport Guestflip — reputacioni do të përjashtohet. Ngarkoje te seksioni "Reputacioni Online".';
+
+ if(!confirm('Dërgo Raportin Mujor Managerial për periudhën: ' + label + '?\n\n' + gfNote + '\n\nDestinatarë:\nredathana@gmail.com\nernestcaci@gmail.com\nFinanca@hotel-flower.com\ninfo@hotel-flower.com\npandiolakerthi@gmail.com\nrinacaci@gmail.com')) return;
 
  var btn = document.getElementById('btnMonthlyReport');
  var toast = document.getElementById('srToast');
@@ -4072,7 +4077,7 @@ window.sendMonthlyReport = function(){
  fetch('/api/send-monthly-report', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ period: key, periodLabel: label, kpis: kpis, channels: chData, insights: ins, token: ADMIN.pass })
+ body: JSON.stringify({ period: key, periodLabel: label, kpis: kpis, channels: chData, insights: ins, guestflip: gfData, token: ADMIN.pass })
  })
  .then(function(res){ return res.json().then(function(j){ return {ok: res.ok, j: j}; }); })
  .then(function(r){

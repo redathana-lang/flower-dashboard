@@ -1421,6 +1421,85 @@ app.post('/api/send-monthly-report', async function(req, res) {
  ];
  const insData = insights || {};
 
+ // ── Online reputation (Guestflip) — optional section ────────────────────────
+ const gf = req.body.guestflip || null;
+ const gfOverall = gf && gf.overall ? gf.overall : {};
+ const gfPlats = gf && Array.isArray(gf.platforms) ? gf.platforms.filter(p => (p.rating||0) > 0) : [];
+ const gfComps = gf && Array.isArray(gf.competition) ? gf.competition.slice().sort((a,b)=>(b.gri||0)-(a.gri||0)) : [];
+ const gfHas = !!gf && ((gfOverall.rating||0) > 0 || gfPlats.length > 0);
+ const normRat = (name, r) => (name === 'Booking.com' ? (r/2) : r); // Booking.com is /10
+ let repHtml = '';
+ if (gfHas) {
+   const o = gfOverall;
+   const ratStr = o.rating ? Number(o.rating).toFixed(1) : '&mdash;';
+   const ratYoY = arrowTxt(o.rating, o.ratingLY), ratCol = arrowCol(o.rating, o.ratingLY);
+   const revYoY = arrowTxt(o.reviews, o.reviewsLY), revCol = arrowCol(o.reviews, o.reviewsLY);
+   const totSent = (o.positive||0) + (o.negative||0);
+   const posPct = totSent > 0 ? (o.positive/totSent*100) : (o.sentimentScore!=null ? Number(o.sentimentScore) : null);
+   const plats = gfPlats.slice(0, 6);
+   const comps = gfComps.slice(0, 5);
+   const platRows = plats.map((p) => {
+     const rn = normRat(p.l, p.rating||0);
+     const bw = Math.max(2, Math.round(rn/5*100)), br = 100 - bw;
+     return `<tr>
+     <td style="padding:7px 0;border-bottom:1px solid #0a1c2e;"><font color="#c8d4e8" style="font-size:11px;font-weight:bold;font-family:Arial,sans-serif;">&#9646; ${p.l}</font></td>
+     <td style="padding:7px 0;border-bottom:1px solid #0a1c2e;text-align:right;white-space:nowrap;"><font color="#ffffff" style="font-size:11px;font-weight:bold;font-family:Arial,sans-serif;">${rn.toFixed(2)}</font><font color="#4a6888" style="font-size:9px;font-family:Arial,sans-serif;">/5</font></td>
+     <td style="padding:7px 0 7px 14px;border-bottom:1px solid #0a1c2e;width:42%;">
+       <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+         <td bgcolor="#c9a84c" width="${bw}%" height="5" style="font-size:0;line-height:0;">&nbsp;</td>
+         ${br>0?'<td bgcolor="#0d2040" width="'+br+'%" height="5" style="font-size:0;line-height:0;">&nbsp;</td>':''}
+       </tr></table>
+     </td>
+     <td style="padding:7px 0 7px 12px;border-bottom:1px solid #0a1c2e;text-align:right;white-space:nowrap;"><font color="#4a6888" style="font-size:10px;font-family:Arial,sans-serif;">${fN(p.reviews||0)} rev</font></td>
+     </tr>`;
+   }).join('');
+   const compRows = comps.map((c,i) => {
+     const bw = Math.max(2, Math.round((c.gri||0))), br = 100 - bw;
+     const col = i===0 ? '#4caf7d' : '#6b8aab';
+     return `<tr>
+     <td style="padding:6px 0;border-bottom:1px solid #0a1c2e;"><font color="#c8d4e8" style="font-size:11px;font-weight:bold;font-family:Arial,sans-serif;">${i+1}. ${c.l}</font></td>
+     <td style="padding:6px 0 6px 14px;border-bottom:1px solid #0a1c2e;width:46%;">
+       <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+         <td bgcolor="${col}" width="${bw}%" height="5" style="font-size:0;line-height:0;">&nbsp;</td>
+         ${br>0?'<td bgcolor="#0d2040" width="'+br+'%" height="5" style="font-size:0;line-height:0;">&nbsp;</td>':''}
+       </tr></table>
+     </td>
+     <td style="padding:6px 0 6px 12px;border-bottom:1px solid #0a1c2e;text-align:right;white-space:nowrap;"><font color="${col}" style="font-size:11px;font-weight:bold;font-family:Arial,sans-serif;">GRI ${Number(c.gri||0).toFixed(0)}</font></td>
+     </tr>`;
+   }).join('');
+   repHtml = `
+<!--== NAVY DIVIDER ==-->
+<tr><td bgcolor="#1a3a5c" height="1" style="font-size:0;line-height:0;">&nbsp;</td></tr>
+<!--== REPUTACIONI ONLINE (Guestflip) ==-->
+<tr><td bgcolor="#071629" style="padding:22px 26px;border-left:2px solid #1a3a5c;border-right:2px solid #1a3a5c;">
+  <p style="margin:0 0 3px 0;font-size:9px;font-weight:bold;color:#c9a84c;letter-spacing:3px;font-family:Arial,sans-serif;text-transform:uppercase;">REPUTACIONI ONLINE &mdash; GUESTFLIP</p>
+  <p style="margin:0 0 14px 0;font-size:10px;color:#4a6888;font-family:Arial,sans-serif;">${gf.period||''}${gf.comparePeriod?' &#183; vs '+gf.comparePeriod:''}</p>
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tr>
+    <td width="34%" bgcolor="#060f1c" style="padding:10px 12px;vertical-align:top;border-right:1px solid #0d2040;">
+      <p style="margin:0 0 2px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:1.5px;font-family:Arial,sans-serif;text-transform:uppercase;">VLERESIMI MESATAR</p>
+      <p style="margin:0 0 2px 0;font-size:20px;font-weight:bold;color:#c9a84c;font-family:Arial,sans-serif;">${ratStr}<font style="font-size:10px;color:#4a6888;">/5</font></p>
+      <p style="margin:0;font-size:9px;font-family:Arial,sans-serif;"><font color="${ratCol}">${ratYoY||''}</font> <font color="#4a6888">vs VK</font></p>
+    </td>
+    <td width="33%" bgcolor="#071629" style="padding:10px 12px;vertical-align:top;border-right:1px solid #0d2040;">
+      <p style="margin:0 0 2px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:1.5px;font-family:Arial,sans-serif;text-transform:uppercase;">REVIEW TOTAL</p>
+      <p style="margin:0 0 2px 0;font-size:20px;font-weight:bold;color:#ffffff;font-family:Arial,sans-serif;">${o.reviews!=null?fN(o.reviews):'&mdash;'}</p>
+      <p style="margin:0;font-size:9px;font-family:Arial,sans-serif;"><font color="${revCol}">${revYoY||''}</font> <font color="#4a6888">vs VK</font></p>
+    </td>
+    <td width="33%" bgcolor="#060f1c" style="padding:10px 12px;vertical-align:top;">
+      <p style="margin:0 0 2px 0;font-size:8px;font-weight:bold;color:#4a6888;letter-spacing:1.5px;font-family:Arial,sans-serif;text-transform:uppercase;">SENTIMENT POZITIV</p>
+      <p style="margin:0 0 2px 0;font-size:20px;font-weight:bold;color:#4caf7d;font-family:Arial,sans-serif;">${posPct!=null?posPct.toFixed(0)+'%':'&mdash;'}</p>
+      <p style="margin:0;font-size:9px;color:#4a6888;font-family:Arial,sans-serif;">${fN(o.positive||0)} poz &#183; ${fN(o.negative||0)} neg</p>
+    </td>
+  </tr>
+  </table>
+  ${platRows?`<p style="margin:16px 0 8px 0;font-size:8px;font-weight:bold;color:#2a4860;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">VLERESIMI SIPAS PLATFORMES</p>
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">${platRows}</table>`:''}
+  ${compRows?`<p style="margin:16px 0 8px 0;font-size:8px;font-weight:bold;color:#2a4860;letter-spacing:2px;font-family:Arial,sans-serif;text-transform:uppercase;">POZICIONI KONKURRUES (GRI)</p>
+  <table border="0" cellpadding="0" cellspacing="0" width="100%">${compRows}</table>`:''}
+</td></tr>`;
+ }
+
  // ── EMAIL HTML — single-column outer card, nested tables for multi-col sections
  const html = `<!DOCTYPE html>
 <html lang="sq" xmlns="http://www.w3.org/1999/xhtml">
@@ -1578,7 +1657,7 @@ app.post('/api/send-monthly-report', async function(req, res) {
   ${chTotal>0?`<tr><td colspan="3" style="padding:10px 0 0;"><font color="#4a6888" style="font-size:10px;font-family:Arial,sans-serif;">Total: </font><font color="#c9a84c" style="font-size:12px;font-weight:bold;font-family:Arial,sans-serif;">${fE(chTotal)}</font></td></tr>`:''}
   </table>
 </td></tr>
-
+${repHtml}
 <!--== NAVY DIVIDER ==-->
 <tr><td bgcolor="#1a3a5c" height="1" style="font-size:0;line-height:0;">&nbsp;</td></tr>
 
