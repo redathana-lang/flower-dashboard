@@ -614,6 +614,45 @@ function calcCFMonthly(rows, year, month) {
  };
 }
 
+// Raw per-month components from the Monthly Cash Flow sheet (gid 513542516), in
+// native currency (Lek or EUR per column). Feeds the detailed "Cash Flow Report"
+// whose EUR maths are done CLIENT-SIDE so the exchange rate is adjustable live.
+// Layout = 28 cols (A..AB); cols 22–27 (Detyrime + Arkëtime) are report-only and
+// unused by the daily-shaped calcCFMonthly above. Returns null for empty months.
+const CF_RAW_FIELDS = [
+  'nonCashLek','nonCashBankEur','recepCashEur','recepCashLek','allotmentEur',
+  'disbKrediEur','fnbLek','miceEur','miceLek','pagaLek','taksaLek','krediEur',
+  'krediLek','houseUseLek','furnCashLek','furnCashEur','furnBankLek','furnBankEur',
+  'investBankEur','investBankLek','investCashLek','detFurnStartLek','detInvStartLek',
+  'detFurnEndLek','detInvEndLek','recvMiceEur','recvOtaEur',
+];
+function cfMonthlyRaw(rows, year, month) {
+  if (!rows || rows.length < 2) return null;
+  const MFULL = ['','January','February','March','April','May','June',
+                 'July','August','September','October','November','December'];
+  const want = `${MFULL[month]} ${year}`.toLowerCase();
+  let r = null;
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][0] || '').trim().toLowerCase() === want) { r = rows[i]; break; }
+  }
+  if (!r) return null;
+  const g = i => n(r[i]);
+  const raw = {
+    nonCashLek: g(1),  nonCashBankEur: g(2), recepCashEur: g(3),  recepCashLek: g(4),
+    allotmentEur: g(5), disbKrediEur: g(6),  fnbLek: g(7),        miceEur: g(8),
+    miceLek: g(9),     pagaLek: g(10),       taksaLek: g(11),     krediEur: g(12),
+    krediLek: g(13),   houseUseLek: g(14),   furnCashLek: g(15),  furnCashEur: g(16),
+    furnBankLek: g(17), furnBankEur: g(18),  investBankEur: g(19),investBankLek: g(20),
+    investCashLek: g(21), detFurnStartLek: g(22), detInvStartLek: g(23),
+    detFurnEndLek: g(24), detInvEndLek: g(25), recvMiceEur: g(26), recvOtaEur: g(27),
+  };
+  // Empty (future) months have no operating inflow → treat as no data.
+  const inflow = raw.nonCashLek + raw.nonCashBankEur + raw.recepCashEur + raw.recepCashLek
+               + raw.allotmentEur + raw.fnbLek + raw.miceEur + raw.miceLek;
+  if (inflow === 0) return null;
+  return raw;
+}
+
 // ─── CACHE ────────────────────────────────────────────────────────────────────
 let cache = { fo:null, fnb:null, cashflow:null, cashflow_monthly:null, finance:null, spa:null, boards:null, exec:null, pl:null, mkt:null, channels:null, revenues:null, expenses:null, srcmarkets:null, boardmix:null };
 let lastFetch = 0;
@@ -962,6 +1001,7 @@ app.get('/api/admin', async (req, res) => {
  const b = bud[key] || {};
  const k = mkt[key] || {};
  const cf = calcCFMonthly(cache.cashflow_monthly || [], 2026, m) || {};
+ const cfRep = cfMonthlyRaw(cache.cashflow_monthly || [], 2026, m);
  // Expense categories from Expenses sheet (LEK)
  const expAY = expMap[MON_AY[key]] || {};
  const expLY = expMap[MON_LY[key]] || {};
@@ -1041,6 +1081,8 @@ app.get('/api/admin', async (req, res) => {
  cfDaljeEUR_eur: cf.cfDaljeEUR_eur || null,
  cfOutCash: cf.cfOutCash || null,
  cfOutNonCash: cf.cfOutNonCash || null,
+ // Raw Monthly Cash Flow components (native currency) — drives the detailed Cash Flow Report
+ cfRep: cfRep || null,
  };
  }
 
@@ -1140,6 +1182,14 @@ app.get('/api/admin', async (req, res) => {
  cfDaljeEUR_eur: sum('cfDaljeEUR_eur') || null,
  cfOutCash: sum('cfOutCash') || null,
  cfOutNonCash: sum('cfOutNonCash') || null,
+ // Raw components — YTD sum per field (rate-independent; client applies rate once)
+ cfRep: (() => {
+ const present = keys.filter(k => result[k].cfRep);
+ if (!present.length) return null;
+ const acc = {};
+ CF_RAW_FIELDS.forEach(f => { acc[f] = present.reduce((a,k) => a + (result[k].cfRep[f]||0), 0); });
+ return acc;
+ })(),
  };
 
  result._months = activeKeys; // ordered list of months with data — drives the UI

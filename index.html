@@ -850,6 +850,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  </div>
  </div>
 
+ <!-- CASH FLOW REPORT (Monthly Cash Flow sheet · EUR · configurable rate) -->
+ <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:30px;flex-wrap:wrap">
+ <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">Cash Flow Report</span>
+ <span style="background:rgba(55,138,221,.15);border:1px solid rgba(55,138,221,.35);color:#5aa0e6;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Fleta Monthly Cash Flow · EUR</span>
+ <div style="flex:1;height:1px;background:rgba(201,168,76,.18);min-width:20px"></div>
+ <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap">Kursi €→Lek
+ <input id="adm-cfr-rate" type="number" min="50" max="200" step="0.5" value="97" oninput="admCFRateChange(this.value)"
+ style="width:66px;background:var(--card);border:1px solid rgba(201,168,76,.3);color:var(--gold2);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;text-align:center">
+ </label>
+ </div>
+ <div id="adm-cfr-nodata" style="display:none;color:#6b7fa3;font-size:13px;font-style:italic;padding:18px 2px">Pa të dhëna Cash Flow për këtë periudhë — fleta Monthly Cash Flow nuk është plotësuar.</div>
+ <div id="adm-cfr-body">
+ <div id="adm-cfr-summary" class="adm-g4" style="margin-bottom:16px"><!-- 6 KPIs, admInitCFReport(d) --></div>
+ <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px;margin-bottom:16px">
+ <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Waterfall — Rrjedha e Parasë (EUR)</div>
+ <div style="font-size:10px;color:var(--muted);margin-bottom:12px;font-style:italic">Hyrje op → Dalje op → Fluksi op → Financim → Investime → Ndryshimi neto</div>
+ <canvas id="adm-c-cfr-wf" height="200"></canvas>
+ <div id="adm-cfr-bullets" style="margin-top:14px;border-top:1px solid rgba(201,168,76,.12);padding-top:12px"></div>
+ </div>
+ <div id="adm-cfr-sections" class="adm-g2-cf"><!-- detailed sections 1–4 --></div>
+ <div class="adm-g2-cf" style="margin-top:16px">
+ <div id="adm-cfr-liab" style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px"></div>
+ <div id="adm-cfr-recv" style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px"></div>
+ </div>
+ </div>
+
  </div><!-- /adm-wrap -->
  </div><!-- /sec_admin_panel -->
 </div><!-- /app -->
@@ -2445,6 +2471,7 @@ var ADM_INS = {
 };
 
 var admCurKey='all', admCharts={}, admInited=false;
+var admCFRate=97, admCFLastD=null; // Cash Flow Report: live-adjustable €→Lek rate
 // ── Central month config (managerial year 2026) — single source of truth ───────
 // A newly-filled month in the sheet flows here via /api/admin _months, so the
 // dropdown, labels, arrays and charts all extend automatically (no per-month edits).
@@ -3644,6 +3671,222 @@ function renderCFItems(elId, items, colorMap){
  el.innerHTML=html;
 }
 
+// ── Detailed Cash Flow Report ────────────────────────────────────────────────
+// Reads raw components (d.cfRep) from the Monthly Cash Flow sheet and does ALL
+// EUR maths client-side at admCFRate so the rate input recomputes live.
+// Waterfall order keeps financing BEFORE investments so the cascade stays >0.
+window.admCFRateChange=function(v){
+ var r=parseFloat(v); if(r>0&&isFinite(r)) admCFRate=r;
+ if(admCFLastD) admInitCFReport(admCFLastD);
+};
+function admInitCFReport(d){
+ admCFLastD=d;
+ var body=document.getElementById('adm-cfr-body');
+ var nod=document.getElementById('adm-cfr-nodata');
+ var raw=d?d.cfRep:null;
+ if(!raw){
+ if(body) body.style.display='none';
+ if(nod) nod.style.display='block';
+ destroyChart('adm-c-cfr-wf');
+ return;
+ }
+ if(body) body.style.display='block';
+ if(nod) nod.style.display='none';
+
+ var K=(admCFRate>0)?admCFRate:97;
+ var e=function(lek,eur){return (lek||0)/K + (eur||0);};       // → EUR
+ var fe=function(v){return '€'+Math.round(v).toLocaleString('en-US');};
+ var fkk=function(v){var s=v<0?'-':''; return s+'€'+Math.abs(Math.round(v/1000)).toLocaleString('en-US')+'k';};
+ var fL=function(v){return v?Math.round(v).toLocaleString('en-US')+' L':'—';};
+
+ // ── Line items (native currency; Total EUR = Lek/K + EUR) ────────────────────
+ var hyrjeItems=[
+ {l:'Jo-Cash (Bankë)',    lek:raw.nonCashLek,  eur:raw.nonCashBankEur},
+ {l:'Recepsion Cash',     lek:raw.recepCashLek,eur:raw.recepCashEur},
+ {l:'Allotments / Garanci',lek:0,              eur:raw.allotmentEur},
+ {l:'F&B',                lek:raw.fnbLek,      eur:0},
+ {l:'MICE',               lek:raw.miceLek,     eur:raw.miceEur},
+ ];
+ var daljeItems=[
+ {l:'Paga',               lek:raw.pagaLek,     eur:0},
+ {l:'Taksa & Utilitete',  lek:raw.taksaLek,    eur:0},
+ {l:'House Use',          lek:raw.houseUseLek, eur:0},
+ {l:'Furnitorë Cash',     lek:raw.furnCashLek, eur:raw.furnCashEur},
+ {l:'Furnitorë Bankë',    lek:raw.furnBankLek, eur:raw.furnBankEur},
+ ];
+ var investItems=[
+ {l:'Investime Bankë',    lek:raw.investBankLek,eur:raw.investBankEur},
+ {l:'Investime Cash',     lek:raw.investCashLek,eur:0},
+ ];
+ var sum=function(items){return items.reduce(function(a,x){return a+e(x.lek,x.eur);},0);};
+ var hyrjeOp=sum(hyrjeItems);
+ var daljeOp=sum(daljeItems);
+ var fluksOp=hyrjeOp-daljeOp;
+ var invest =sum(investItems);
+ var disb   =raw.disbKrediEur;                 // Disbursim Kredi (+, EUR)
+ var shlyerje=e(raw.krediLek,raw.krediEur);     // Shlyerje Kredi (−)
+ var financim=disb-shlyerje;
+ var ndryshim=fluksOp - invest + financim;
+ var detFurnChg=(raw.detFurnEndLek-raw.detFurnStartLek)/K;   // (Y−W)/K
+ var detInvChg =(raw.detInvEndLek -raw.detInvStartLek )/K;   // (Z−X)/K
+ var rezRreg   =fluksOp - detFurnChg;                        // rezultati op i rregulluar
+ var recvMice=raw.recvMiceEur, recvOta=raw.recvOtaEur, recvTot=recvMice+recvOta;
+
+ // ── Summary KPIs (6) ─────────────────────────────────────────────────────────
+ var sumEl=document.getElementById('adm-cfr-summary');
+ if(sumEl){
+ var kpi=function(lbl,val,color,sub){
+ return '<div class="adm-kpi" data-color="'+color+'"><div class="adm-kpi-lbl">'+lbl+'</div>'
+ +'<div class="adm-kpi-val">'+val+'</div><div class="adm-kpi-sub">'+sub+'</div></div>';
+ };
+ sumEl.innerHTML=
+ kpi('Hyrjet operative', fe(hyrjeOp),'green','Cash In · veprimtaria')
+ +kpi('Daljet operative', fe(daljeOp),'red','Cash Out · veprimtaria')
+ +kpi('Fluksi neto operativ', fe(fluksOp),(fluksOp>=0?'green':'red'),'Hyrje op − Dalje op')
+ +kpi('Financimi neto', fe(financim),(financim>=0?'green':'red'),'Disbursim − shlyerje kredie')
+ +kpi('Investimet', fe(invest),'red','Bankë + cash')
+ +kpi('Ndryshimi neto i parasë', fe(ndryshim),'amber','Fluksi + financim − investime');
+ }
+
+ // ── Waterfall ────────────────────────────────────────────────────────────────
+ var GRN='#1D9E75', RED='#D85A30', BLU='#378ADD', PRP='#534AB7';
+ var ff=fluksOp+financim;
+ var wfLabels=['Hyrje op','Dalje op','Fluksi op','Financim','Investime','Ndryshimi'];
+ var pre =[0, hyrjeOp, 0, fluksOp, ff, 0];
+ var post=[hyrjeOp, fluksOp, fluksOp, ff, ndryshim, ndryshim];
+ var wfData=wfLabels.map(function(_,i){return [Math.min(pre[i],post[i]), Math.max(pre[i],post[i])];});
+ var deltas=[hyrjeOp, -daljeOp, fluksOp, financim, -invest, ndryshim];
+ var wfColors=[GRN, RED, BLU, (financim>=0?GRN:RED), RED, PRP];
+ mk('adm-c-cfr-wf','bar',wfLabels,[{
+ label:'EUR', data:wfData,
+ backgroundColor:wfColors, borderColor:wfColors, borderWidth:1, borderRadius:4, borderSkipped:false
+ }],{
+ plugins:{
+ legend:{display:false},
+ tooltip:{callbacks:{label:function(ctx){return fe(deltas[ctx.dataIndex]);}}},
+ datalabels:{
+ anchor:'end',align:'end',offset:2,clip:false,color:'#c8d4e8',font:{size:9,weight:'700'},
+ formatter:function(_,ctx){
+ var v=deltas[ctx.dataIndex]; var isSub=(ctx.dataIndex===2||ctx.dataIndex===5);
+ var pfx=isSub?'':(v>=0?'+':'−');
+ return pfx+'€'+Math.abs(v/1000).toFixed(0)+'k';
+ }
+ }
+ },
+ scales:{
+ y:{beginAtZero:true, ticks:{callback:function(v){return '€'+(v/1000).toFixed(0)+'k';}}},
+ x:{ticks:{color:'#a8bcda',font:{size:10,weight:'600'}},grid:{display:false}}
+ }
+ });
+
+ // ── Bullet explanations under the waterfall ──────────────────────────────────
+ var bulletEl=document.getElementById('adm-cfr-bullets');
+ if(bulletEl){
+ // Text is the approved wording (raporti_cash_flow_maj_2026_eur.xlsx, rows 86–91);
+ // amounts are computed live so they stay correct across months and rate changes.
+ var bullets=[
+ ['Hyrjet operative','jeshile','të gjitha arkëtimet nga aktiviteti i hotelit: recepsioni, F&B, MICE, allotments dhe hyrjet jo-cash',hyrjeOp],
+ ['Daljet operative','e kuqe','pagesat e funksionimit të përditshëm: paga, taksa dhe utilitete, furnitorë, house use',daljeOp],
+ ['Fluksi neto operativ','blu','hyrjet minus daljet operative; paraja që gjeneron vetë hoteli, para kredive dhe investimeve',fluksOp],
+ ['Financimi neto','jeshile','disbursimi i kredisë së re minus pagesat e kësteve të kredive',financim],
+ ['Investimet','e kuqe','pagesat për investime gjatë muajit, në bankë dhe cash',invest],
+ ['Ndryshimi neto','vjollcë','rezultati përfundimtar: sa u rrit paraja gjithsej gjatë muajit',ndryshim],
+ ];
+ bulletEl.innerHTML='<div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Shpjegimi i kolonave</div>'
+ +bullets.map(function(b){
+ return '<div style="display:flex;gap:8px;margin-bottom:6px;font-size:11px;line-height:1.5">'
+ +'<span style="color:var(--gold2);flex-shrink:0">•</span>'
+ +'<span style="color:#c8d4e8"><b style="color:var(--gold2)">'+b[0]+' ('+b[1]+')</b> <span style="color:#a8bcda">— '+b[2]+' ('+fe(b[3])+').</span></span></div>';
+ }).join('');
+ }
+
+ // ── Detailed sections 1–4 (Lek / EUR / Totali EUR) ───────────────────────────
+ var CARD='background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px';
+ var HST='font-size:12px;font-weight:700;color:var(--gold);margin-bottom:2px;text-transform:uppercase;letter-spacing:.4px';
+ var SUB='font-size:10px;color:var(--muted);margin-bottom:10px;font-style:italic';
+ var TH='padding:6px 6px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid rgba(201,168,76,.2)';
+ var TD='padding:6px 6px;font-size:12px;color:#c8d4e8;border-bottom:1px solid rgba(255,255,255,.05)';
+ var NUM='text-align:right;font-variant-numeric:tabular-nums';
+ function secTable(title,subt,items,totLbl,totEur){
+ var rows=items.map(function(x){
+ return '<tr><td style="'+TD+'">'+x.l+'</td>'
+ +'<td style="'+TD+NUM+'">'+fL(x.lek)+'</td>'
+ +'<td style="'+TD+NUM+'">'+(x.eur?fe(x.eur):'—')+'</td>'
+ +'<td style="'+TD+NUM+';color:var(--gold2);font-weight:700">'+fe(e(x.lek,x.eur))+'</td></tr>';
+ }).join('');
+ return '<div style="'+CARD+'"><div style="'+HST+'">'+title+'</div><div style="'+SUB+'">'+subt+'</div>'
+ +'<table style="width:100%;border-collapse:collapse"><thead><tr>'
+ +'<th style="'+TH+';text-align:left">Kategoria</th><th style="'+TH+NUM+'">Lek</th>'
+ +'<th style="'+TH+NUM+'">EUR</th><th style="'+TH+NUM+'">Totali EUR</th></tr></thead><tbody>'+rows+'</tbody>'
+ +'<tfoot><tr><td style="'+TD+';font-weight:800;color:var(--gold);border-top:1px solid rgba(201,168,76,.25);border-bottom:none">'+totLbl+'</td>'
+ +'<td style="border-top:1px solid rgba(201,168,76,.25)"></td><td style="border-top:1px solid rgba(201,168,76,.25)"></td>'
+ +'<td style="'+TD+NUM+';font-weight:800;color:var(--gold);border-top:1px solid rgba(201,168,76,.25);border-bottom:none">'+fe(totEur)+'</td></tr></tfoot></table></div>';
+ }
+ // Financing card — signed (+ disbursim, − shlyerje) + neto line
+ var finCard='<div style="'+CARD+'"><div style="'+HST+'">4 · Financimi</div><div style="'+SUB+'">Disbursim − shlyerje kredie · EUR</div>'
+ +'<table style="width:100%;border-collapse:collapse"><thead><tr>'
+ +'<th style="'+TH+';text-align:left">Kategoria</th><th style="'+TH+NUM+'">Lek</th>'
+ +'<th style="'+TH+NUM+'">EUR</th><th style="'+TH+NUM+'">Totali EUR</th></tr></thead><tbody>'
+ +'<tr><td style="'+TD+'">Disbursim Kredi (+)</td><td style="'+TD+NUM+'">—</td><td style="'+TD+NUM+'">'+fe(raw.disbKrediEur)+'</td><td style="'+TD+NUM+';color:#4caf7d;font-weight:700">+'+fe(disb)+'</td></tr>'
+ +'<tr><td style="'+TD+'">Shlyerje Kredi (−)</td><td style="'+TD+NUM+'">'+fL(raw.krediLek)+'</td><td style="'+TD+NUM+'">'+(raw.krediEur?fe(raw.krediEur):'—')+'</td><td style="'+TD+NUM+';color:#e05252;font-weight:700">−'+fe(shlyerje)+'</td></tr>'
+ +'</tbody><tfoot><tr><td style="'+TD+';font-weight:800;color:var(--gold);border-top:1px solid rgba(201,168,76,.25);border-bottom:none">Financimi neto</td>'
+ +'<td style="border-top:1px solid rgba(201,168,76,.25)"></td><td style="border-top:1px solid rgba(201,168,76,.25)"></td>'
+ +'<td style="'+TD+NUM+';font-weight:800;color:'+(financim>=0?'#4caf7d':'#e05252')+';border-top:1px solid rgba(201,168,76,.25);border-bottom:none">'+fe(financim)+'</td></tr></tfoot></table></div>';
+
+ var secEl=document.getElementById('adm-cfr-sections');
+ if(secEl){
+ secEl.innerHTML=
+ secTable('1 · Hyrjet operative','Arkëtime nga veprimtaria · EUR', hyrjeItems,'Totali Hyrjet operative',hyrjeOp)
+ +secTable('2 · Daljet operative','Pagesa operative · EUR', daljeItems,'Totali Daljet operative',daljeOp)
+ +secTable('3 · Investimet (dalje)','Dalje për investime · EUR', investItems,'Totali Investime',invest)
+ +finCard;
+ }
+
+ // ── Detyrimet ndaj furnitorëve (liabilities) ─────────────────────────────────
+ var liabEl=document.getElementById('adm-cfr-liab');
+ if(liabEl){
+ var TH2='padding:6px 6px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid rgba(201,168,76,.2)';
+ function liabRow(l,startLek,endLek,chgEur){
+ return '<tr><td style="'+TD+'">'+l+'</td>'
+ +'<td style="'+TD+NUM+'">'+fL(startLek)+'</td>'
+ +'<td style="'+TD+NUM+'">'+fL(endLek)+'</td>'
+ +'<td style="'+TD+NUM+';color:'+(chgEur>=0?'#e8a23a':'#4caf7d')+';font-weight:700">'+(chgEur>=0?'+':'')+fe(chgEur)+'</td></tr>';
+ }
+ liabEl.innerHTML='<div style="'+HST+'">Detyrimet ndaj furnitorëve</div>'
+ +'<div style="'+SUB+'">Fillim / fund muaji (Lek) · ndryshimi në EUR</div>'
+ +'<table style="width:100%;border-collapse:collapse"><thead><tr>'
+ +'<th style="'+TH2+';text-align:left">Kategoria</th><th style="'+TH2+NUM+'">Fillim</th>'
+ +'<th style="'+TH2+NUM+'">Fund</th><th style="'+TH2+NUM+'">Δ EUR</th></tr></thead><tbody>'
+ +liabRow('Furnitorë operativë',raw.detFurnStartLek,raw.detFurnEndLek,detFurnChg)
+ +liabRow('Investime',raw.detInvStartLek,raw.detInvEndLek,detInvChg)
+ +'</tbody></table>'
+ +'<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(201,168,76,.15);display:flex;justify-content:space-between;align-items:center">'
+ +'<div><div style="font-size:11px;color:var(--gold2);font-weight:700">Rezultati operativ i rregulluar</div>'
+ +'<div style="font-size:10px;color:var(--muted)">Fluksi op − ndryshimi i detyrimeve operative</div></div>'
+ +'<div style="font-size:18px;font-weight:800;color:'+(rezRreg>=0?'#4caf7d':'#e05252')+'">'+fe(rezRreg)+'</div></div>';
+ }
+
+ // ── Arkëtime të pritshme (expected receivables) ──────────────────────────────
+ var recvEl=document.getElementById('adm-cfr-recv');
+ if(recvEl){
+ var recvItems=[{l:'MICE',v:recvMice,c:'#3b82f6'},{l:'OTA',v:recvOta,c:'#e8a23a'}];
+ var rmax=Math.max(recvMice,recvOta,1);
+ recvEl.innerHTML='<div style="'+HST+'">Arkëtime të pritshme</div>'
+ +'<div style="'+SUB+'">Për t\'u mbledhur · EUR</div>'
+ +recvItems.map(function(x){
+ var pct=recvTot>0?(x.v/recvTot*100):0;
+ return '<div style="margin-bottom:12px">'
+ +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">'
+ +'<span style="color:#c8d4e8"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:'+x.c+';margin-right:6px"></span>'+x.l+'</span>'
+ +'<span style="color:var(--gold2);font-weight:700">'+fe(x.v)+' <span style="color:var(--muted);font-weight:400;font-size:10px">'+pct.toFixed(0)+'%</span></span></div>'
+ +'<div style="height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+(x.v/rmax*100).toFixed(1)+'%;background:'+x.c+'"></div></div></div>';
+ }).join('')
+ +'<div style="margin-top:6px;padding-top:12px;border-top:1px solid rgba(201,168,76,.15);display:flex;justify-content:space-between;align-items:center">'
+ +'<span style="font-size:11px;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Gjithsej</span>'
+ +'<span style="font-size:18px;font-weight:800;color:var(--gold)">'+fe(recvTot)+'</span></div>';
+ }
+}
+
 function admInitRevChart(d){
  var cats = d.revOutlets || d.revCats;
  if(!cats || !cats.length) return;
@@ -3739,6 +3982,7 @@ function admUpdateCharts(d){
  admInitRevChart(d);
  admInitExpChart(d);
  admInitCFCharts(d); // Now period-aware
+ admInitCFReport(d); // Detailed Cash Flow Report (Monthly Cash Flow sheet)
 }
 
 // ── Live data loader — merges /api/admin into ADM_DATA ────────────────────────
@@ -3882,6 +4126,8 @@ function admMergeSheet(key, live) {
  d.cfOutNonCash  = live.cfOutNonCash  != null ? live.cfOutNonCash  : null;
  d.cfDaljeALL_eur= live.cfDaljeALL_eur!= null ? live.cfDaljeALL_eur: null;
  d.cfDaljeEUR_eur= live.cfDaljeEUR_eur!= null ? live.cfDaljeEUR_eur: null;
+ // Raw Monthly Cash Flow components for the detailed Cash Flow Report (server sums for 'all')
+ d.cfRep = live.cfRep || null;
 
  // ── Revenue by outlet — per-outlet breakdown (server provides live data) ────────
  if (live.revOutlets != null) {
