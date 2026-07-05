@@ -1382,7 +1382,7 @@ function ciGenInsights(m){
                    : ' por ul çmimin mesatar (ADR '+ciEur2(dom.adr)+' < '+ciEur2(adrAvg)+').'));
  if(dom.shareNights>0.5) recom.push('Diversifiko kanalet: <b>'+dom.ch+'</b> zë mbi 50% të netëve — ul varësinë nga një kanal i vetëm.');
  chans.filter(function(c){return c.shareNights>0.10 && c.adr<adrAvg;}).forEach(function(c){
- concl.push('<b>'+c.ch+'</b> dilon çmimin — '+ciPct(c.shareNights)+' të netëve por ADR '+ciEur2(c.adr)+' nën mesataren '+ciEur2(adrAvg)+'.');
+ concl.push('<b>'+c.ch+'</b> ul çmimin mesatar — '+ciPct(c.shareNights)+' të netëve por ADR '+ciEur2(c.adr)+' nën mesataren '+ciEur2(adrAvg)+'.');
  recom.push('Rinegocio tarifat ose kufizo disponueshmërinë për <b>'+c.ch+'</b> (ADR nën mesatare me vëllim të lartë).');
  });
  var topAdr=byAdr[0];
