@@ -1307,11 +1307,13 @@ function ciRenderTable(m){
  var topBorder=';border-top:1px solid rgba(201,168,76,.25)';
  function badge(x){ var p=(x||0)*100; var c=p>=40?'#2a78d6':p>=15?'#4a3aa7':'#6b7fa3'; return '<span style="background:'+c+'22;border:1px solid '+c+'55;color:'+c+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">'+p.toFixed(1)+'%</span>'; }
  var rows=chans.map(function(c){
- return '<tr><td style="'+td+';font-weight:600">'+c.ch+'</td>'
- +'<td style="'+td+num+'">'+c.roomnights.toLocaleString('en-US')+'</td>'
+ var gap=c.revenue>0 && c.roomnights===0; // revenue but no nights → source data gap
+ var gapS=gap?';color:#e8a23a':''; var gapMark=gap?' ⚠':'';
+ return '<tr'+(gap?' title="Netët/ADR mungojnë në fletën CHANNEL PERFORMANCE"':'')+'><td style="'+td+';font-weight:600">'+c.ch+'</td>'
+ +'<td style="'+td+num+gapS+'">'+c.roomnights.toLocaleString('en-US')+gapMark+'</td>'
  +'<td style="'+td+';text-align:right">'+badge(c.shareNights)+'</td>'
  +'<td style="'+td+num+'">'+c.reservations.toLocaleString('en-US')+'</td>'
- +'<td style="'+td+num+'">'+ciEur2(c.adr)+'</td>'
+ +'<td style="'+td+num+gapS+'">'+ciEur2(c.adr)+gapMark+'</td>'
  +'<td style="'+td+num+'">'+(c.alos?c.alos.toFixed(2):'—')+'</td>'
  +'<td style="'+td+num+';color:var(--gold2);font-weight:700">'+ciEur(c.revenue)+'</td>'
  +'<td style="'+td+num+'">'+ciPct(c.shareRev)+'</td>'
@@ -1382,6 +1384,9 @@ function ciGenInsights(m){
  var commPct=function(c){ return c.revenue>0 ? c.commission/c.revenue : 0; };
 
  function impact(c){
+ // Revenue present but no nights → source data gap (e.g. ROOMNIGHTS not filled).
+ if(c.revenue>0 && c.roomnights===0)
+   return '<b>'+c.ch+'</b> — ⚠ të dhëna mangët: '+ciEur(c.revenue)+' revenue ('+ciPct(c.shareRev)+') por PA netë të regjistruara (netët/ADR mungojnë në fletën CHANNEL PERFORMANCE).';
  var premium=c.adr>=adrAvg;
  var role = (c===dom) ? 'kanali kryesor (dominues)'
           : (c.shareNights>=0.10) ? 'kontribues i madh në vëllim'
@@ -1399,6 +1404,7 @@ function ciGenInsights(m){
  }
 
  function action(c){
+ if(c.revenue>0 && c.roomnights===0) return 'Plotëso ROOMNIGHTS / ADR për <b>'+c.ch+'</b> në fletën CHANNEL PERFORMANCE — të dhënat mungojnë.';
  var premium=c.adr>=adrAvg, g=yoy(c);
  if(c===dom) return c.shareNights>0.5
    ? 'Ruaj marrëdhënien por diversifiko — zë mbi 50% të netëve, ul varësinë nga një kanal i vetëm.'
@@ -1412,10 +1418,14 @@ function ciGenInsights(m){
  return 'Monitoro — kontribut i kufizuar në miks.';
  }
 
- return {
- concl: byN.map(impact),
- recom: byN.map(function(c){ return '<b>'+c.ch+'</b>: '+action(c); })
- };
+ var concl=byN.map(impact);
+ var recom=byN.map(function(c){ return '<b>'+c.ch+'</b>: '+action(c); });
+ // Surface any revenue-without-nights gaps prominently at the top.
+ var missing=chans.filter(function(c){ return c.revenue>0 && c.roomnights===0; });
+ if(missing.length){
+ concl.unshift('<span style="color:#e8a23a">⚠ <b>Të dhëna mungojnë:</b> '+missing.map(function(c){ return c.ch+' ('+ciEur(c.revenue)+' revenue, 0 netë)'; }).join(', ')+' — plotëso ROOMNIGHTS/ADR në fletën CHANNEL PERFORMANCE që raporti të jetë i saktë.</span>');
+ }
+ return { concl:concl, recom:recom };
 }
 function ciRenderInsights(m){
  var ins=ciGenInsights(m);
