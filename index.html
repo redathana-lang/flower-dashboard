@@ -393,7 +393,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <button class="nav-tab" id="tab_fo" onclick="showSec('fo')"> Front Office</button>
  <button class="nav-tab" id="tab_fnb" onclick="showSec('fnb')"> F&B</button>
  <button class="nav-tab" id="tab_spa" onclick="showSec('spa')"> SPA</button>
- <button class="nav-tab" id="tab_pax" onclick="showSec('pax')"> PAX</button>
+ <button class="nav-tab" id="tab_pax" onclick="showSec('pax')"> Channel Insights</button>
  <button class="nav-tab" id="tab_cashflow" onclick="showSec('cashflow')"> Cash Flow</button>
  <button class="nav-tab" id="tab_finance" onclick="showSec('finance')"> Shpenzime</button>
  <button class="nav-tab" id="tab_housekeeping" onclick="showSec('housekeeping')"> Housekeeping</button>
@@ -425,7 +425,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <div id="c_spa"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
  </div>
  <div id="sec_pax" class="fsec" style="display:none">
- <div id="c_pax"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+ <div id="ci-root">
+ <!-- Header: title + month dropdown + export -->
+ <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+ <div>
+ <div style="font-size:18px;font-weight:700;color:var(--gold)">Channel Production Insights</div>
+ <div style="font-size:11px;color:var(--muted);margin-top:2px">Prodhimi sipas kanaleve · Fleta CHANNEL PERFORMANCE</div>
+ </div>
+ <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+ <select id="ci-month" onchange="ciSelectMonth(this.value)" style="background:var(--card);border:1px solid rgba(201,168,76,.3);color:var(--gold2);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer"></select>
+ <button onclick="ciExportCSV()" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:var(--gold2);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer">⬇ Eksporto CSV</button>
+ </div>
+ </div>
+ <div id="ci-loading" class="loading"><div class="spin"></div>Duke ngarkuar...</div>
+ <div id="ci-body" style="display:none">
+ <div id="ci-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px"></div>
+ <div id="ci-table" style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow-x:auto;margin-bottom:16px"></div>
+ <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+ <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+ <span style="font-size:13px;font-weight:700;color:var(--gold)">Renditja grafike</span>
+ <div id="ci-tabs" style="display:flex;gap:6px;margin-left:auto;flex-wrap:wrap"></div>
+ </div>
+ <div id="ci-chart-wrap" style="position:relative;height:360px"><canvas id="ci-chart"></canvas></div>
+ </div>
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
+ <div id="ci-concl" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px"></div>
+ <div id="ci-recom" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px"></div>
+ </div>
+ </div>
+ </div>
  </div>
  <div id="sec_cashflow" class="fsec" style="display:none">
  <div id="c_cashflow"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
@@ -969,12 +997,14 @@ function showSec(id){
  const tab=document.getElementById('tab_'+id); if(tab) tab.classList.add('active');
  document.getElementById('tbSub').textContent=id.toUpperCase()+' · '+fRange()+' VS '+pYRange();
  const db=document.querySelector('.date-bar');
- if(db) db.style.display=(id==='housekeeping'||id==='admin_panel')?'none':'flex';
+ if(db) db.style.display=(id==='housekeeping'||id==='admin_panel'||id==='pax')?'none':'flex';
  // Daily report button hidden on admin panel tab (has its own monthly report button)
  var srBtn=document.getElementById('btnSendReport');
  if(srBtn) srBtn.style.display=(currentRole==='admin' && id!=='admin_panel')?'inline-flex':'none';
  if(id==='sales' && typeof salesAutoLoad==='function') salesAutoLoad();
  if(id==='admin_panel' && typeof admLazyInit==='function') admLazyInit();
+ if(id==='pax' && typeof loadChannelInsights==='function') loadChannelInsights();
+ if(id==='pax'){ var sub=document.getElementById('tbSub'); if(sub) sub.textContent='CHANNEL PRODUCTION INSIGHTS'; }
 }
 
 // ─── DATE ─────────────────────────────────────────────────────────────────────
@@ -1002,13 +1032,13 @@ async function forceRefresh(){
 }
 
 function setLoading(){
- ['overview','fo','fnb','spa','pax','cashflow','finance'].forEach(id=>{
+ ['overview','fo','fnb','spa','cashflow','finance'].forEach(id=>{
  const el=document.getElementById('c_'+id);
  if(el) el.innerHTML='<div class="loading"><div class="spin"></div>Duke ngarkuar...</div>';
  });
 }
 function setErr(m){
- ['overview','fo','fnb','spa','pax','cashflow','finance'].forEach(id=>{
+ ['overview','fo','fnb','spa','cashflow','finance'].forEach(id=>{
  const el=document.getElementById('c_'+id);
  if(el) el.innerHTML=`<div class="err">⚠ ${m}</div>`;
  });
@@ -1022,7 +1052,7 @@ function renderAll(d){
  rFO(fo,foY);
  rFNB(fnb,fnbY);
  rSPA(spa,spaY);
- rPAX(boards,boardsY);
+ // Pax tab repurposed as Channel Production Insights (own monthly loader) — no daily render here
  rCF(cf);
  rFin(fin);
 }
@@ -1207,24 +1237,201 @@ function rSPA(spa,spaY){
  </div>`;
 }
 
-// ─── PAX (Daily Boards) ───────────────────────────────────────────────────────
-function rPAX(boards,boardsY){
- const el=document.getElementById('c_pax'); if(!el)return;
- const tot=n(boards.total_pax)||n(boards.pax_bb)+n(boards.pax_hb)+n(boards.pax_ai)+n(boards.pax_romantic);
- const totY=n(boardsY.pax_bb)+n(boardsY.pax_hb)+n(boardsY.pax_ai)+n(boardsY.pax_romantic);
- const row=(l,v,vy)=>`<tr><td>${l}</td><td class="v g">${v||0}</td><td class="v">${vy!==undefined?vy:'—'}</td></tr>`;
- el.innerHTML=`<div class="sec-card">
- <div class="sec-hdr2"> PAX / Daily Boards — ${fRange()}</div>
- <table class="dtable">
- <tr><th>Pako</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
- ${row(' BB PAX',n(boards.pax_bb),n(boardsY.pax_bb))}
- ${row(' HB PAX',n(boards.pax_hb),n(boardsY.pax_hb))}
- ${row('⭐ AI PAX',n(boards.pax_ai),n(boardsY.pax_ai))}
- ${row(' Romantic PAX',n(boards.pax_romantic),n(boardsY.pax_romantic))}
- <tr class="tr"><td>TOTAL PAX</td><td class="v g">${tot}</td><td class="v">${totY||'—'}</td></tr>
- </table>
- </div>`;
+// ─── CHANNEL PRODUCTION INSIGHTS (monthly; replaces the old daily Pax tab) ──────
+// Data from GET /api/channel-insights (processed per spec). Own month dropdown.
+var CI_DATA=null, CI_CUR=null, CI_TAB='nights', CI_CHART=null, CI_LOADED=false;
+var CI_TABS=[
+ {k:'nights',  l:'Netët',   color:'#2a78d6'},
+ {k:'adr',     l:'ADR',     color:'#4a3aa7'},
+ {k:'revenue', l:'Revenue', color:'#1baf7a'}
+];
+function ciEur(v){ return '€'+Math.round(v||0).toLocaleString('en-US'); }
+function ciEur2(v){ return '€'+(v||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); } // ADR (rate → cents matter)
+function ciPct(x){ return ((x||0)*100).toFixed(1)+'%'; }
+
+async function loadChannelInsights(){
+ if(CI_LOADED){ ciRenderMonth(); return; }
+ var body=document.getElementById('ci-body'), load=document.getElementById('ci-loading');
+ try{
+ var r=await fetch('/api/channel-insights');
+ if(!r.ok) throw new Error('Server '+r.status);
+ CI_DATA=await r.json(); CI_LOADED=true;
+ var months=CI_DATA.months||[];
+ var sel=document.getElementById('ci-month');
+ sel.innerHTML=months.map(function(m){return '<option value="'+m.key+'">'+m.label+'</option>';}).join('');
+ CI_CUR = months.length ? months[months.length-1].key : null; // default: latest month with data
+ if(CI_CUR) sel.value=CI_CUR;
+ document.getElementById('ci-tabs').innerHTML=CI_TABS.map(ciTabBtn).join('');
+ if(load) load.style.display='none';
+ if(!CI_CUR){ if(load){load.style.display='block';load.className='';load.textContent='Pa të dhëna kanalesh.';} return; }
+ if(body) body.style.display='block';
+ ciRenderMonth();
+ }catch(e){ if(load){ load.className='err'; load.innerHTML='⚠ '+e.message; } }
 }
+
+function ciTabBtn(t){
+ var on=CI_TAB===t.k;
+ return '<button onclick="ciSetTab(\''+t.k+'\')" style="background:'+(on?t.color:'transparent')+';border:1px solid '+(on?t.color:'rgba(255,255,255,.15)')+';color:'+(on?'#fff':'#a8bcda')+';border-radius:7px;padding:5px 12px;font-size:11px;font-weight:600;cursor:pointer">'+t.l+'</button>';
+}
+window.ciSetTab=function(k){ CI_TAB=k; var tb=document.getElementById('ci-tabs'); if(tb) tb.innerHTML=CI_TABS.map(ciTabBtn).join(''); ciRenderChart(); };
+window.ciSelectMonth=function(k){ CI_CUR=k; ciRenderMonth(); };
+
+function ciRenderMonth(){
+ var m=CI_DATA&&CI_DATA.data[CI_CUR]; if(!m) return;
+ ciRenderKPIs(m); ciRenderTable(m); ciRenderChart(); ciRenderInsights(m);
+}
+
+function ciRenderKPIs(m){
+ var t=m.totals;
+ var card=function(lbl,val,sub,color){
+ return '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden">'
+ +'<div style="position:absolute;top:0;left:0;right:0;height:2px;background:'+color+'"></div>'
+ +'<div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">'+lbl+'</div>'
+ +'<div style="font-size:20px;font-weight:800;color:'+color+'">'+val+'</div>'
+ +'<div style="font-size:10px;color:var(--muted);margin-top:3px">'+sub+'</div></div>';
+ };
+ document.getElementById('ci-kpis').innerHTML=
+ card('Të ardhura totale', ciEur(t.revenue), m.label, '#1baf7a')
+ +card('Netë të shitura', t.nights.toLocaleString('en-US'), t.reservations.toLocaleString('en-US')+' rezervime', '#2a78d6')
+ +card('ADR mesatar', ciEur2(t.adrAvg), 'Σrev / Σnetë', '#4a3aa7')
+ +card('Occupancy', (t.occ!=null?t.occ.toFixed(1)+'%':'—'), (t.nightsAvail? t.nights.toLocaleString('en-US')+' / '+t.nightsAvail.toLocaleString('en-US')+' netë':'—'), '#c9a84c')
+ +card('Komisione totale', ciEur(t.commission), 'OTA / agjensi', '#d8823a');
+}
+
+function ciRenderTable(m){
+ var chans=m.channels.slice().sort(function(a,b){return b.roomnights-a.roomnights;});
+ var t=m.totals;
+ var th='padding:9px 10px;font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid rgba(201,168,76,.2);white-space:nowrap';
+ var td='padding:8px 10px;font-size:12px;color:#c8d4e8;border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap';
+ var num=';text-align:right;font-variant-numeric:tabular-nums';
+ var topBorder=';border-top:1px solid rgba(201,168,76,.25)';
+ function badge(x){ var p=(x||0)*100; var c=p>=40?'#2a78d6':p>=15?'#4a3aa7':'#6b7fa3'; return '<span style="background:'+c+'22;border:1px solid '+c+'55;color:'+c+';font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px">'+p.toFixed(1)+'%</span>'; }
+ var rows=chans.map(function(c){
+ return '<tr><td style="'+td+';font-weight:600">'+c.ch+'</td>'
+ +'<td style="'+td+num+'">'+c.roomnights.toLocaleString('en-US')+'</td>'
+ +'<td style="'+td+';text-align:right">'+badge(c.shareNights)+'</td>'
+ +'<td style="'+td+num+'">'+c.reservations.toLocaleString('en-US')+'</td>'
+ +'<td style="'+td+num+'">'+ciEur2(c.adr)+'</td>'
+ +'<td style="'+td+num+'">'+(c.alos?c.alos.toFixed(2):'—')+'</td>'
+ +'<td style="'+td+num+';color:var(--gold2);font-weight:700">'+ciEur(c.revenue)+'</td>'
+ +'<td style="'+td+num+'">'+ciPct(c.shareRev)+'</td>'
+ +'<td style="'+td+num+'">'+(c.commission?ciEur(c.commission):'—')+'</td></tr>';
+ }).join('');
+ var tot='<tr style="background:rgba(201,168,76,.08)"><td style="'+td+topBorder+';font-weight:800;color:var(--gold)">TOTALI</td>'
+ +'<td style="'+td+num+topBorder+';font-weight:800">'+t.nights.toLocaleString('en-US')+'</td>'
+ +'<td style="'+td+topBorder+'"></td>'
+ +'<td style="'+td+num+topBorder+';font-weight:800">'+t.reservations.toLocaleString('en-US')+'</td>'
+ +'<td style="'+td+num+topBorder+';font-weight:800">'+ciEur2(t.adrAvg)+'</td>'
+ +'<td style="'+td+topBorder+'"></td>'
+ +'<td style="'+td+num+topBorder+';font-weight:800;color:var(--gold)">'+ciEur(t.revenue)+'</td>'
+ +'<td style="'+td+num+topBorder+';font-weight:800">100.0%</td>'
+ +'<td style="'+td+num+topBorder+';font-weight:800">'+ciEur(t.commission)+'</td></tr>';
+ document.getElementById('ci-table').innerHTML=
+ '<table style="width:100%;border-collapse:collapse;min-width:760px">'
+ +'<thead><tr><th style="'+th+';text-align:left">Kanali</th><th style="'+th+num+'">Netë</th><th style="'+th+';text-align:right">% Netë</th>'
+ +'<th style="'+th+num+'">Rezervime</th><th style="'+th+num+'">ADR</th><th style="'+th+num+'">ALOS</th>'
+ +'<th style="'+th+num+'">Revenue</th><th style="'+th+num+'">% Rev</th><th style="'+th+num+'">Komisione</th></tr></thead>'
+ +'<tbody>'+rows+tot+'</tbody></table>';
+}
+
+function ciRenderChart(){
+ var m=CI_DATA&&CI_DATA.data[CI_CUR]; if(!m) return;
+ var tab=CI_TABS.filter(function(t){return t.k===CI_TAB;})[0]||CI_TABS[0];
+ var chans=m.channels.slice(), valOf, fmt;
+ if(CI_TAB==='nights'){ chans.sort(function(a,b){return b.roomnights-a.roomnights;}); valOf=function(c){return c.roomnights;}; fmt=function(c){return c.roomnights.toLocaleString('en-US');}; }
+ else if(CI_TAB==='adr'){ chans.sort(function(a,b){return b.adr-a.adr;}); valOf=function(c){return c.adr;}; fmt=function(c){return ciEur2(c.adr);}; }
+ else { chans.sort(function(a,b){return b.revenue-a.revenue;}); valOf=function(c){return c.revenue;}; fmt=function(c){return ciEur(c.revenue)+' ('+ciPct(c.shareRev)+')';}; }
+ var labels=chans.map(function(c){return c.ch;});
+ var data=chans.map(valOf);
+ var fmtMap={}; chans.forEach(function(c){ fmtMap[c.ch]=fmt(c); });
+ var cv=document.getElementById('ci-chart'); if(!cv||typeof Chart==='undefined') return;
+ var wrap=document.getElementById('ci-chart-wrap'); if(wrap) wrap.style.height=Math.max(220,labels.length*32+30)+'px';
+ if(CI_CHART){ try{CI_CHART.destroy();}catch(e){} CI_CHART=null; }
+ var _DL=window.ChartDataLabels;
+ CI_CHART=new Chart(cv,{
+ type:'bar',
+ data:{labels:labels,datasets:[{label:tab.l,data:data,backgroundColor:tab.color,borderRadius:5,borderSkipped:false,barThickness:18,maxBarThickness:22}]},
+ options:{
+ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+ layout:{padding:{right:CI_TAB==='revenue'?130:70}},
+ plugins:{
+ legend:{display:false},
+ tooltip:{callbacks:{label:function(ctx){return ' '+fmtMap[ctx.label];}}},
+ datalabels:{ anchor:'end',align:'end',offset:4,clip:false,color:'#c8d4e8',font:{size:10,weight:'700'},
+ formatter:function(v,ctx){return fmtMap[labels[ctx.dataIndex]];} }
+ },
+ scales:{
+ x:{beginAtZero:true,ticks:{color:'#8fa3c0',font:{size:10},callback:function(v){return CI_TAB==='nights'?v:('€'+(v>=1000?(v/1000).toFixed(0)+'k':v));}},grid:{color:'rgba(255,255,255,.05)'}},
+ y:{ticks:{color:'#a8bcda',font:{size:10,weight:'600'}},grid:{display:false}}
+ }
+ },
+ plugins: _DL?[_DL]:[]
+ });
+}
+
+// Rule-generated conclusions & recommendations (spec §"Rregullat e konkluzioneve/rekomandimeve").
+function ciGenInsights(m){
+ var chans=m.channels, t=m.totals, adrAvg=t.adrAvg;
+ var concl=[], recom=[];
+ if(!chans.length) return {concl:['Pa të dhëna.'], recom:[]};
+ var byN=chans.slice().sort(function(a,b){return b.shareNights-a.shareNights;});
+ var byAdr=chans.slice().sort(function(a,b){return b.adr-a.adr;});
+ var dom=byN[0];
+ concl.push('<b>'+dom.ch+'</b> dominon me '+ciPct(dom.shareNights)+' të netëve'
+ +(dom.adr>=adrAvg ? ' me ADR të shëndetshëm ('+ciEur2(dom.adr)+' ≥ mesatarja '+ciEur2(adrAvg)+').'
+                   : ' por ul çmimin mesatar (ADR '+ciEur2(dom.adr)+' < '+ciEur2(adrAvg)+').'));
+ if(dom.shareNights>0.5) recom.push('Diversifiko kanalet: <b>'+dom.ch+'</b> zë mbi 50% të netëve — ul varësinë nga një kanal i vetëm.');
+ chans.filter(function(c){return c.shareNights>0.10 && c.adr<adrAvg;}).forEach(function(c){
+ concl.push('<b>'+c.ch+'</b> dilon çmimin — '+ciPct(c.shareNights)+' të netëve por ADR '+ciEur2(c.adr)+' nën mesataren '+ciEur2(adrAvg)+'.');
+ recom.push('Rinegocio tarifat ose kufizo disponueshmërinë për <b>'+c.ch+'</b> (ADR nën mesatare me vëllim të lartë).');
+ });
+ var topAdr=byAdr[0];
+ if(topAdr){
+ var minimal=topAdr.shareNights<0.01;
+ concl.push('ADR më i lartë: <b>'+topAdr.ch+'</b> '+ciEur2(topAdr.adr)+(minimal?' — por vëllim i papërfillshëm ('+topAdr.roomnights+' netë), potencial i pashfrytëzuar.':'.'));
+ if(minimal) recom.push('Aktivizo/investo në <b>'+topAdr.ch+'</b>: ADR i lartë ('+ciEur2(topAdr.adr)+') me vëllim minimal — hapësirë rritjeje.');
+ }
+ chans.forEach(function(c){
+ if(c.lyRev!=null && c.lyRev>0){
+ var chg=(c.revenue-c.lyRev)/c.lyRev;
+ if(chg< -0.30){
+ concl.push('<b>'+c.ch+'</b> rënie '+Math.round(Math.abs(chg)*100)+'% e revenue kundrejt vitit të kaluar ('+ciEur(c.lyRev)+' → '+ciEur(c.revenue)+').');
+ recom.push('Hetim për <b>'+c.ch+'</b>: rënie e ndjeshme YoY — kontrollo kontratën / allotmentin / çmimin.');
+ }
+ }
+ });
+ chans.forEach(function(c){
+ if(c.revenue>0 && c.commission/c.revenue>0.10) concl.push('<b>'+c.ch+'</b> komision i lartë: '+ciPct(c.commission/c.revenue)+' e revenue ('+ciEur(c.commission)+').');
+ });
+ if(!recom.length) recom.push('Struktura e kanaleve e balancuar — vazhdo monitorimin e ADR dhe komisioneve.');
+ return {concl:concl, recom:recom};
+}
+function ciRenderInsights(m){
+ var ins=ciGenInsights(m);
+ function panel(title,icon,items,color){
+ return '<div style="font-size:13px;font-weight:700;color:'+color+';margin-bottom:10px">'+icon+' '+title+'</div>'
+ +'<ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px">'
+ +items.map(function(x){return '<li style="font-size:11.5px;line-height:1.55;color:#c8d4e8;padding-left:14px;position:relative"><span style="position:absolute;left:0;color:'+color+'">•</span>'+x+'</li>';}).join('')
+ +'</ul>';
+ }
+ document.getElementById('ci-concl').innerHTML=panel('Konkluzione','📊',ins.concl,'#c9a84c');
+ document.getElementById('ci-recom').innerHTML=panel('Rekomandime','💡',ins.recom,'#1baf7a');
+}
+
+window.ciExportCSV=function(){
+ var m=CI_DATA&&CI_DATA.data[CI_CUR]; if(!m) return;
+ var chans=m.channels.slice().sort(function(a,b){return b.roomnights-a.roomnights;});
+ var lines=[['Kanali','Nete','% Nete','Rezervime','ADR','ALOS','Revenue','% Rev','Komisione'].join(',')];
+ chans.forEach(function(c){
+ lines.push([c.ch,c.roomnights,(c.shareNights*100).toFixed(1)+'%',c.reservations,c.adr,c.alos,c.revenue,(c.shareRev*100).toFixed(1)+'%',c.commission].join(','));
+ });
+ var t=m.totals;
+ lines.push(['TOTALI',t.nights,'',t.reservations,t.adrAvg,'',t.revenue,'100%',t.commission].join(','));
+ var blob=new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'});
+ var url=URL.createObjectURL(blob), a=document.createElement('a');
+ a.href=url; a.download='channel_insights_'+CI_CUR+'_2026.csv'; document.body.appendChild(a); a.click();
+ document.body.removeChild(a); URL.revokeObjectURL(url);
+};
 
 // ─── CASH FLOW ────────────────────────────────────────────────────────────────
 // Doughnut helper for the Cash Flow tab (Hyrje/Dalje breakdown pies).

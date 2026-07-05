@@ -313,6 +313,106 @@ function parseExecSummary(rows) {
  return result;
 }
 
+// Albanian month names for UI labels (Channel Insights, etc.)
+const MON_SQ = { jan:'Janar', feb:'Shkurt', mar:'Mars', apr:'Prill', may:'Maj', jun:'Qershor',
+                 jul:'Korrik', aug:'Gusht', sep:'Shtator', oct:'Tetor', nov:'Nëntor', dec:'Dhjetor' };
+
+// ─── CHANNEL PRODUCTION INSIGHTS ──────────────────────────────────────────────
+// Processes the CHANNEL PERFORMANCE sheet (gid 954992085) per month.
+// Sheet cols: A MONTH | B CHANNEL | C REVENUE | D SHARE | E COMMISION | F ROOMNIGHTS
+//             | G RESERVATIONS | H ADR | I ALOS. One row per channel per month.
+// Rules (approved spec):
+//  1. filter rows of the selected month (month labels match MON_DEFS ay, e.g. "May-26");
+//  2. drop rows whose REVENUE cell is blank (the sheet has duplicate empty rows, some
+//     under a space-variant label like "May 26" — normalised here);
+//  3. DEBITOR is never shown — its (negative) revenue/nights/reservations fold into DIRECT;
+//  4. drop channels with no activity (REVENUE = 0 AND ROOMNIGHTS = 0);
+//  5. shares are computed here, NOT read from sheet col D (its range is wrong);
+//  6. DIRECT ADR is recomputed (revenue/roomnights) after the DEBITOR fold.
+function computeChannelInsights(chRows, execRows) {
+  const out = { months: [], data: {} };
+  if (!chRows || chRows.length < 2) return out;
+  const execIdx = indexByMonth(execRows || [], 1); // MONTH → exec row; col 1 = RN AVAIL
+
+  // Group non-blank channel rows by normalised month label ("May 26" → "May-26").
+  const byMonth = {};
+  for (let i = 1; i < chRows.length; i++) {
+    const r = chRows[i];
+    const monRaw = String(r[0] || '').trim();
+    if (!monRaw) continue;
+    const mon = monRaw.replace(/\s+/g, '-');
+    const ch = String(r[1] || '').trim();
+    if (!ch) continue;
+    if (String(r[2] == null ? '' : r[2]).trim() === '') continue; // rule 2: blank REVENUE
+    (byMonth[mon] = byMonth[mon] || []).push({
+      ch, revenue: n(r[2]), commission: n(r[4]), roomnights: n(r[5]),
+      reservations: n(r[6]), adr: n(r[7]), alos: n(r[8]),
+    });
+  }
+
+  // Fold DEBITOR into DIRECT (rule 3), recompute DIRECT ADR (rule 6), drop 0/0 (rule 4).
+  function processMonth(rows) {
+    let debRev = 0, debNights = 0, debResv = 0;
+    const list = [];
+    for (const c of rows) {
+      if (c.ch.toUpperCase() === 'DEBITOR') { debRev += c.revenue; debNights += c.roomnights; debResv += c.reservations; continue; }
+      list.push(Object.assign({}, c));
+    }
+    const direct = list.find(c => c.ch.toUpperCase() === 'DIRECT');
+    if (direct) {
+      direct.revenue += debRev; direct.roomnights += debNights; direct.reservations += debResv;
+      direct.adr = direct.roomnights ? direct.revenue / direct.roomnights : 0;
+    }
+    return list.filter(c => !(c.revenue === 0 && c.roomnights === 0));
+  }
+
+  for (const def of MON_DEFS) {
+    const rows = byMonth[def.ay];
+    if (!rows || !rows.length) continue;
+    const channels = processMonth(rows);
+    const totalRev = channels.reduce((a, c) => a + c.revenue, 0);
+    const totalNights = channels.reduce((a, c) => a + c.roomnights, 0);
+    if (totalRev === 0 && totalNights === 0) continue; // month present but no activity
+    const totalResv = channels.reduce((a, c) => a + c.reservations, 0);
+    const totalComm = channels.reduce((a, c) => a + c.commission, 0);
+
+    // YoY revenue per channel (prior-year same month), DEBITOR folded there too.
+    const lyRevByChan = {};
+    (byMonth[def.ly] ? processMonth(byMonth[def.ly]) : []).forEach(c => {
+      lyRevByChan[c.ch.toUpperCase()] = (lyRevByChan[c.ch.toUpperCase()] || 0) + c.revenue;
+    });
+
+    channels.forEach(c => { // rule 5: shares computed here
+      c.shareRev = totalRev ? c.revenue / totalRev : 0;
+      c.shareNights = totalNights ? c.roomnights / totalNights : 0;
+      c.lyRev = lyRevByChan[c.ch.toUpperCase()] != null ? lyRevByChan[c.ch.toUpperCase()] : null;
+    });
+
+    const execRow = execIdx[def.ay];
+    const nightsAvail = execRow ? n(execRow[1]) : 0;
+    const adrAvg = totalNights ? totalRev / totalNights : 0;
+    const occ = nightsAvail ? totalNights / nightsAvail * 100 : null;
+    const r2 = x => Math.round(x * 100) / 100;
+
+    out.data[def.key] = {
+      key: def.key,
+      label: (MON_SQ[def.key] || def.key) + ' 2026',
+      channels: channels.map(c => ({
+        ch: c.ch, revenue: r2(c.revenue), commission: r2(c.commission),
+        roomnights: c.roomnights, reservations: c.reservations,
+        adr: r2(c.adr), alos: c.alos, shareRev: c.shareRev, shareNights: c.shareNights, lyRev: c.lyRev,
+      })),
+      totals: {
+        revenue: r2(totalRev), nights: totalNights, reservations: totalResv,
+        commission: r2(totalComm), adrAvg: r2(adrAvg),
+        nightsAvail, occ: occ != null ? Math.round(occ * 10) / 10 : null,
+      },
+    };
+    out.months.push({ key: def.key, label: (MON_SQ[def.key] || def.key) + ' 2026' });
+  }
+  return out;
+}
+
 // P&L sheet — budget figures only (values in ALL ÷100 = EUR)
 // Cols: Date | Company | Revenue | BudgetRev | Expenses | BudgetExp | Profit | ProfitBudget
 function parsePLBudget(rows) {
@@ -970,6 +1070,20 @@ function fnbMonthSum(fnbRows, year, month) {
 }
 
 // ─── ADMIN PANEL API ─────────────────────────────────────────────────────────
+// Channel Production Insights — processed per-channel monthly data (replaces the
+// old daily Pax tab). Self-contained: reuses the shared Google-Sheets cache.
+app.get('/api/channel-insights', async (req, res) => {
+ try {
+ await ensureCache();
+ const result = computeChannelInsights(cache.channels || [], cache.exec || []);
+ result._ts = new Date().toISOString();
+ res.json(result);
+ } catch (e) {
+ console.error('[FLOW] /api/channel-insights error:', e.message);
+ res.status(500).json({ error: e.message });
+ }
+});
+
 app.get('/api/admin', async (req, res) => {
  try {
  await ensureCache();
