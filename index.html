@@ -709,17 +709,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  </div>
 
  <!-- GUESTFLIP / ONLINE REPUTATION -->
- <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px">
+ <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:24px;flex-wrap:wrap">
  <span style="font-size:15px;font-weight:700;color:var(--gold2);letter-spacing:.5px">Reputacioni Online &amp; Pozicioni Konkurrues</span>
  <span id="adm-gf-badge" style="background:rgba(107,127,163,.15);border:1px solid rgba(107,127,163,.3);color:#a8bcda;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Ngarko Raportin Guestflip</span>
- <div style="flex:1;height:1px;background:rgba(201,168,76,.18)"></div>
+ <span id="adm-gf-scope" style="font-size:10px;color:var(--muted);font-weight:600"></span>
+ <button id="adm-gf-replace" onclick="admGfShowUpload()" style="display:none;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);color:var(--gold2);font-size:10px;padding:4px 10px;border-radius:8px;font-weight:600;cursor:pointer">↻ Ngarko tjetër</button>
+ <div style="flex:1;height:1px;background:rgba(201,168,76,.18);min-width:20px"></div>
  </div>
  <!-- Upload zone -->
  <div id="adm-gf-upload-card" style="background:var(--card);border:2px dashed rgba(201,168,76,.35);border-radius:12px;padding:32px;text-align:center;margin-bottom:16px;cursor:pointer;transition:border-color .2s" onclick="document.getElementById('adm-gf-file').click()" ondragover="event.preventDefault();this.style.borderColor='#c9a84c'" ondragleave="this.style.borderColor='rgba(201,168,76,.35)'" ondrop="event.preventDefault();this.style.borderColor='rgba(201,168,76,.35)';admGfHandleFile(event.dataTransfer.files[0])">
  <input type="file" id="adm-gf-file" accept=".xlsx,.xls" style="display:none" onchange="admGfHandleFile(this.files[0])">
  <div style="font-size:28px;margin-bottom:8px">📊</div>
- <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px">Hidhni këtu Raportin Mujor Guestflip</div>
- <div style="font-size:11px;color:var(--muted)">ose klikoni për të shfletuar · skedar .xlsx nga eksporti i Guestflip</div>
+ <div style="font-size:14px;font-weight:600;color:var(--gold2);margin-bottom:4px">Hidhni këtu Raportin Guestflip <span id="adm-gf-upload-month"></span></div>
+ <div style="font-size:11px;color:var(--muted)">ose klikoni për të shfletuar · skedar .xlsx nga eksporti i Guestflip · ruhet për muajin e zgjedhur</div>
  </div>
  <!-- Charts shown after upload -->
  <div id="adm-gf-panel" style="display:none">
@@ -2548,6 +2550,7 @@ window.admApplyFilter=function(){
  admUpdateBudget(d);
  admUpdateInsights();
  admUpdateCharts(d);
+ if(typeof admGfSyncMonth==='function') admGfSyncMonth(); // reputation report follows the selected month
 };
 
 // ── KPI Cards ─────────────────────────────────────────────────────────────────
@@ -3102,6 +3105,11 @@ function admInitSrcCharts(d){
 }
 
 // ── GUESTFLIP REPORT UPLOAD & RENDERING ──────────────────────────────────────
+// Reputation reports are stored PER MONTH: adm_gf_data_<key> (key = admCurKey,
+// e.g. 'may' or 'all'). The upload zone always applies to the selected month.
+function admGfKey(key){ return 'adm_gf_data_' + (key || admCurKey || 'all'); }
+function admGfPeriodLabel(){ return admCurKey==='all' ? ('YTD '+admYtdShort()+' 2026') : ((MON_FULL[admCurKey]||admCurKey)+' 2026'); }
+
 function admGfHandleFile(file){
  if(!file) return;
  if(typeof XLSX==='undefined'){ alert('SheetJS nuk është ngarkuar ende — provoni përsëri.'); return; }
@@ -3110,18 +3118,20 @@ function admGfHandleFile(file){
    try{
      var wb=XLSX.read(e.target.result,{type:'array'});
      var data=admGfParse(wb);
-     // Save to localStorage so report persists across refreshes
-     try{ localStorage.setItem('adm_gf_data', JSON.stringify(data)); }catch(se){ console.warn('localStorage e plotë:', se); }
+     // Save under the currently-selected month so each month keeps its own report
+     try{ localStorage.setItem(admGfKey(), JSON.stringify(data)); }catch(se){ console.warn('localStorage e plotë:', se); }
      admGfShowPanel(data);
    }catch(err){ alert('Gabim në leximin e skedarit Guestflip: '+err.message); console.error(err); }
  };
  reader.readAsArrayBuffer(file);
+ var fi=document.getElementById('adm-gf-file'); if(fi) fi.value=''; // allow re-selecting the same file
 }
 
 function admGfShowPanel(data){
  admGfRender(data);
  document.getElementById('adm-gf-upload-card').style.display='none';
  document.getElementById('adm-gf-panel').style.display='';
+ var rep=document.getElementById('adm-gf-replace'); if(rep) rep.style.display='';
  var badge=document.getElementById('adm-gf-badge');
  if(badge){
    var lbl=data.period?('Guestflip · '+data.period):'Raporti Guestflip u ngarkua';
@@ -3132,14 +3142,37 @@ function admGfShowPanel(data){
  }
 }
 
-function admGfRestoreSaved(){
- try{
-   var raw=localStorage.getItem('adm_gf_data');
-   if(!raw) return;
-   var data=JSON.parse(raw);
-   admGfShowPanel(data);
- }catch(e){ console.warn('Nuk u rikthye raporti Guestflip:', e); }
+// Show the empty upload zone (for the selected month), hiding the panel.
+function admGfShowUpload(){
+ var up=document.getElementById('adm-gf-upload-card'); if(up) up.style.display='';
+ var pan=document.getElementById('adm-gf-panel'); if(pan) pan.style.display='none';
+ var rep=document.getElementById('adm-gf-replace'); if(rep) rep.style.display='none';
+ var badge=document.getElementById('adm-gf-badge');
+ if(badge){ badge.textContent='Ngarko Raportin Guestflip'; badge.style.background='rgba(107,127,163,.15)'; badge.style.borderColor='rgba(107,127,163,.3)'; badge.style.color='#a8bcda'; }
 }
+
+// Called on month change: load that month's saved report, or show the upload zone.
+function admGfSyncMonth(){
+ var lbl=admGfPeriodLabel();
+ var scope=document.getElementById('adm-gf-scope'); if(scope) scope.textContent='· '+lbl;
+ var um=document.getElementById('adm-gf-upload-month'); if(um) um.textContent='për '+lbl;
+ var raw=null;
+ try{ raw=localStorage.getItem(admGfKey()); }catch(e){}
+ if(raw){
+   try{ admGfShowPanel(JSON.parse(raw)); return; }catch(e){}
+ }
+ admGfShowUpload();
+}
+
+// One-time migration of the legacy single blob → YTD (all) slot.
+function admGfMigrateLegacy(){
+ try{
+   var legacy=localStorage.getItem('adm_gf_data');
+   if(legacy && !localStorage.getItem('adm_gf_data_all')){ localStorage.setItem('adm_gf_data_all', legacy); }
+ }catch(e){}
+}
+
+function admGfRestoreSaved(){ admGfMigrateLegacy(); admGfSyncMonth(); }
 
 function admGfParse(wb){
  var sh=function(name){ return wb.Sheets[name]?XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''}):null; };
@@ -4265,9 +4298,9 @@ window.sendMonthlyReport = function(){
  var label = key==='all' ? ('YTD '+admYtdShort()+' 2026') : ((MON_FULL[key]||key)+' 2026');
  var d = ADM_DATA[key] || {};
 
- // Guestflip reputation data (uploaded in the "Reputacioni Online" section, saved in localStorage)
+ // Guestflip reputation data — per-month (falls back to the legacy single blob)
  var gfData = null;
- try { gfData = JSON.parse(localStorage.getItem('adm_gf_data') || 'null'); } catch(e){ gfData = null; }
+ try { gfData = JSON.parse(localStorage.getItem('adm_gf_data_'+key) || localStorage.getItem('adm_gf_data') || 'null'); } catch(e){ gfData = null; }
  var gfNote = gfData ? ('✓ Përfshihet raporti Guestflip: ' + (gfData.period||'i ngarkuar')) : '⚠ Pa raport Guestflip — reputacioni do të përjashtohet. Ngarkoje te seksioni "Reputacioni Online".';
 
  if(!confirm('Dërgo Raportin Mujor Managerial për periudhën: ' + label + '?\n\n' + gfNote + '\n\nDestinatarë:\nredathana@gmail.com\nernestcaci@gmail.com\nFinanca@hotel-flower.com\ninfo@hotel-flower.com\npandiolakerthi@gmail.com\nrinacaci@gmail.com')) return;
@@ -4304,7 +4337,9 @@ window.sendMonthlyReport = function(){
 
  var chData = d.chData || null;
 
- var insObj = ADM_INS[key] || ADM_INS.all || {};
+ // Month-specific conclusions — same generated insights shown on-screen for this
+ // period (falls back to static ADM_INS only if generation yields nothing).
+ var insObj = admGenInsights(d) || ADM_INS[key] || ADM_INS.all || {};
  var ins = {
   pozitive:    stripHtml(insObj.pozitive     || ''),
   problematika:stripHtml(insObj.problematika || ''),
@@ -4338,6 +4373,8 @@ window.sendMonthlyReport = function(){
 window.admGfHandleFile = admGfHandleFile;
 window.admGfRender = admGfRender;
 window.admGfShowPanel = admGfShowPanel;
+window.admGfShowUpload = admGfShowUpload;
+window.admGfSyncMonth = admGfSyncMonth;
 window.admGfRestoreSaved = admGfRestoreSaved;
 window.admGfParse  = admGfParse;
 
