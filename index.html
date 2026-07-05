@@ -1369,44 +1369,53 @@ function ciRenderChart(){
  });
 }
 
-// Rule-generated conclusions & recommendations (spec §"Rregullat e konkluzioneve/rekomandimeve").
+// Comprehensive per-channel insights: EVERY channel gets an impact line (its role
+// in the mix) and a matching recommended action. Sorted by night-share (most
+// impactful first). Rule signals (spec) are woven in as tags on each channel.
 function ciGenInsights(m){
  var chans=m.channels, t=m.totals, adrAvg=t.adrAvg;
- var concl=[], recom=[];
  if(!chans.length) return {concl:['Pa të dhëna.'], recom:[]};
  var byN=chans.slice().sort(function(a,b){return b.shareNights-a.shareNights;});
- var byAdr=chans.slice().sort(function(a,b){return b.adr-a.adr;});
  var dom=byN[0];
- concl.push('<b>'+dom.ch+'</b> dominon me '+ciPct(dom.shareNights)+' të netëve'
- +(dom.adr>=adrAvg ? ' me ADR të shëndetshëm ('+ciEur2(dom.adr)+' ≥ mesatarja '+ciEur2(adrAvg)+').'
-                   : ' por ul çmimin mesatar (ADR '+ciEur2(dom.adr)+' < '+ciEur2(adrAvg)+').'));
- if(dom.shareNights>0.5) recom.push('Diversifiko kanalet: <b>'+dom.ch+'</b> zë mbi 50% të netëve — ul varësinë nga një kanal i vetëm.');
- // Price-diluter flag: meaningful night-share at below-average ADR. Threshold
- // tuned to 5% (spec said 10%) so notable low-ADR channels like 7 BEDS are caught.
- chans.filter(function(c){return c.shareNights>0.05 && c.adr<adrAvg;}).forEach(function(c){
- concl.push('<b>'+c.ch+'</b> ul çmimin mesatar — '+ciPct(c.shareNights)+' të netëve por ADR '+ciEur2(c.adr)+' nën mesataren '+ciEur2(adrAvg)+'.');
- recom.push('Rinegocio tarifat ose kufizo disponueshmërinë për <b>'+c.ch+'</b> (ADR nën mesatare me vëllim të lartë).');
- });
- var topAdr=byAdr[0];
- if(topAdr){
- var minimal=topAdr.shareNights<0.01;
- concl.push('ADR më i lartë: <b>'+topAdr.ch+'</b> '+ciEur2(topAdr.adr)+(minimal?' — por vëllim i papërfillshëm ('+topAdr.roomnights+' netë), potencial i pashfrytëzuar.':'.'));
- if(minimal) recom.push('Aktivizo/investo në <b>'+topAdr.ch+'</b>: ADR i lartë ('+ciEur2(topAdr.adr)+') me vëllim minimal — hapësirë rritjeje.');
+ var topAdr=chans.slice().sort(function(a,b){return b.adr-a.adr;})[0];
+ var yoy=function(c){ return (c.lyRev!=null && c.lyRev>0) ? (c.revenue-c.lyRev)/c.lyRev : null; };
+ var commPct=function(c){ return c.revenue>0 ? c.commission/c.revenue : 0; };
+
+ function impact(c){
+ var premium=c.adr>=adrAvg;
+ var role = (c===dom) ? 'kanali kryesor (dominues)'
+          : (c.shareNights>=0.10) ? 'kontribues i madh në vëllim'
+          : (c.shareNights>=0.03) ? 'kontribues mesatar'
+          : 'kontribues margjinal';
+ var tags=[];
+ if(c===dom && c.shareNights>0.5) tags.push('varësi e lartë nga një kanal i vetëm');
+ if(c===topAdr) tags.push(c.shareNights<0.01 ? 'ADR më i lartë por vëllim i papërfillshëm — potencial i pashfrytëzuar' : 'ADR më i lartë i grupit');
+ if(!premium && c.shareNights>0.05) tags.push('ul çmimin mesatar (presion mbi ADR)');
+ var g=yoy(c); if(g!=null){ if(g<-0.30) tags.push('rënie '+Math.round(-g*100)+'% YoY'); else if(g>0.30) tags.push('rritje '+Math.round(g*100)+'% YoY'); }
+ if(commPct(c)>0.10) tags.push('komision i lartë '+ciPct(commPct(c)));
+ var s='<b>'+c.ch+'</b> — '+role+': '+ciPct(c.shareNights)+' netë · '+ciPct(c.shareRev)+' revenue · ADR '+ciEur2(c.adr)
+   +' ('+(premium?'mbi mesatare':'nën mesatare')+')';
+ return s + (tags.length?' · '+tags.join(', '):'') + '.';
  }
- chans.forEach(function(c){
- if(c.lyRev!=null && c.lyRev>0){
- var chg=(c.revenue-c.lyRev)/c.lyRev;
- if(chg< -0.30){
- concl.push('<b>'+c.ch+'</b> rënie '+Math.round(Math.abs(chg)*100)+'% e revenue kundrejt vitit të kaluar ('+ciEur(c.lyRev)+' → '+ciEur(c.revenue)+').');
- recom.push('Hetim për <b>'+c.ch+'</b>: rënie e ndjeshme YoY — kontrollo kontratën / allotmentin / çmimin.');
+
+ function action(c){
+ var premium=c.adr>=adrAvg, g=yoy(c);
+ if(c===dom) return c.shareNights>0.5
+   ? 'Ruaj marrëdhënien por diversifiko — zë mbi 50% të netëve, ul varësinë nga një kanal i vetëm.'
+   : 'Ruaj dhe forco kanalin kryesor; monitoro varësinë ndaj tij.';
+ if(c===topAdr && c.shareNights<0.01) return 'Aktivizo/investo — ADR i lartë ('+ciEur2(c.adr)+') me vëllim minimal, hapësirë e madhe rritjeje.';
+ if(g!=null && g<-0.30) return 'Hetim për rënien YoY — kontrollo kontratën / allotmentin / çmimin.';
+ if(commPct(c)>0.10) return 'Vlerëso koston e komisionit ('+ciPct(commPct(c))+') kundrejt vlerës neto të kanalit.';
+ if(!premium && c.shareNights>0.05) return 'Rinegocio tarifat ose kufizo disponueshmërinë — ADR nën mesatare me vëllim të ndjeshëm.';
+ if(!premium) return 'Monitoro çmimin — ADR nën mesatare por vëllim i vogël.';
+ if(premium && c.shareNights>=0.03) return 'Mbro dhe rrit — ADR premium me vëllim të mirë.';
+ return 'Monitoro — kontribut i kufizuar në miks.';
  }
- }
- });
- chans.forEach(function(c){
- if(c.revenue>0 && c.commission/c.revenue>0.10) concl.push('<b>'+c.ch+'</b> komision i lartë: '+ciPct(c.commission/c.revenue)+' e revenue ('+ciEur(c.commission)+').');
- });
- if(!recom.length) recom.push('Struktura e kanaleve e balancuar — vazhdo monitorimin e ADR dhe komisioneve.');
- return {concl:concl, recom:recom};
+
+ return {
+ concl: byN.map(impact),
+ recom: byN.map(function(c){ return '<b>'+c.ch+'</b>: '+action(c); })
+ };
 }
 function ciRenderInsights(m){
  var ins=ciGenInsights(m);
