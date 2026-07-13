@@ -3660,7 +3660,14 @@ function admInitMktChart(d){
 }
 
 function admInitExpChart(d){
- if(!d.expCats) return;
+ if(!d.expCats || !d.expCats.length){
+  // No expense data for this period — clear stale content instead of leaving the
+  // previously-rendered month/YTD figures on screen.
+  var sd=document.getElementById('adm-exp-summary');
+  if(sd) sd.innerHTML='<div style="font-size:11px;color:var(--muted);padding:8px 0">Pa të dhëna shpenzimesh për këtë periudhë.</div>';
+  if(typeof destroyChart==='function') destroyChart('adm-c-exp');
+  return;
+ }
  // expCats values are native LEK from Expenses sheet (v = AY, lv = LY actual)
  var cats=d.expCats.slice().sort(function(a,b){return b.v-a.v;});
  var expTotal=cats.reduce(function(a,x){return a+x.v;},0);
@@ -4420,15 +4427,33 @@ function admMergeSheet(key, live) {
  if (live.srcData   != null) d.srcData   = live.srcData;
  if (live.boardData != null) d.boardData = live.boardData;
 
+ // ── Expense categories — native LEK from the Expenses sheet (v = AY, lv = LY) ──
+ // Server sends this per active month AND aggregated for 'all'. Without this merge
+ // the section kept the hardcoded Jan–Apr baseline: months with no baseline (May+)
+ // showed the previous view's stale figures, and YTD never reflected later months.
+ if (live.expCats != null) d.expCats = live.expCats;
+ else if (!isAll) d.expCats = null; // truly no data → let the chart show "Pa të dhëna"
+
+ // ── Executive-Summary extras consumed by the monthly email report ──────────────
+ if (live.laborCost   != null) d.laborCost   = live.laborCost;
+ if (live.lyLaborCost != null) d.lyLaborCost = live.lyLaborCost;
+ if (live.ftes        != null) d.ftes        = live.ftes;
+ if (live.houseUse    != null) d.houseUse    = live.houseUse;
+
  // ── Update Marketing in expCats to use mktSpend (cash-only, excl. HU) ────────
- // For 'all', live.mktSpend is the YTD sum; for monthly it's the single-month value
+ // For 'all', live.mktSpend is the YTD sum; for monthly it's the single-month value.
+ // mktSpend is in EUR while every other expCat is native LEK from the Expenses sheet,
+ // so convert to LEK (rate 95, matching server LEK_EUR) before dropping it into the
+ // Lek-denominated chart — otherwise Marketing renders ~95× too small. Keep the LY
+ // (lv) figure from the Expenses-sheet Marketing row so the YoY comparison survives.
  if (live.mktSpend != null && d.expCats) {
- var mktSpendVal = isAll
+ var LEK_EUR = 95;
+ var mktSpendVal = (isAll
  ? ADM_MONTHS.reduce(function(s,k){ return s + ((ADM_DATA[k] && ADM_DATA[k].mktSpend) ? (Array.isArray(ADM_DATA[k].mktSpend) ? ADM_DATA[k].mktSpend[0] : ADM_DATA[k].mktSpend) : 0); }, 0)
- : live.mktSpend;
+ : live.mktSpend) * LEK_EUR;
  for (var ci=0; ci<d.expCats.length; ci++) {
  if (d.expCats[ci].l && d.expCats[ci].l.toLowerCase().indexOf('market') !== -1) {
- d.expCats[ci] = { l: 'Marketing (cash)', v: Math.round(mktSpendVal), c: '#c9a84c' };
+ d.expCats[ci] = { l: 'Marketing (cash)', v: Math.round(mktSpendVal), lv: d.expCats[ci].lv || 0, c: '#c9a84c' };
  break;
  }
  }
