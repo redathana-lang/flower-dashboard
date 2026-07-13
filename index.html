@@ -3844,6 +3844,24 @@ function admInitCFCharts(d){
  }
 
  // ── Chart 1: Hyrje (Cash In) — Prev Month vs Current ─────────────────────────
+ // In single-month view with no Hyrje data (e.g. June before the sheet is filled),
+ // don't leave a lone previous-month bar — show the same "no data" placeholder the
+ // rest of the CF section uses, so the whole block is consistent.
+ var cfSrcEl = document.getElementById('adm-c-cf-src');
+ var cfSrcParent = cfSrcEl ? cfSrcEl.parentElement : null;
+ if (cfSrcParent) { var srcPh = cfSrcParent.querySelector('.cf-no-data'); if (srcPh) srcPh.parentElement.removeChild(srcPh); }
+ if (!isAll && !hasH26) {
+ if (cfSrcEl) cfSrcEl.style.display='none';
+ destroyChart('adm-c-cf-src');
+ if (cfSrcParent) {
+ var srcND = document.createElement('div');
+ srcND.className='cf-no-data';
+ srcND.style.cssText='display:flex;align-items:center;justify-content:center;height:180px;color:#6b7fa3;font-size:13px;font-style:italic;';
+ srcND.textContent='Pa të dhëna Cash In — Fleta Cash Flow mujore nuk është plotësuar për këtë periudhë';
+ cfSrcParent.appendChild(srcND);
+ }
+ } else {
+ if (cfSrcEl) cfSrcEl.style.display='';
  mk('adm-c-cf-src','bar',labels,[
  {label:'Muaji i kaluar (€)', data:hPrevArr,
  backgroundColor:'rgba(201,168,76,.5)',borderColor:'#c9a84c',
@@ -3860,6 +3878,7 @@ function admInitCFCharts(d){
  formatter:function(v){return v?'€'+(v/1000).toFixed(0)+'k':'';}
  }}
  });
+ }
 
  // ── Chart 2: Dalje (Cash Out) — from Daily Cash Flow pagesat ─────────────────
  // Color palette for CF Out categories
@@ -4485,15 +4504,21 @@ function admMergeSheet(key, live) {
 // Create a safe baseline object for any month not already in ADM_DATA (e.g. May+),
 // so the merge + chart functions never read undefined fields for a new month.
 function admEnsureMonthObjects(){
+ // 2024 comparison values are hardcoded full-year arrays on ADM_DATA.all; pull the
+ // right month so synthesised months (May+) show a real 2024 bar/line in the USALI
+ // charts instead of 0 (jan–apr keep their own hardcoded per-month values).
+ var y24=function(arr,mi){ return [ (arr && arr[mi]!=null) ? arr[mi] : 0 ]; };
  ADM_MONTHS.forEach(function(key){
  if(ADM_DATA[key]) return;
+ var mi=MON_ORDER.indexOf(key);
+ var A=ADM_DATA.all||{};
  ADM_DATA[key]={
  lyLabel:(MON_FULL[key]||key)+' 2025',
  rev:0,lyRev:0,budRev:0, exp:0,lyExp:0,budExp:0, prf:0,lyPrf:0,budPrf:0,
  occ:0,lyOcc:0, rn:0,lyRn:0, adrEur:0,lyAdrEur:0, revpar:0,
  mRev:[0],mBudRev:[0],mExp:[0],mBudExp:[0],
- rnArr:[0],rnLy:[0],rn24:[0], occArr:[0],occLy:[0],occ24:[0],
- adrArr:[0],adrLy:[0],adr24:[0], nop26:[0],nop25:[0],
+ rnArr:[0],rnLy:[0],rn24:y24(A.rn24,mi), occArr:[0],occLy:[0],occ24:y24(A.occ24,mi),
+ adrArr:[0],adrLy:[0],adr24:y24(A.adr24,mi), nop26:[0],nop25:[0],
  revOutlets:null,revCats:null, chData:[],chDataLY:[], srcData:[],boardData:[],
  repData:[null],revCounts:[0],
  platLabels:['Google','Booking.com','TripAdvisor','Expedia'],
