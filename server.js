@@ -432,6 +432,22 @@ function parsePLBudget(rows) {
 
 // MARKETING COST sheet — values already in EUR
 // Cols: Month|MetaAds|GoogleAds|Content|AdvCo|Events|Email|Guestflip|Cloudbeds|ZohoCRM|OtherSubs|MediaAds|GiftVoucher|HouseUse|MktCost|Revenue|%MktCost
+// Per-category cost columns (EUR) that make up the cash marketing spend (excl. House Use).
+// Drives the dynamic "Ndarja e Kostove" breakdown table in the Admin panel.
+const MKT_COLS = [
+ { i:1,  l:'Meta Ads (Social)' },
+ { i:2,  l:'Metasearch + Google' },
+ { i:3,  l:'Krijimi i Përmbajtjes' },
+ { i:4,  l:'Kompania e Reklamave' },
+ { i:5,  l:'Evente' },
+ { i:6,  l:'Email Marketing' },
+ { i:7,  l:'Guestflip' },
+ { i:8,  l:'Cloudbeds CRS' },
+ { i:9,  l:'Zoho CRM' },
+ { i:10, l:'Abonime të Tjera' },
+ { i:11, l:'Reklama Media & Panaire' },
+ { i:12, l:'Kupon Dhuratë' },
+];
 function parseMkt(rows) {
  const idx = indexByMonth(rows, 1);
  const result = {};
@@ -446,6 +462,8 @@ function parseMkt(rows) {
  const mktPct = parseFloat(String(r[16] || '0').replace('%','').trim()) || 0;
  const cashPct = mktRev > 0 ? Math.round(mktSpend / mktRev * 10000) / 100 : 0;
  const roi = mktSpend > 0 ? Math.round(mktRev / mktSpend * 10) / 10 : 0;
+ // Full per-category cash breakdown (each item already EUR)
+ const breakdown = MKT_COLS.map(c => ({ l: c.l, v: Math.round(n(r[c.i])) }));
  result[key] = {
  metaAds: Math.round(n(r[1])),
  mktTotal: Math.round(mktTotal), // incl. House Use
@@ -455,6 +473,7 @@ function parseMkt(rows) {
  mktPct: Math.round(mktPct * 100) / 100,
  mktCashPct: cashPct,
  mktRoi: roi,
+ mktBreakdown: breakdown, // per-category cash items (EUR) for the breakdown table
  };
  }
  return result;
@@ -1169,6 +1188,7 @@ app.get('/api/admin', async (req, res) => {
  mktPct: k.mktPct || null,
  mktCashPct: k.mktCashPct || null,
  mktRoi: k.mktRoi || null,
+ mktBreakdown: k.mktBreakdown || null, // per-category cash cost items (EUR)
  // Revenue by outlet — ALL VALUES IN LEK, sourced from Revenues sheet
  revOutlets: revOutletsForKey(revMap, MON_AY[key], MON_LY[key]),
  // Keep revCats for backward compat (channel/source charts still use lyRev)
@@ -1229,6 +1249,15 @@ app.get('/api/admin', async (req, res) => {
  mktHU: sum('mktHU'), mktSpend: sum('mktSpend'),
  mktRev: sum('mktRev'), mktPct: avg('mktPct'),
  mktCashPct: avg('mktCashPct'), mktRoi: avg('mktRoi'),
+ // Marketing breakdown YTD — sum each cost category across active months
+ mktBreakdown: (() => {
+ const any = keys.some(k => result[k].mktBreakdown != null);
+ if (!any) return null;
+ return MKT_COLS.map(c => ({
+ l: c.l,
+ v: keys.reduce((a,k)=>{ const bd=result[k].mktBreakdown; const it=bd&&bd.find(x=>x.l===c.l); return a+(it?it.v:0); }, 0),
+ }));
+ })(),
  // Revenue by outlet — YTD sum across months (9 outlets incl. Beach Bar & House Use)
  revOutlets: (() => {
    const outlets = ['Hotel Revenue','Flower Restaurant','Pool Bar','Beach Bar','Brutal Garden','Pool Bar Garden','Spa Flower','Garden Spa','House Use'];

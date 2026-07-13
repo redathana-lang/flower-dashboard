@@ -791,21 +791,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <canvas id="adm-c-mkt" height="200"></canvas>
  </div>
  <div style="background:var(--card);border:1px solid rgba(201,168,76,.18);border-radius:12px;padding:16px">
- <div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">Ndarja e Kostove — 2026 YTD</div>
+ <div id="adm-mkt-bd-title" style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px">Ndarja e Kostove — 2026 YTD</div>
  <table style="width:100%;font-size:11px;border-collapse:collapse">
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Meta Ads (Social)</td><td style="text-align:right;font-weight:600">€10,502</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Krijimi i Përmbajtjes</td><td style="text-align:right;font-weight:600">€4,000</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Cloudbeds CRS</td><td style="text-align:right;font-weight:600">€2,760</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Kompania e Reklamave</td><td style="text-align:right;font-weight:600">€2,000</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Reklama Media &amp; Panaire</td><td style="text-align:right;font-weight:600">€1,825</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Metasearch + Google</td><td style="text-align:right;font-weight:600">€602</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Guestflip</td><td style="text-align:right;font-weight:600">€240</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Zoho CRM</td><td style="text-align:right;font-weight:600">€324</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Abonime të Tjera</td><td style="text-align:right;font-weight:600">€400</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">Kupon Dhuratë</td><td style="text-align:right;font-weight:600">€120</td></tr>
- <tr style="border-bottom:1px solid rgba(201,168,76,.2);border-top:1px solid rgba(201,168,76,.2)"><td style="padding:5px 4px;color:#c9a84c;font-weight:600">Nëntotali Cash</td><td style="text-align:right;color:#c9a84c;font-weight:700">€22,773</td></tr>
- <tr style="border-bottom:1px solid rgba(255,255,255,.04)"><td style="padding:5px 4px;color:var(--muted)">House Use (i brendshëm)</td><td style="text-align:right;font-weight:600">€20,186</td></tr>
- <tr><td style="padding:6px 4px;color:var(--gold2);font-weight:700">TOTALI (incl. HU)</td><td style="text-align:right;color:var(--gold2);font-weight:700">€42,959</td></tr>
+ <tbody id="adm-mkt-breakdown"></tbody>
  </table>
  </div>
  </div>
@@ -3657,6 +3645,38 @@ function admInitMktChart(d){
  +' · Kostoja mesatare % e të ardhurave: <strong style="color:#e8a23a">'+avgPct.toFixed(2)+'%</strong>'
  +' · ROI mesatar: <strong style="color:#8b5cf6">'+avgRoi.toFixed(1)+'×</strong>';
  }
+ renderMktBreakdown(d);
+}
+
+// Dynamic marketing cost breakdown table — was hardcoded static (frozen at April).
+// Driven per-period by d.mktBreakdown (per-category EUR) from the MARKETING COST sheet.
+function renderMktBreakdown(d){
+ var tb=document.getElementById('adm-mkt-breakdown');
+ var title=document.getElementById('adm-mkt-bd-title');
+ var periodTxt = admCurKey==='all' ? ('2026 YTD '+admYtdShort()) : ((MON_FULL[admCurKey]||admCurKey)+' 2026');
+ if(title) title.textContent='Ndarja e Kostove — '+periodTxt;
+ if(!tb) return;
+ var bd=d.mktBreakdown;
+ if(!bd || !bd.length){
+  tb.innerHTML='<tr><td style="padding:8px 4px;color:var(--muted)">Pa të dhëna marketingu për këtë periudhë.</td></tr>';
+  return;
+ }
+ var sumArr=function(v){ return Array.isArray(v)?v.reduce(function(a,x){return a+(x||0);},0):(v||0); };
+ var cash=bd.reduce(function(a,x){return a+(x.v||0);},0);
+ var hu=sumArr(d.mktHU);
+ var tot=cash+hu;
+ var row=function(l,v,opt){ opt=opt||{};
+  return '<tr style="border-bottom:1px solid '+(opt.br||'rgba(255,255,255,.04)')+(opt.bt?';border-top:1px solid '+opt.bt:'')+'">'
+   +'<td style="padding:5px 4px;color:'+(opt.lc||'var(--muted)')+';font-weight:'+(opt.fw||'400')+'">'+l+'</td>'
+   +'<td style="text-align:right;color:'+(opt.vc||'inherit')+';font-weight:'+(opt.vw||'600')+'">€'+Math.round(v).toLocaleString()+'</td></tr>';
+ };
+ var html=bd.filter(function(x){return x.v>0;}).sort(function(a,b){return b.v-a.v;})
+   .map(function(x){ return row(x.l,x.v); }).join('');
+ if(!html) html='<tr><td style="padding:5px 4px;color:var(--muted)">Asnjë shpenzim cash</td></tr>';
+ html+=row('Nëntotali Cash',cash,{lc:'#c9a84c',fw:'600',vc:'#c9a84c',vw:'700',br:'rgba(201,168,76,.2)',bt:'rgba(201,168,76,.2)'});
+ html+=row('House Use (i brendshëm)',hu,{});
+ html+=row('TOTALI (incl. HU)',tot,{lc:'var(--gold2)',fw:'700',vc:'var(--gold2)',vw:'700',br:'transparent'});
+ tb.innerHTML=html;
 }
 
 function admInitExpChart(d){
@@ -4345,6 +4365,8 @@ function admMergeSheet(key, live) {
  d.mktCashPct = [live.mktCashPct];
  }
  }
+ // Per-category cost breakdown — server sends per-month AND aggregated for 'all'
+ if (live.mktBreakdown != null) d.mktBreakdown = live.mktBreakdown;
 
  // ── Cash Flow — always overwrite (null = no data for this period) ────────────
  // All CF data exclusively from Daily Cash Flow sheet; null for Jan/Feb/Mar (not entered)
@@ -4476,7 +4498,7 @@ function admEnsureMonthObjects(){
  repData:[null],revCounts:[0],
  platLabels:['Google','Booking.com','TripAdvisor','Expedia'],
  platRatings:[null,null,null,null],platReviews:[0,0,0,0],
- mktRev:[0],mktSpend:[0],mktTotal:[0],mktHU:[0],metaAds:[0],mktPct:[0],mktCashPct:[0],mktRoi:[0],
+ mktRev:[0],mktSpend:[0],mktTotal:[0],mktHU:[0],metaAds:[0],mktPct:[0],mktCashPct:[0],mktRoi:[0],mktBreakdown:null,
  cfHyrje26:null,cfDalje26:null,cfDaljeItems:null,cfLekPct:null,cfHyrjeALL_eur:null,cfHyrjeEUR_eur:null,
  cfInCash:null,cfInNonCash:null,cfOutCash:null,cfOutNonCash:null,cfDaljeALL_eur:null,cfDaljeEUR_eur:null,
  expCats:null
