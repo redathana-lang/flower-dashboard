@@ -463,8 +463,14 @@ function parseMkt(rows) {
 // CHANNEL PERFORMANCE sheet — cols: MONTH | CHANNEL | REVENUE | ...
 // Groups all channels into dashboard categories, aggregates per month
 function parseChannelPerf(rows) {
+ // Large producers get their own slice; only genuinely small tour operators are
+ // pooled into 'Other'. In summer ITAKA/W2M/7 BEDS are among the top channels, so
+ // burying them in 'Other' made 'Other' the biggest (misleading) slice and hid the
+ // real #1 channel. DEBITOR is a tiny (usually negative) adjustment folded into
+ // Direct, matching the Channel Insights tab.
  const MAP = {
  'DIRECT': 'Direct',
+ 'DEBITOR': 'Direct', // fold adjustment into Direct (matches Channel Insights)
  'MICE': 'MICE/Groups',
  'BOOKING': 'Booking.com',
  'EXPEDIA': 'Expedia',
@@ -473,7 +479,9 @@ function parseChannelPerf(rows) {
  'WEBSITE': 'Website',
  'OTS': 'OTS',
  'TRIP.COM': 'OTS', // group with OTS
- 'W2M': 'Other',
+ 'ITAKA': 'ITAKA', // major tour operator — own slice
+ 'W2M': 'W2M', // major tour operator — own slice
+ '7 BEDS': '7 Beds', // own slice
  'KOLENIA': 'Other',
  'APOLLO': 'Other',
  'HOTELPLAN': 'Other',
@@ -481,8 +489,6 @@ function parseChannelPerf(rows) {
  'DERTOUR': 'Other',
  'TUI DESTIMO': 'Other',
  'SCHAUINSLAND':'Other',
- 'ITAKA': 'Other',
- 'DEBITOR': 'Other',
  };
  const result = {};
 
