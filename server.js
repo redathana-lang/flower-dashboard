@@ -935,18 +935,22 @@ function parseExpensesByMonth(rows) {
   return map;
 }
 
-// Expense category definitions — sheet name → display label + colour
+// Expense category definitions — sheet name → display label + colour.
+// The full set (incl. F&B All Inclusive) sums to the Executive Summary TOTAL
+// EXPENSES (sheet is in ALL; ÷100 = EUR). Omitting a row makes the breakdown
+// total disagree with the headline expense KPI.
 const EXP_CATS = [
-  { sheet:'Wages & Salaries',      l:'Wages & Salaries',     c:'#e05252' },
-  { sheet:'F&B Cost of Sale',      l:'F&B Cost of Sale',     c:'#e8a23a' },
-  { sheet:'Utilities and Taxes',   l:'Utilities & Taxes',    c:'#3b82f6' },
-  { sheet:'Loan',                  l:'Loan Repayments',      c:'#8b5cf6' },
-  { sheet:'Hotel & Spa',           l:'Hotel & Spa Ops',      c:'#14b8a6' },
-  { sheet:'Marketing',             l:'Marketing (incl.HU)',  c:'#c9a84c' },
-  { sheet:'Overheads F&B',         l:'Overheads F&B',        c:'#06b6d4' },
-  { sheet:'Entertainment',         l:'Entertainment',        c:'#f97316' },
-  { sheet:'Repairs & Maintenance', l:'Repairs & Maint.',     c:'#4caf7d' },
-  { sheet:'Insurance',             l:'Insurance',            c:'#6b7fa3' },
+  { sheet:'Wages & Salaries',              l:'Wages & Salaries',     c:'#e05252' },
+  { sheet:'F&B Cost of Sale',              l:'F&B Cost of Sale',     c:'#e8a23a' },
+  { sheet:'Hotel & Spa F&B All Inclusive', l:'F&B All Inclusive',    c:'#ec4899' },
+  { sheet:'Utilities and Taxes',           l:'Utilities & Taxes',    c:'#3b82f6' },
+  { sheet:'Loan',                          l:'Loan Repayments',      c:'#8b5cf6' },
+  { sheet:'Hotel & Spa',                   l:'Hotel & Spa Ops',      c:'#14b8a6' },
+  { sheet:'Marketing',                     l:'Marketing',            c:'#c9a84c' },
+  { sheet:'Overheads F&B',                 l:'Overheads F&B',        c:'#06b6d4' },
+  { sheet:'Entertainment',                 l:'Entertainment',        c:'#f97316' },
+  { sheet:'Repairs & Maintenance',         l:'Repairs & Maint.',     c:'#4caf7d' },
+  { sheet:'Insurance',                     l:'Insurance',            c:'#6b7fa3' },
 ];
 
 // ─── REVENUES SHEET PARSER ───────────────────────────────────────────────────

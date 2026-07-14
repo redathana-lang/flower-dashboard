@@ -4481,24 +4481,11 @@ function admMergeSheet(key, live) {
  if (live.ftes        != null) d.ftes        = live.ftes;
  if (live.houseUse    != null) d.houseUse    = live.houseUse;
 
- // ── Update Marketing in expCats to use mktSpend (cash-only, excl. HU) ────────
- // For 'all', live.mktSpend is the YTD sum; for monthly it's the single-month value.
- // mktSpend is in EUR while every other expCat is native LEK from the Expenses sheet,
- // so convert to LEK (rate 95, matching server LEK_EUR) before dropping it into the
- // Lek-denominated chart — otherwise Marketing renders ~95× too small. Keep the LY
- // (lv) figure from the Expenses-sheet Marketing row so the YoY comparison survives.
- if (live.mktSpend != null && d.expCats) {
- var LEK_EUR = 95;
- var mktSpendVal = (isAll
- ? ADM_MONTHS.reduce(function(s,k){ return s + ((ADM_DATA[k] && ADM_DATA[k].mktSpend) ? (Array.isArray(ADM_DATA[k].mktSpend) ? ADM_DATA[k].mktSpend[0] : ADM_DATA[k].mktSpend) : 0); }, 0)
- : live.mktSpend) * LEK_EUR;
- for (var ci=0; ci<d.expCats.length; ci++) {
- if (d.expCats[ci].l && d.expCats[ci].l.toLowerCase().indexOf('market') !== -1) {
- d.expCats[ci] = { l: 'Marketing (cash)', v: Math.round(mktSpendVal), lv: d.expCats[ci].lv || 0, c: '#c9a84c' };
- break;
- }
- }
- }
+ // NOTE: the Expenses-sheet "Marketing" row is already the cash figure in native
+ // ALL units (÷100 = EUR = mktSpend, excl. House Use), so it is used as-is — no
+ // conversion/substitution. (A previous version multiplied EUR mktSpend ×95 here,
+ // which double-counted the rate and made the breakdown total disagree with the
+ // Executive-Summary expense KPI.)
 }
 
 // Create a safe baseline object for any month not already in ADM_DATA (e.g. May+),
