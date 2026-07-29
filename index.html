@@ -1173,16 +1173,22 @@ function rFO(fo,foY){
  const availFOY=n(foY.nights_available)||days2*TR;
  const avgAvailFO=Math.round(availFO/days2);
  const occ=(rooms/availFO*100).toFixed(1);
+ // ADR (Average Daily Rate) = room revenue ÷ rooms occupied — AY (this year) vs LY (last year)
+ const adrAY = rooms>0 ? n(fo.revenue_eur)/rooms : 0;
+ const roomsY = n(foY.rooms_occupied);
+ const adrLY = roomsY>0 ? n(foY.revenue_eur)/roomsY : null;
+ const fADR = v => (v||v===0) ? '€'+Number(v).toLocaleString('sq-AL',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—';
  el.innerHTML=`<div class="sec-card">
  <div class="sec-hdr2"> Hotel Daily Performance — ${fRange()}</div>
  <table class="dtable">
- <tr><th>Tregues</th><th class="v">Sot</th><th class="v">YoY ${new Date(fromDate).getFullYear()-1}</th></tr>
+ <tr><th>Tregues</th><th class="v">AY · ${new Date(fromDate).getFullYear()}</th><th class="v">LY · ${new Date(fromDate).getFullYear()-1}</th></tr>
  <tr class="sh"><td colspan="3">Dhoma</td></tr>
  <tr><td>Dhoma të Zëna</td><td class="v">${rooms}</td><td class="v">${n(foY.rooms_occupied)||'—'}</td></tr>
  <tr><td>Dhoma të Lira (mesatare/ditë)</td><td class="v">${avgAvailFO-Math.round(rooms/days2)}</td><td class="v">${foY.rooms_occupied?Math.round(availFOY/days2)-Math.round(n(foY.rooms_occupied)/days2):'—'}</td></tr>
  <tr><td>Ocupanca</td><td class="v g">${occ}%</td><td class="v">${foY.rooms_occupied?(n(foY.rooms_occupied)/availFOY*100).toFixed(1)+'%':'—'}</td></tr>
  <tr class="sh"><td colspan="3">Të Ardhura</td></tr>
  <tr class="tr"><td>Revenue Ditore</td><td class="v g">${fE(fo.revenue_eur||0)}</td><td class="v">${fE(foY.revenue_eur||0)}</td></tr>
+ <tr><td>ADR (Average Daily Rate)</td><td class="v g">${fADR(adrAY)}</td><td class="v">${fADR(adrLY)}</td></tr>
  <tr><td>Ekuivalent Lek (×${EH})</td><td class="v">${fL(n(fo.revenue_eur)*EH)}</td><td class="v">${fL(n(foY.revenue_eur)*EH)}</td></tr>
  </table>
  </div>`;
