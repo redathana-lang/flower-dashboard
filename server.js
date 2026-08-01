@@ -2278,6 +2278,18 @@ app.post('/api/hms/close-day', async (req, res) => {
  res.status(500).json({ error: e.message });
  }
 });
+// ─── KONTROLLO PRENOTIMET AUTO-INGEST ────────────────────────────────────────
+// Reads the nightly "KontrolloPrenotimet - YYYY-MM-DD" email from Trinosoft
+// (info@triniscloud.com → flowreport26@gmail.com, 21:22), parses the xlsx,
+// applies the owner-confirmed rules (no Saranda SR rooms, no Z VILA, ITAKA at 0),
+// updates HOTEL DAILY PERFORMANCE via Apps Script and labels the email
+// "processed-report". See emailIngest.js.
+try {
+ require('./emailIngest').init(app);
+} catch (e) {
+ console.warn('[KONTROLLO] init failed (dashboard continues without it):', e.message);
+}
+
 // ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
