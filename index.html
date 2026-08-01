@@ -1214,15 +1214,17 @@ function rFOKontrollo(){
    }
    var tRooms=j.roomsOccupied||1, tRev=j.revenueEur||0;
    function planLabel(k){ if(/^ITAKA/i.test(k)) return 'ITAKA'; return k; }
-   function agg(map,labelFn){
+   function agg(map,labelFn,sortBy){
      var m={};
      Object.keys(map||{}).forEach(function(k){
        var L=labelFn?labelFn(k):k;
        if(!m[L]) m[L]={rooms:0,rev:0};
        m[L].rooms+=map[k].rooms||0; m[L].rev+=map[k].revenueEur||0;
      });
-     return Object.keys(m).map(function(L){return [L,m[L]];})
-       .sort(function(a,b){return b[1].rev-a[1].rev || b[1].rooms-a[1].rooms;});
+     var srt = sortBy==='rooms'
+       ? function(a,b){return b[1].rooms-a[1].rooms || b[1].rev-a[1].rev;}
+       : function(a,b){return b[1].rev-a[1].rev || b[1].rooms-a[1].rooms;};
+     return Object.keys(m).map(function(L){return [L,m[L]];}).sort(srt);
    }
    function tbl(title,entries){
      var rows=entries.map(function(e){
@@ -1241,7 +1243,7 @@ function rFOKontrollo(){
        +'</div>';
    }
    el.innerHTML = tbl('Rezervimet sipas Planit (Kompania)',agg(j.byPlan,planLabel))
-                + tbl('Rezervimet sipas Burimit të Rezervimit',agg(j.byChannel));
+                + tbl('Rezervimet sipas Burimit të Rezervimit',agg(j.byChannel,null,'rooms'));
  })
  .catch(function(){ el.innerHTML=''; });
 }
