@@ -301,6 +301,37 @@ function init(app) {
     res.json({ ok: true, lastCheck: state.lastCheck, lastError: state.lastError, days: days });
   });
 
+  // aggregated breakdowns for a date range — feeds the Front Office tables
+  // "Rezervimet sipas Planit (Kompania)" and "sipas Burimit të Rezervimit"
+  app.get('/api/kontrollo/range', function (req, res) {
+    const from = req.query.from;
+    const to = req.query.to || from;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from || '')) {
+      return res.status(400).json({ ok: false, error: 'from=YYYY-MM-DD required' });
+    }
+    const out = { ok: true, from: from, to: to, daysCovered: [],
+      roomsOccupied: 0, revenueEur: 0, byPlan: {}, byChannel: {} };
+    Object.keys(state.days).sort().forEach(function (d) {
+      if (d < from || d > to) return;
+      const a = state.days[d];
+      if (!a || !a.ok) return;
+      out.daysCovered.push(d);
+      out.roomsOccupied += a.roomsOccupied || 0;
+      out.revenueEur += a.revenueEur || 0;
+      ['byPlan', 'byChannel'].forEach(function (k) {
+        Object.keys(a[k] || {}).forEach(function (name) {
+          if (!out[k][name]) out[k][name] = { rooms: 0, revenueEur: 0 };
+          out[k][name].rooms += a[k][name].rooms || 0;
+          out[k][name].revenueEur += a[k][name].revenueEur || 0;
+        });
+      });
+    });
+    out.revenueEur = Math.round(out.revenueEur * 100) / 100;
+    Object.keys(out.byPlan).forEach(function (k) { out.byPlan[k].revenueEur = Math.round(out.byPlan[k].revenueEur * 100) / 100; });
+    Object.keys(out.byChannel).forEach(function (k) { out.byChannel[k].revenueEur = Math.round(out.byChannel[k].revenueEur * 100) / 100; });
+    res.json(out);
+  });
+
   // manual trigger (admin) — body: {token, date?} · date forces reprocess
   app.post('/api/kontrollo/check', async function (req, res) {
     const token = req.body && req.body.token;

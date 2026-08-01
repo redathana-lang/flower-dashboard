@@ -1191,7 +1191,59 @@ function rFO(fo,foY){
  <tr><td>ADR (Average Daily Rate)</td><td class="v g">${fADR(adrAY)}</td><td class="v">${fADR(adrLY)}</td></tr>
  <tr><td>Ekuivalent Lek (×${EH})</td><td class="v">${fL(n(fo.revenue_eur)*EH)}</td><td class="v">${fL(n(foY.revenue_eur)*EH)}</td></tr>
  </table>
- </div>`;
+ </div><div id="fo_kontrollo"></div>`;
+ rFOKontrollo();
+}
+
+// ─── FO: KONTROLLO PRENOTIMET BREAKDOWNS ─────────────────────────────────────
+// Two tables under Hotel Daily Performance, fed by the nightly Trinosoft
+// "KontrolloPrenotimet" email (auto-processed by emailIngest.js on the server):
+//   1. Rezervimet sipas Planit (Kompania): ALL INCLUSIVE / Bed & Breakfast /
+//      ITAKA / Pa plan — dhoma, %, të ardhura, %.
+//   2. Rezervimet sipas Burimit të Rezervimit — same columns.
+// ITAKA shows €0 by rule (settled at end of season). Data exists from 25.07.2026.
+function rFOKontrollo(){
+ var el=document.getElementById('fo_kontrollo'); if(!el)return;
+ fetch('/api/kontrollo/range?from='+fromDate+'&to='+toDate,{cache:'no-store'})
+ .then(function(r){return r.json();})
+ .then(function(j){
+   if(!j.ok||!j.daysCovered||!j.daysCovered.length){
+     el.innerHTML='<div class="sec-card"><div class="sec-hdr2"> Rezervimet sipas Planit & Burimit</div>'
+       +'<div style="padding:12px;font-size:12px;color:var(--muted)">Nuk ka të dhëna nga KontrolloPrenotimet për këtë periudhë (të dhënat automatike fillojnë nga 25 Korrik 2026).</div></div>';
+     return;
+   }
+   var tRooms=j.roomsOccupied||1, tRev=j.revenueEur||0;
+   function planLabel(k){ if(/^ITAKA/i.test(k)) return 'ITAKA'; return k; }
+   function agg(map,labelFn){
+     var m={};
+     Object.keys(map||{}).forEach(function(k){
+       var L=labelFn?labelFn(k):k;
+       if(!m[L]) m[L]={rooms:0,rev:0};
+       m[L].rooms+=map[k].rooms||0; m[L].rev+=map[k].revenueEur||0;
+     });
+     return Object.keys(m).map(function(L){return [L,m[L]];})
+       .sort(function(a,b){return b[1].rev-a[1].rev || b[1].rooms-a[1].rooms;});
+   }
+   function tbl(title,entries){
+     var rows=entries.map(function(e){
+       var pR=e[1].rooms/tRooms*100, pV=tRev>0?e[1].rev/tRev*100:0;
+       return '<tr><td>'+e[0]+'</td><td class="v">'+e[1].rooms+'</td><td class="v">'+pR.toFixed(1)+'%</td>'
+         +'<td class="v">'+fE(e[1].rev)+'</td><td class="v">'+pV.toFixed(1)+'%</td></tr>';
+     }).join('');
+     return '<div class="sec-card"><div class="sec-hdr2"> '+title+' — '+fRange()+'</div>'
+       +'<table class="dtable">'
+       +'<tr><th>Kategoria</th><th class="v">Dhoma</th><th class="v">%</th><th class="v">Të ardhura</th><th class="v">%</th></tr>'
+       +rows
+       +'<tr class="tr"><td>TOTAL</td><td class="v g">'+j.roomsOccupied+'</td><td class="v">100%</td>'
+       +'<td class="v g">'+fE(tRev)+'</td><td class="v">100%</td></tr>'
+       +'</table>'
+       +(j.daysCovered.length>1?'<div style="padding:6px 10px;font-size:10px;color:var(--muted)">'+j.daysCovered.length+' ditë me të dhëna · '+j.daysCovered[0]+' → '+j.daysCovered[j.daysCovered.length-1]+'</div>':'')
+       +'</div>';
+   }
+   el.innerHTML = tbl('Rezervimet sipas Planit (Kompania)',agg(j.byPlan,planLabel))
+                + tbl('Rezervimet sipas Burimit të Rezervimit',agg(j.byChannel));
+ })
+ .catch(function(){ el.innerHTML=''; });
 }
 
 // ─── F&B ──────────────────────────────────────────────────────────────────────
