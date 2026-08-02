@@ -29,6 +29,20 @@ app.get('/api/version', (req, res) => {
  try { v = require('fs').statSync(path.join(__dirname, 'index.html')).mtimeMs; } catch(_) {}
  res.json({ v: Math.round(v) });
 });
+
+// ─── FLOW HR schedule proxy (read-only Turnet feed; token stays server-side) ──
+const HR_URL = (process.env.HR_URL || 'https://flow-hr.onrender.com').replace(/\/$/, '');
+const HR_SCHEDULE_TOKEN = process.env.SCHEDULE_TOKEN || '';
+app.get('/api/hr-schedule', async (req, res) => {
+ if (!HR_SCHEDULE_TOKEN) return res.status(503).json({ error: 'HR schedule not configured' });
+ try {
+  const r = await fetch(HR_URL + '/api/schedule', { headers: { 'x-schedule-token': HR_SCHEDULE_TOKEN } });
+  if (!r.ok) return res.status(502).json({ error: 'HR ' + r.status });
+  const d = await r.json();
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(d);
+ } catch (e) { res.status(502).json({ error: e.message }); }
+});
 app.use(express.static(__dirname));
 
 // ─── GOOGLE SHEETS CONFIG ─────────────────────────────────────────────────────

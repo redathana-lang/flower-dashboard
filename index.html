@@ -107,6 +107,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* DETAIL CARDS */
 .sec-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
 .sec-hdr2{padding:12px 18px;background:rgba(201,168,76,.04);border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--gold);}
+/* Turnet — read-only FLOW HR schedule grid */
+.tn-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px}
+.tn-grid{width:100%;border-collapse:collapse;font-size:11px;min-width:760px}
+.tn-grid th{background:var(--bg);color:var(--gold);padding:8px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;border-bottom:1px solid var(--border)}
+.tn-grid th.tn-day{text-align:center}
+.tn-grid td{padding:6px 8px;border-bottom:1px solid rgba(26,51,88,.5);vertical-align:top}
+.tn-grid tbody tr:hover td{background:rgba(255,255,255,.02)}
+.tn-grid .tn-emp{white-space:nowrap;min-width:150px}
+.tn-grid .tn-emp b{font-weight:600;color:var(--text)}
+.tn-grid .tn-emp small{display:block;color:var(--muted);font-size:10px}
+.tn-grid .tn-grp td{background:rgba(201,168,76,.06);color:var(--gold);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+.tn-grid .tn-grp .n{opacity:.6;font-weight:600;margin-left:6px}
+.tn-cell{text-align:center}
+.tchip{display:inline-block;margin:1px;padding:3px 7px;border-radius:7px;font-weight:600;font-size:10px;line-height:1.3;white-space:nowrap}
+.tchip small{display:block;opacity:.85;font-weight:500;font-size:9px}
+.tchip .lt{display:inline-block;margin-left:4px;padding:0 4px;border-radius:4px;background:rgba(255,255,255,.15);font-size:8px;vertical-align:middle}
+.tn-off{color:var(--muted);opacity:.4}
+.tn-meta{color:var(--muted);font-size:11px}
 .dtable{width:100%;border-collapse:collapse;}
 .dtable th{text-align:left;padding:9px 16px;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);}
 .dtable td{padding:10px 16px;font-size:13px;border-bottom:1px solid rgba(26,51,88,.4);}
@@ -398,6 +416,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <button class="nav-tab" id="tab_finance" onclick="showSec('finance')"> Shpenzime</button>
  <button class="nav-tab" id="tab_housekeeping" onclick="showSec('housekeeping')"> Housekeeping</button>
  <button class="nav-tab" id="tab_sales" onclick="showSec('sales')"> Daily Pick Up & Season Snapshot</button>
+ <button class="nav-tab" id="tab_turnet" onclick="showSec('turnet')"> Turnet</button>
  <button class="nav-tab" id="tab_admin_panel" onclick="showSec('admin_panel')" style="color:var(--gold);font-weight:700;display:none">Paneli Admin</button>
  </div>
 
@@ -414,6 +433,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
  <div id="sec_overview" class="fsec">
  <div id="c_overview"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
+ </div>
+ <div id="sec_turnet" class="fsec" style="display:none">
+ <div id="c_turnet"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
  </div>
  <div id="sec_fo" class="fsec" style="display:none">
  <div id="c_fo"><div class="loading"><div class="spin"></div>Duke ngarkuar...</div></div>
@@ -904,9 +926,9 @@ const MANAGER = { user:'MANAGER', pass:'Flow2026' };
 const FO_USER = { user:'FRONT OFFICE', pass:'FO2026' };
 const ADMIN = { user:'ADMIN', pass:'Rep26' };
 const ROLE_TABS = {
- admin: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping','sales','admin_panel'],
- manager: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping','sales'],
- fo: ['fo','spa','pax','housekeeping']
+ admin: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping','sales','turnet','admin_panel'],
+ manager: ['overview','fo','fnb','spa','pax','cashflow','finance','housekeeping','sales','turnet'],
+ fo: ['fo','spa','pax','housekeeping','turnet']
 };
 let currentRole = null;
 const TR = 110; // total rooms
@@ -978,6 +1000,56 @@ function doLogout(){
 document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin(); });
 
 // ─── NAVIGATION ───────────────────────────────────────────────────────────────
+// ─── TURNET (read-only FLOW HR schedule) ───────────────────────────────
+const TN_DAYS=['Hën','Mar','Mër','Enj','Pre','Sht','Die'];
+const TN_MONS=['Jan','Shk','Mar','Pri','Maj','Qer','Kor','Gsh','Sht','Tet','Nën','Dhj'];
+function tnHexA(hex,a){hex=(hex||'#7c6cf5').replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
+function tnWeekStart(){const d=new Date();d.setHours(0,0,0,0);const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return d;}
+function tnShiftInfo(s,st){
+ if(s==='leje'||(s&&s.cls==='leje'))return{leje:true};
+ if(typeof s==='object'&&s)return{lbl:s.lbl||'Turn',t:s.t||'',color:s.color||'#14b8a6',loc:s.loc};
+ const tp=(st||[]).find(t=>t.id===s);
+ if(tp)return{lbl:tp.lbl,t:(tp.start||'')+'–'+(tp.end||''),color:tp.color||'#7c6cf5'};
+ return{lbl:String(s),t:'',color:'#14b8a6'};
+}
+function tnChip(s,st){
+ const i=tnShiftInfo(s,st);
+ if(i.leje)return '<span class="tchip" style="background:rgba(239,68,68,.14);color:#f87171">Leje</span>';
+ const loc=i.loc?'<span class="lt">'+(i.loc==='flower'?'F':'G')+'</span>':'';
+ return '<span class="tchip" style="background:'+tnHexA(i.color,.18)+';color:'+i.color+'">'+i.lbl+loc+(i.t?'<small>'+i.t+'</small>':'')+'</span>';
+}
+async function loadTurnet(){
+ const box=document.getElementById('c_turnet');
+ box.innerHTML='<div class="loading"><div class="spin"></div>Duke ngarkuar orarin…</div>';
+ try{
+  const r=await fetch('/api/hr-schedule',{cache:'no-store'});
+  if(!r.ok)throw new Error(r.status===503?'orari nuk është konfiguruar (mungon SCHEDULE_TOKEN)':('Server '+r.status));
+  renderTurnet(await r.json());
+ }catch(e){ box.innerHTML='<div class="sec-card"><div class="sec-hdr2">Turnet</div><div style="padding:18px;color:var(--muted)">S\'u ngarkua orari: '+e.message+'</div></div>'; }
+}
+function renderTurnet(d){
+ const box=document.getElementById('c_turnet');
+ const ws=tnWeekStart(),dates=[];for(let i=0;i<7;i++){const dt=new Date(ws);dt.setDate(dt.getDate()+i);dates.push(dt);}
+ const lbl=dates[0].getDate()+' '+TN_MONS[dates[0].getMonth()]+' – '+dates[6].getDate()+' '+TN_MONS[dates[6].getMonth()];
+ const emps=(d.employees||[]).filter(e=>e.status!=='ended');
+ const shifts=d.shifts||{},st=d.shiftTypes||[];
+ const cell=(id,day)=>{const arr=shifts[id+'|'+day]||[];return arr.length?arr.map(s=>tnChip(s,st)).join(''):'<span class="tn-off">—</span>';};
+ let head='<tr><th class="tn-emp">Punonjësi</th>';
+ dates.forEach((dt,i)=>head+='<th class="tn-day">'+TN_DAYS[i]+'<br>'+dt.getDate()+'</th>');
+ head+='</tr>';
+ let rows='';
+ (d.departments||[]).forEach(dp=>{
+  const es=emps.filter(e=>e.dept===dp);if(!es.length)return;
+  rows+='<tr class="tn-grp"><td colspan="8">'+dp+'<span class="n">'+es.length+'</span></td></tr>';
+  es.forEach(e=>{let tds='';for(let i=0;i<7;i++)tds+='<td class="tn-cell">'+cell(e.id,i)+'</td>';rows+='<tr><td class="tn-emp"><b>'+e.fn+' '+e.ln+'</b><small>'+(e.pos||'')+'</small></td>'+tds+'</tr>';});
+ });
+ const hasOpen=[0,1,2,3,4,5,6].some(dd=>(shifts['open|'+dd]||[]).length);
+ if(hasOpen){let tds='';for(let i=0;i<7;i++)tds+='<td class="tn-cell">'+cell('open',i)+'</td>';rows+='<tr class="tn-grp"><td colspan="8">Turne të hapura</td></tr><tr><td class="tn-emp"><b>Të papërcaktuara</b></td>'+tds+'</tr>';}
+ if(!rows)rows='<tr><td colspan="8" style="padding:18px;text-align:center;color:var(--muted)">Nuk ka turne të caktuara për këtë javë.</td></tr>';
+ box.innerHTML='<div class="sec-card"><div class="sec-hdr2">Orari javor · '+lbl+'</div>'+
+  '<p class="tn-meta" style="padding:10px 18px 0">Vetëm-lexim nga FLOW HR · java aktuale · përditësohet çdo herë që hapet.</p>'+
+  '<div class="tn-wrap" style="margin:12px 14px 14px"><table class="tn-grid"><thead>'+head+'</thead><tbody>'+rows+'</tbody></table></div></div>';
+}
 function showSec(id){
  document.querySelectorAll('.fsec').forEach(s=>s.style.display='none');
  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
@@ -985,7 +1057,7 @@ function showSec(id){
  const tab=document.getElementById('tab_'+id); if(tab) tab.classList.add('active');
  document.getElementById('tbSub').textContent=id.toUpperCase()+' · '+fRange()+' VS '+pYRange();
  const db=document.querySelector('.date-bar');
- if(db) db.style.display=(id==='housekeeping'||id==='admin_panel'||id==='pax')?'none':'flex';
+ if(db) db.style.display=(id==='housekeeping'||id==='admin_panel'||id==='pax'||id==='turnet')?'none':'flex';
  // Daily report button hidden on admin panel tab (has its own monthly report button)
  var srBtn=document.getElementById('btnSendReport');
  if(srBtn) srBtn.style.display=(currentRole==='admin' && id!=='admin_panel')?'inline-flex':'none';
@@ -993,6 +1065,7 @@ function showSec(id){
  if(id==='admin_panel' && typeof admLazyInit==='function') admLazyInit();
  if(id==='pax' && typeof loadChannelInsights==='function') loadChannelInsights();
  if(id==='pax'){ var sub=document.getElementById('tbSub'); if(sub) sub.textContent='CHANNEL PRODUCTION INSIGHTS'; }
+ if(id==='turnet'){ var sub2=document.getElementById('tbSub'); if(sub2) sub2.textContent='TURNET — ORARI I STAFIT (FLOW HR)'; if(typeof loadTurnet==='function') loadTurnet(); }
 }
 
 // ─── DATE ─────────────────────────────────────────────────────────────────────
