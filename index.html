@@ -1004,7 +1004,11 @@ document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&document.getElement
 const TN_DAYS=['Hën','Mar','Mër','Enj','Pre','Sht','Die'];
 const TN_MONS=['Jan','Shk','Mar','Pri','Maj','Qer','Kor','Gsh','Sht','Tet','Nën','Dhj'];
 function tnHexA(hex,a){hex=(hex||'#7c6cf5').replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
-function tnWeekStart(){const d=new Date();d.setHours(0,0,0,0);const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return d;}
+let tnWeekOffset=0,tnData=null;
+function tnWeekStart(){const d=new Date();d.setHours(0,0,0,0);const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd+tnWeekOffset*7);return d;}
+function tnISO(dt){return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');}
+function tnNav(delta){tnWeekOffset+=delta;if(tnData)renderTurnet(tnData);else loadTurnet();}
+function tnToday(){tnWeekOffset=0;if(tnData)renderTurnet(tnData);else loadTurnet();}
 function tnShiftInfo(s,st){
  if(s==='leje'||(s&&s.cls==='leje'))return{leje:true};
  if(typeof s==='object'&&s)return{lbl:s.lbl||'Turn',t:s.t||'',color:s.color||'#14b8a6',loc:s.loc};
@@ -1028,12 +1032,14 @@ async function loadTurnet(){
  }catch(e){ box.innerHTML='<div class="sec-card"><div class="sec-hdr2">Turnet</div><div style="padding:18px;color:var(--muted)">S\'u ngarkua orari: '+e.message+'</div></div>'; }
 }
 function renderTurnet(d){
+ tnData=d;
  const box=document.getElementById('c_turnet');
  const ws=tnWeekStart(),dates=[];for(let i=0;i<7;i++){const dt=new Date(ws);dt.setDate(dt.getDate()+i);dates.push(dt);}
+ const iso=i=>tnISO(dates[i]);
  const lbl=dates[0].getDate()+' '+TN_MONS[dates[0].getMonth()]+' – '+dates[6].getDate()+' '+TN_MONS[dates[6].getMonth()];
  const emps=(d.employees||[]).filter(e=>e.status!=='ended');
  const shifts=d.shifts||{},st=d.shiftTypes||[];
- const cell=(id,day)=>{const arr=shifts[id+'|'+day]||[];return arr.length?arr.map(s=>tnChip(s,st)).join(''):'<span class="tn-off">—</span>';};
+ const cell=(id,dISO)=>{const arr=shifts[id+'|'+dISO]||[];return arr.length?arr.map(s=>tnChip(s,st)).join(''):'<span class="tn-off">—</span>';};
  let head='<tr><th class="tn-emp">Punonjësi</th>';
  dates.forEach((dt,i)=>head+='<th class="tn-day">'+TN_DAYS[i]+'<br>'+dt.getDate()+'</th>');
  head+='</tr>';
@@ -1041,13 +1047,15 @@ function renderTurnet(d){
  (d.departments||[]).forEach(dp=>{
   const es=emps.filter(e=>e.dept===dp);if(!es.length)return;
   rows+='<tr class="tn-grp"><td colspan="8">'+dp+'<span class="n">'+es.length+'</span></td></tr>';
-  es.forEach(e=>{let tds='';for(let i=0;i<7;i++)tds+='<td class="tn-cell">'+cell(e.id,i)+'</td>';rows+='<tr><td class="tn-emp"><b>'+e.fn+' '+e.ln+'</b><small>'+(e.pos||'')+'</small></td>'+tds+'</tr>';});
+  es.forEach(e=>{let tds='';for(let i=0;i<7;i++)tds+='<td class="tn-cell">'+cell(e.id,iso(i))+'</td>';rows+='<tr><td class="tn-emp"><b>'+e.fn+' '+e.ln+'</b><small>'+(e.pos||'')+'</small></td>'+tds+'</tr>';});
  });
- const hasOpen=[0,1,2,3,4,5,6].some(dd=>(shifts['open|'+dd]||[]).length);
- if(hasOpen){let tds='';for(let i=0;i<7;i++)tds+='<td class="tn-cell">'+cell('open',i)+'</td>';rows+='<tr class="tn-grp"><td colspan="8">Turne të hapura</td></tr><tr><td class="tn-emp"><b>Të papërcaktuara</b></td>'+tds+'</tr>';}
+ const hasOpen=[0,1,2,3,4,5,6].some(i=>(shifts['open|'+iso(i)]||[]).length);
+ if(hasOpen){let tds='';for(let i=0;i<7;i++)tds+='<td class="tn-cell">'+cell('open',iso(i))+'</td>';rows+='<tr class="tn-grp"><td colspan="8">Turne të hapura</td></tr><tr><td class="tn-emp"><b>Të papërcaktuara</b></td>'+tds+'</tr>';}
  if(!rows)rows='<tr><td colspan="8" style="padding:18px;text-align:center;color:var(--muted)">Nuk ka turne të caktuara për këtë javë.</td></tr>';
- box.innerHTML='<div class="sec-card"><div class="sec-hdr2">Orari javor · '+lbl+'</div>'+
-  '<p class="tn-meta" style="padding:10px 18px 0">Vetëm-lexim nga FLOW HR · java aktuale · përditësohet çdo herë që hapet.</p>'+
+ const nbtn='background:transparent;border:1px solid var(--border,#2a2f57);color:var(--gold,#c9a84c);border-radius:6px;padding:2px 10px;cursor:pointer;font-size:14px';
+ const nav='<span style="display:inline-flex;gap:6px;align-items:center;margin-left:auto"><button style="'+nbtn+'" onclick="tnNav(-1)">‹</button><button style="'+nbtn+'" onclick="tnToday()">Sot</button><button style="'+nbtn+'" onclick="tnNav(1)">›</button></span>';
+ box.innerHTML='<div class="sec-card"><div class="sec-hdr2" style="display:flex;align-items:center;gap:10px">Orari javor · '+lbl+nav+'</div>'+
+  '<p class="tn-meta" style="padding:10px 18px 0">Vetëm-lexim nga FLOW HR · sipas datës · përdor ‹ › për të parë javët e tjera.</p>'+
   '<div class="tn-wrap" style="margin:12px 14px 14px"><table class="tn-grid"><thead>'+head+'</thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 function showSec(id){
