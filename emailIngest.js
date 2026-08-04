@@ -23,8 +23,12 @@
 //   6. Labels the email "processed-report" in Gmail, like the rest
 //      of the FLOW pipeline.
 //
-// RULES (confirmed by Mireda on 2026-08-01):
+// RULES (confirmed by Mireda on 2026-08-01, extended 2026-08-04):
 //   • Rooms starting with "SR"  = Flower Residence SARANDA → excluded.
+//   • Rooms starting with "RB" (a.k.a. "BR") = a separate off-site
+//     residence, NOT Flower Hotel → excluded (added 2026-08-04 after
+//     6 "RB" rooms were wrongly counted for 2026-08-03, pushing
+//     occupancy to 165/160 = 103%).
 //   • Room type "Z VILA" (VILA 1, VILA 2, 313 — owner villas) → excluded.
 //   • Name/source exclusions — SAME list as the "Prenotimet ne recepsion"
 //     sales report (dashboard: "Pa Caci/Jasht Pune/Bllok/SAISTOURS"):
@@ -135,7 +139,7 @@ function parseWorkbook(buffer, reportDate) {
     totalRecords: rows.length,
     roomsOccupied: 0,
     revenueEur: 0,
-    excluded: { saranda: 0, sarandaRevenueEur: 0, vila: 0, named: 0, namedRevenueEur: 0 },
+    excluded: { saranda: 0, sarandaRevenueEur: 0, rb: 0, rbRevenueEur: 0, vila: 0, named: 0, namedRevenueEur: 0 },
     itakaRooms: 0,
     flower: { rooms: 0, revenueEur: 0 },
     garden: { rooms: 0, revenueEur: 0 },
@@ -155,7 +159,10 @@ function parseWorkbook(buffer, reportDate) {
     const price = Number(r.Cmimi) || 0;
 
     // RULE: Saranda rooms (SR …) are a different property — excluded.
-    if (/^SR\b/i.test(room)) { res.excluded.saranda++; res.excluded.sarandaRevenueEur += price; return; }
+    // Anchor on the prefix only (no \b) so "SR3" / "SR 3" both match.
+    if (/^SR/i.test(room)) { res.excluded.saranda++; res.excluded.sarandaRevenueEur += price; return; }
+    // RULE: RB / BR rooms are a separate off-site residence — excluded.
+    if (/^(?:RB|BR)/i.test(room)) { res.excluded.rb++; res.excluded.rbRevenueEur += price; return; }
     // RULE: owner villas (Z VILA → VILA 1, VILA 2, 313) — excluded.
     if (rtype === 'Z VILA') { res.excluded.vila++; return; }
     // RULE: same name/source exclusions as "Prenotimet ne recepsion"
