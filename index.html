@@ -896,7 +896,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <span style="background:rgba(55,138,221,.15);border:1px solid rgba(55,138,221,.35);color:#5aa0e6;font-size:10px;padding:3px 8px;border-radius:12px;font-weight:600">Fleta Monthly Cash Flow · EUR</span>
  <div style="flex:1;height:1px;background:rgba(201,168,76,.18);min-width:20px"></div>
  <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap">Kursi €→Lek
- <input id="adm-cfr-rate" type="number" min="50" max="200" step="0.5" value="97" oninput="admCFRateChange(this.value)"
+ <input id="adm-cfr-rate" type="number" min="50" max="200" step="0.5" value="92" oninput="admCFRateChange(this.value)"
  style="width:66px;background:var(--card);border:1px solid rgba(201,168,76,.3);color:var(--gold2);border-radius:8px;padding:5px 8px;font-size:12px;font-weight:700;text-align:center">
  </label>
  </div>
@@ -2830,7 +2830,7 @@ var ADM_INS = {
 };
 
 var admCurKey='all', admCharts={}, admInited=false;
-var admCFRate=97, admCFLastD=null; // Cash Flow Report: live-adjustable €→Lek rate
+var admCFRate=92, admCFLastD=null; // Cash Flow Report: live-adjustable €→Lek rate
 // ── Central month config (managerial year 2026) — single source of truth ───────
 // A newly-filled month in the sheet flows here via /api/admin _months, so the
 // dropdown, labels, arrays and charts all extend automatically (no per-month edits).
@@ -4141,7 +4141,7 @@ function admInitCFReport(d){
  if(body) body.style.display='block';
  if(nod) nod.style.display='none';
 
- var K=(admCFRate>0)?admCFRate:97;
+ var K=(admCFRate>0)?admCFRate:92;
  var e=function(lek,eur){return (lek||0)/K + (eur||0);};       // → EUR
  var fe=function(v){return '€'+Math.round(v).toLocaleString('en-US');};
  var fkk=function(v){var s=v<0?'-':''; return s+'€'+Math.abs(Math.round(v/1000)).toLocaleString('en-US')+'k';};
