@@ -196,12 +196,13 @@ function parseCashFlow(rows, date) {
  loan_euro: n(r[12]),
  loan_lek: n(r[13]),
  house_use: n(r[14]),
- furnitore_cash: n(r[15]),
- furnitore_bank_lek: n(r[16]),
- furnitore_bank_euro: n(r[17]),
- investime_banke_euro: n(r[18]),
- investime_banke_lek: n(r[19]),
- investime_cash: n(r[20]),
+ furnitore_cash: n(r[15]),        // Lek
+ furnitore_cash_euro: n(r[16]),   // Euro — col Q, added to the daily sheet 2026-08-17
+ furnitore_bank_lek: n(r[17]),
+ furnitore_bank_euro: n(r[18]),
+ investime_banke_euro: n(r[19]),
+ investime_banke_lek: n(r[20]),
+ investime_cash: n(r[21]),
  }
  };
 }
@@ -597,7 +598,7 @@ function calcCFMonth(cfRows, year, month) {
  'Taxes': Math.round((p.taxes||0) / LEK_EUR),
  'Loan': Math.round((p.loan_lek||0)/LEK_EUR + (p.loan_euro||0)),
  'House Use': Math.round((p.house_use||0) / LEK_EUR),
- 'Suppliers': Math.round((p.furnitore_cash||0)/LEK_EUR + (p.furnitore_bank_lek||0)/LEK_EUR + (p.furnitore_bank_euro||0)),
+ 'Suppliers': Math.round((p.furnitore_cash||0)/LEK_EUR + (p.furnitore_bank_lek||0)/LEK_EUR + (p.furnitore_cash_euro||0) + (p.furnitore_bank_euro||0)),
  'Investments': Math.round((p.investime_banke_lek||0)/LEK_EUR + (p.investime_cash||0)/LEK_EUR + (p.investime_banke_euro||0)),
  };
  const cfDaljeItems = Object.entries(outGroups)
@@ -616,11 +617,11 @@ function calcCFMonth(cfRows, year, month) {
  const lekOutALL = (p.paga||0)+(p.taxes||0)+(p.loan_lek||0)+(p.house_use||0)
                  + (p.furnitore_cash||0)+(p.furnitore_bank_lek||0)
                  + (p.investime_banke_lek||0)+(p.investime_cash||0);
- const eurOut    = (p.loan_euro||0)+(p.furnitore_bank_euro||0)+(p.investime_banke_euro||0);
+ const eurOut    = (p.loan_euro||0)+(p.furnitore_cash_euro||0)+(p.furnitore_bank_euro||0)+(p.investime_banke_euro||0);
  const lekOutEUR = lekOutALL / LEK_EUR;
  const totalOut  = lekOutEUR + eurOut;
- // Cash = Furnitore Cash + Investime Cash (both Lek); the rest is non-cash.
- const outCash    = ((p.furnitore_cash||0) + (p.investime_cash||0)) / LEK_EUR;
+ // Cash = Furnitore Cash (Lek + Euro) + Investime Cash (Lek); the rest is non-cash.
+ const outCash    = ((p.furnitore_cash||0) + (p.investime_cash||0)) / LEK_EUR + (p.furnitore_cash_euro||0);
  const outNonCash = totalOut - outCash;
 
  return {
@@ -2009,7 +2010,7 @@ app.post('/api/send-report', async function(req, res) {
  + (nv(ark.non_cash_euro) + nv(ark.reception_cash_euro) + nv(ark.allotment) + nv(ark.itaka) + nv(ark.mice_euro)) * EC;
  const cfOutLek = nv(pag.paga) + nv(pag.taxes) + nv(pag.loan_lek) + nv(pag.house_use) + nv(pag.furnitore_cash)
  + nv(pag.furnitore_bank_lek) + nv(pag.investime_banke_lek) + nv(pag.investime_cash)
- + (nv(pag.loan_euro) + nv(pag.furnitore_bank_euro) + nv(pag.investime_banke_euro)) * EC;
+ + (nv(pag.loan_euro) + nv(pag.furnitore_cash_euro) + nv(pag.furnitore_bank_euro) + nv(pag.investime_banke_euro)) * EC;
  const cfNetLek = cfInLek - cfOutLek;
  // Available rooms for the day come from the FO sheet "Nights Available" column
  // (per-day; varies during June 2026). Occupancy is computed against it; fall back to
@@ -2113,7 +2114,8 @@ app.post('/api/send-report', async function(req, res) {
  { label:'Kredi Euro×'+EC, lek: Math.round(nv(pag.loan_euro)*EC) },
  { label:'Kredi Lek', lek: nv(pag.loan_lek) },
  { label:'House Use', lek: nv(pag.house_use) },
- { label:'Furnitore Cash', lek: nv(pag.furnitore_cash) },
+ { label:'Furnitore Cash Lek', lek: nv(pag.furnitore_cash) },
+ { label:'Furnitore Cash Euro×'+EC, lek: Math.round(nv(pag.furnitore_cash_euro)*EC) },
  { label:'Furnitore Bankë Lek', lek: nv(pag.furnitore_bank_lek) },
  { label:'Furnitore Bankë Euro×'+EC, lek: Math.round(nv(pag.furnitore_bank_euro)*EC) },
  { label:'Investime Bankë Euro×'+EC, lek: Math.round(nv(pag.investime_banke_euro)*EC) },
