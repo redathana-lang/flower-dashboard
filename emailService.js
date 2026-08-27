@@ -712,4 +712,42 @@ async function sendDailyReport(date, data, prevData, testTo) {
   return info;
 }
 
-module.exports = { sendDailyReport, buildEmailHTML };
+// ================================================================
+//  sendFile — dërgon një skedar të gatshëm (p.sh. PDF-në e raportit
+//  mujor) me email, duke përdorur të njëjtin transport SMTP.
+//  Marrësi lejohet vetëm nga lista e njohur (RECIPIENTS + FILE_EMAIL_ALLOW),
+//  që endpoint-i të mos shndërrohet në relay nëse token-i bie në dorë tjetri.
+// ================================================================
+function allowedRecipients() {
+  return (RECIPIENTS + ',' + (process.env.FILE_EMAIL_ALLOW || ''))
+    .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+}
+async function sendFile({ to, subject, text, html, filename, buffer, mimeType }) {
+  const target = String(to || '').trim();
+  if (!target) throw new Error('Mungon marrësi.');
+  if (!allowedRecipients().includes(target.toLowerCase())) {
+    throw new Error('Marrësi "' + target + '" nuk është në listën e lejuar. '
+      + 'Shtoje te env FILE_EMAIL_ALLOW nëse duhet.');
+  }
+  if (!buffer || !buffer.length) throw new Error('Skedari është bosh.');
+  if (buffer.length > 25 * 1024 * 1024) throw new Error('Skedari kalon 25MB.');
+
+  const transporter = createTransport();
+  const info = await transporter.sendMail({
+    from: '"FLOW Dashboard" <' + process.env.EMAIL_USER + '>',
+    to: target,
+    subject: subject || filename || 'Raport',
+    text: text || 'Bashkëngjitur gjeni skedarin: ' + (filename || 'raport'),
+    html: html || undefined,
+    attachments: [{
+      filename: filename || 'raport.pdf',
+      content: buffer,
+      contentType: mimeType || 'application/pdf',
+    }],
+  });
+  console.log('[EMAIL] File sent:', filename, (buffer.length/1024).toFixed(0) + 'KB',
+    '→', target, info.messageId);
+  return info;
+}
+
+module.exports = { sendDailyReport, buildEmailHTML, sendFile };

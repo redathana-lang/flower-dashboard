@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const webpush = require('web-push');
-const { sendDailyReport, buildEmailHTML } = require('./emailService');
+const { sendDailyReport, buildEmailHTML, sendFile } = require('./emailService');
 // Load .env if present (local dev — production uses platform env vars)
 try { require('dotenv').config(); } catch(_) {}
 
@@ -2050,6 +2050,37 @@ function computeDailySales(pack, date) {
     }),
   };
 }
+
+// ─── DËRGO NJË SKEDAR ME EMAIL ────────────────────────────────────────────────
+// Trupi i kërkesës është vetë skedari (binar), që të mos kalojë si base64:
+//   curl -X POST "$URL/api/send-file?token=…&to=…&filename=Raport.pdf&subject=…" \
+//        -H "Content-Type: application/pdf" --data-binary @Raport.pdf
+// Marrësi kufizohet nga lista e lejuar në emailService.sendFile.
+app.post('/api/send-file',
+  express.raw({ type: ['application/pdf','application/octet-stream'], limit: '25mb' }),
+  async function (req, res) {
+    const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'Rep26';
+    const q = req.query || {};
+    if (q.token !== ADMIN_TOKEN) return res.status(403).json({ error: 'Nuk keni leje.' });
+    if (!Buffer.isBuffer(req.body) || !req.body.length) {
+      return res.status(400).json({ error: 'Trupi i kërkesës është bosh — dërgo skedarin me --data-binary.' });
+    }
+    try {
+      const info = await sendFile({
+        to: q.to,
+        subject: q.subject,
+        text: q.text,
+        filename: q.filename || 'raport.pdf',
+        buffer: req.body,
+        mimeType: req.get('Content-Type') || 'application/pdf',
+      });
+      res.json({ success: true, to: q.to, filename: q.filename,
+        bytes: req.body.length, messageId: info.messageId });
+    } catch (err) {
+      console.error('[EMAIL] send-file error:', err.message);
+      res.status(400).json({ error: err.message });
+    }
+  });
 
 app.post('/api/send-report', async function(req, res) {
  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'Rep26';
