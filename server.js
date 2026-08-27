@@ -1942,6 +1942,109 @@ ${repHtml}
 });
 
 // ─── EMAIL REPORT ─────────────────────────────────────────────────────────────
+// ─── SHITJET E DITËS (daily sales) ───────────────────────────────────────────
+// Reads the compact per-reservation payload the dashboard stores with the sales
+// aggregate (agg.dailyPack, keyed on the Trinosoft column AF "Data Krijimit")
+// and returns the "what did we sell on this day" block for the daily email.
+function dsShiftDay(key, days) {
+  const p = key.split('-');
+  const d = new Date(+p[0], +p[1] - 1, +p[2]);
+  d.setDate(d.getDate() + days);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function computeDailySales(pack, date) {
+  if (!pack || !Array.isArray(pack.r) || !pack.r.length) return null;
+  const MALS = {1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
+  const rows = pack.r.map(function (a) {
+    return { crk:a[0], skey:a[1], nights:a[2]||0, rev:a[3]||0,
+             ch:pack.ch[a[4]]||'N/A', nat:pack.na[a[5]]||'', pkg:pack.pk[a[6]]||'' };
+  }).filter(function (r) { return r.crk; });
+  if (!rows.length) return null;
+
+  const seen = {};
+  rows.forEach(function (r) { seen[r.crk] = 1; });
+  const dayKeys = Object.keys(seen).sort();
+  const newest = dayKeys[dayKeys.length - 1];
+  // The Excel is uploaded by hand, so the newest sold-on day can lag the report
+  // date. Use the report date when it is covered, otherwise the newest day.
+  const day = seen[date] ? date : newest;
+  const stale = day !== date;
+
+  function totalsFor(k) {
+    let res = 0, nights = 0, rev = 0;
+    rows.forEach(function (r) { if (r.crk === k) { res++; nights += r.nights; rev += r.rev; } });
+    return { res:res, nights:nights, rev:rev };
+  }
+  const sel = rows.filter(function (r) { return r.crk === day; });
+  let nights = 0, rev = 0, lead = 0, leadN = 0;
+  const ch = {}, pkg = {}, nat = {}, mon = {};
+  sel.forEach(function (r) {
+    nights += r.nights; rev += r.rev;
+    if (r.skey) {
+      const a = day.split('-'), b = r.skey.split('-');
+      const L = Math.round((Date.UTC(+b[0],+b[1]-1,+b[2]) - Date.UTC(+a[0],+a[1]-1,+a[2])) / 86400000);
+      if (L > -30 && L < 900) { lead += L; leadN++; }
+    }
+    function bump(o, k) { if (!o[k]) o[k] = { res:0, nights:0, rev:0 }; o[k].res++; o[k].nights += r.nights; o[k].rev += r.rev; }
+    bump(ch, r.ch); bump(pkg, r.pkg || 'Pa paketë'); bump(nat, r.nat || 'Pa specifikuar');
+    // split the stay's nights across the months actually slept
+    if (r.skey) {
+      let p = r.skey.split('-'), yr = +p[0], mo = +p[1], dd = +p[2], rem = r.nights, s = 0;
+      if (rem <= 1) { const k1 = yr + '-' + String(mo).padStart(2,'0');
+        if (!mon[k1]) mon[k1] = { nights:0, rev:0 }; mon[k1].nights += r.nights; mon[k1].rev += r.rev; }
+      else while (rem > 0 && s < 24) {
+        s++;
+        const dim = new Date(yr, mo, 0).getDate();
+        let inMo = Math.min(rem, dim - dd + 1);
+        if (inMo <= 0) inMo = rem;
+        const mk = yr + '-' + String(mo).padStart(2,'0');
+        if (!mon[mk]) mon[mk] = { nights:0, rev:0 };
+        mon[mk].nights += inMo; mon[mk].rev += r.rev * (inMo / r.nights);
+        rem -= inMo; dd = 1; mo++; if (mo > 12) { mo = 1; yr++; }
+      }
+    }
+  });
+
+  const prevDay = dsShiftDay(day, -1);
+  const prev = totalsFor(prevDay);
+  // 7-day run rate: the seven calendar days ending the day before `day`
+  let w = 0, wDays = 0;
+  for (let i = 1; i <= 7; i++) { const k = dsShiftDay(day, -i); if (seen[k]) { w += totalsFor(k).rev; wDays++; } }
+  const avg7 = wDays ? w / wDays : 0;
+  // month to date, up to and including `day`
+  const mStart = day.slice(0, 8) + '01';
+  let mRes = 0, mNights = 0, mRev = 0;
+  rows.forEach(function (r) { if (r.crk >= mStart && r.crk <= day) { mRes++; mNights += r.nights; mRev += r.rev; } });
+
+  // Zero-revenue rows (complimentary / not priced yet) are counted in the
+  // totals but left out of the revenue-ranked lists, where they read as noise.
+  function rank(o, max) {
+    return Object.entries(o).filter(function (e) { return e[1].rev > 0; })
+      .sort(function (a, b) { return b[1].rev - a[1].rev; })
+      .slice(0, max)
+      .map(function (e) { return { name:e[0], res:e[1].res, nights:e[1].nights, rev:e[1].rev,
+        adr: e[1].nights > 0 ? e[1].rev / e[1].nights : 0,
+        share: rev > 0 ? e[1].rev / rev : 0 }; });
+  }
+  const chAll = Object.keys(ch).length;
+  return {
+    day: day, stale: stale, reportDate: date,
+    res: sel.length, nights: nights, rev: rev,
+    adr: nights > 0 ? rev / nights : 0,
+    alos: sel.length > 0 ? nights / sel.length : 0,
+    lead: leadN ? lead / leadN : null,
+    prevRev: prev.rev, prevRes: prev.res, prevDay: prevDay,
+    avg7: avg7, avg7Days: wDays,
+    mtd: { res:mRes, nights:mNights, rev:mRev, from:mStart },
+    channels: rank(ch, 6), channelsTotal: chAll,
+    packages: rank(pkg, 4), nats: rank(nat, 4),
+    months: Object.keys(mon).sort().map(function (k) {
+      const p = k.split('-');
+      return { label:(MALS[+p[1]] || k) + ' ' + p[0].slice(2), nights:mon[k].nights, rev:mon[k].rev };
+    }),
+  };
+}
+
 app.post('/api/send-report', async function(req, res) {
  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'Rep26';
  const token = req.body && req.body.token;
@@ -2079,6 +2182,12 @@ app.post('/api/send-report', async function(req, res) {
  };
  }
  } catch(salesErr) { console.warn('[EMAIL] Sales data unavailable:', salesErr.message); }
+ var dailySales = null;
+ try {
+  if (salesState && salesState.agg && salesState.agg.dailyPack) {
+   dailySales = computeDailySales(salesState.agg.dailyPack, date);
+  }
+ } catch(dsErr) { console.warn('[EMAIL] Daily sales unavailable:', dsErr.message); }
  const data = {
  totalRevenueLek: totalRevLek, totalRevenueEur: Math.round(totalRevLek/EH),
  mtdTotalRevenueLek: mtdTotalRevLek,
@@ -2125,6 +2234,7 @@ app.post('/api/send-report', async function(req, res) {
  },
  expenses: { totalLek: expTotal, items: expItems },
  salesReport: salesSection,
+ dailySales: dailySales,
  };
  const prevData = {
  totalRevenueLek: lyTotalRevLek, occupancyPct: lyOcc, totalRooms: lyRoomsAvail,

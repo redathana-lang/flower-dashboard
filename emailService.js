@@ -205,7 +205,7 @@ function buildEmailHTML(date, d, p) {
   var sr = d.salesReport || null;
 
   // ── Managerial ────────────────────────────────────────────────
-  var mgrOcc = occ >= 70 ? 'e lartë' : occ >= 45 ? 'solide për fazën sezonale' : 'e moderuar';
+  var mgrOcc = occ >= 70 ? 'të lartë' : occ >= 45 ? 'solide për fazën sezonale' : 'të moderuar';
   var mgrYoy = lyTotalLek > 0
     ? '(+' + (((totalLek-lyTotalLek)/lyTotalLek)*100).toFixed(1) + '% krahasuar me ' + (year-1) + ')'
     : '';
@@ -363,9 +363,115 @@ function buildEmailHTML(date, d, p) {
     + '</tr></table></div></td>'
     + '</tr></table></td></tr>' + HR;
 
-  // ── 05 SALES REPORT ──────────────────────────────────────────
+  // ── 05 SHITJET E DITËS ───────────────────────────────────────
+  var ds = d.dailySales || null;
   html += '<tr><td style="' + SEC + '">'
-    + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:3px;">05 \u2014 Daily Pick Up \u2014 Vjetor</div>';
+    + secHead('05','Shitjet e Ditës','#c9a84c');
+
+  if (!ds) {
+    html += '<div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px;font-size:11px;color:#475569;text-align:center;">Nuk ka të dhëna shitjesh — ngarko Excel-in e Trinisoft në dashboard (kolona AF "Data Krijimit").</div>';
+  } else {
+    var dsAdrC = '#a78bfa';
+    html += '<div style="font-size:10px;color:#334155;margin-bottom:10px;">Rezervimet e krijuara më ' + fDate(ds.day)
+      + (ds.stale ? ' <span style="color:#f59e0b;">· Excel-i i fundit i ngarkuar është i kësaj date, jo i ' + ds.reportDate + '</span>' : '')
+      + '</div>';
+
+    // 4 KPIs
+    html += '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px;"><tr>'
+      + card(big((ds.res||0).toLocaleString('en-US'),'#38bdf8') + lbl('Rezervime të reja')
+             + '<div style="font-size:10px;color:#334155;margin-top:2px;">ALOS ' + ds.alos.toFixed(1) + ' netë</div>', '')
+      + card(big(fL(ds.nights),'#c9a84c') + lbl('Netë të shitura')
+             + '<div style="font-size:10px;color:#334155;margin-top:2px;">' + ds.channelsTotal + ' kanale</div>', '')
+      + card(big(fE(ds.rev||0),'#3b82f6') + lbl('Shitje')
+             + '<div style="margin-top:3px;">' + pct(ds.rev, ds.prevRev) + ' <span style="font-size:9px;color:#334155;">vs dje</span></div>', '')
+      + card(big(fE(ds.adr||0),dsAdrC) + lbl('ADR')
+             + '<div style="font-size:10px;color:#334155;margin-top:2px;">' + (ds.lead != null ? Math.round(ds.lead) + ' ditë lead' : '—') + '</div>', 'padding-right:0;')
+      + '</tr></table>';
+
+    // run-rate + MTD strip
+    var rrDiff = ds.avg7 > 0 ? ((ds.rev - ds.avg7) / ds.avg7) * 100 : 0;
+    var rrC    = rrDiff >= 0 ? '#22c55e' : '#ef4444';
+    html += inner('<table width="100%" cellpadding="0" cellspacing="0"><tr>'
+      + '<td style="width:50%;vertical-align:top;padding-right:8px;">'
+      + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.07em;font-weight:700;">Mesatarja 7-ditore</div>'
+      + '<div style="font-size:16px;font-weight:700;color:#c8d5e4;margin-top:3px;">' + fE(ds.avg7) + '</div>'
+      + '<div style="font-size:10px;color:#475a72;margin-top:2px;">'
+      + (ds.avg7Days ? '<span style="color:' + rrC + ';">' + (rrDiff >= 0 ? '▲' : '▼') + ' ' + Math.abs(rrDiff).toFixed(0) + '%</span> sot vs mesatarja' : 'pa histori')
+      + '</div></td>'
+      + '<td style="width:50%;vertical-align:top;border-left:1px solid #1e3a5f;padding-left:12px;">'
+      + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.07em;font-weight:700;">Muaji deri sot</div>'
+      + '<div style="font-size:16px;font-weight:700;color:#c9a84c;margin-top:3px;">' + fE(ds.mtd.rev) + '</div>'
+      + '<div style="font-size:10px;color:#475a72;margin-top:2px;">' + ds.mtd.res + ' rez. · ' + fL(ds.mtd.nights) + ' netë</div>'
+      + '</td></tr></table>', 0);
+
+    // channels + ADR
+    var dsMaxCh = (ds.channels[0] || {}).rev || 1;
+    var chRows = ds.channels.map(function (c, i) {
+      var cc = ['#c9a84c','#3b82f6','#14b8a6','#8b5cf6','#f59e0b','#ec4899'][i] || '#64748b';
+      return '<tr style="border-bottom:1px solid #0d1a28;">'
+        + '<td style="padding:5px 6px 5px 0;font-size:11px;color:#c8d5e4;">' + c.name + '</td>'
+        + '<td style="padding:5px 4px;width:26%;"><div style="background:#111e30;border-radius:3px;height:8px;overflow:hidden;"><div style="background:' + cc + ';height:8px;width:' + Math.max(2, Math.round(c.rev / dsMaxCh * 100)) + '%;border-radius:3px;"></div></div></td>'
+        + '<td style="padding:5px 4px;font-size:11px;color:#8496aa;text-align:center;">' + c.res + '</td>'
+        + '<td style="padding:5px 4px;font-size:11px;color:#8496aa;text-align:center;">' + fL(c.nights) + '</td>'
+        + '<td style="padding:5px 4px;font-size:11px;color:#c9a84c;font-weight:700;text-align:right;white-space:nowrap;">' + fE(c.rev) + '</td>'
+        + '<td style="padding:5px 0 5px 6px;font-size:11px;color:#94a3b8;text-align:right;white-space:nowrap;">' + fE(c.adr) + '</td>'
+        + '</tr>';
+    }).join('');
+    html += '<div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px;margin-top:10px;">'
+      + '<div style="font-size:9px;color:#c9a84c;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;font-weight:700;">Sipas Kanalit &amp; ADR</div>'
+      + '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">'
+      + '<tr><th style="padding:4px 6px 4px 0;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:left;font-weight:600;">Kanali</th>'
+      + '<th></th>'
+      + '<th style="padding:4px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:center;font-weight:600;">Rez.</th>'
+      + '<th style="padding:4px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:center;font-weight:600;">Netë</th>'
+      + '<th style="padding:4px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:right;font-weight:600;">Shitje</th>'
+      + '<th style="padding:4px 0 4px 6px;font-size:9px;color:#3d5070;text-transform:uppercase;text-align:right;font-weight:600;">ADR</th></tr>'
+      + chRows
+      + '<tr><td style="padding:6px 6px 0 0;font-size:11px;color:#c9a84c;font-weight:700;">TOTALI</td><td></td>'
+      + '<td style="padding:6px 4px 0;font-size:11px;color:#c9a84c;font-weight:700;text-align:center;">' + ds.res + '</td>'
+      + '<td style="padding:6px 4px 0;font-size:11px;color:#c9a84c;font-weight:700;text-align:center;">' + fL(ds.nights) + '</td>'
+      + '<td style="padding:6px 4px 0;font-size:11px;color:#c9a84c;font-weight:700;text-align:right;">' + fE(ds.rev) + '</td>'
+      + '<td style="padding:6px 0 0 6px;font-size:11px;color:#c9a84c;font-weight:700;text-align:right;">' + fE(ds.adr) + '</td></tr>'
+      + '</table>'
+      + (ds.channelsTotal > ds.channels.length ? '<div style="font-size:9px;color:#3d5070;margin-top:6px;">+' + (ds.channelsTotal - ds.channels.length) + ' kanale të tjera më të vogla</div>' : '')
+      + '</div>';
+
+    // packages | nationalities
+    function dsMini(title, items, color) {
+      var mx = (items[0] || {}).rev || 1;
+      return '<div style="font-size:9px;color:' + color + ';text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;font-weight:700;">' + title + '</div>'
+        + '<table width="100%" cellpadding="0" cellspacing="0">'
+        + items.map(function (p) {
+            return '<tr><td style="padding:3px 6px 3px 0;font-size:11px;color:#94a3b8;">' + p.name + '</td>'
+              + '<td style="padding:3px 4px;width:34%;"><div style="background:#111e30;border-radius:3px;height:7px;overflow:hidden;"><div style="background:' + color + ';height:7px;width:' + Math.max(2, Math.round(p.rev / mx * 100)) + '%;border-radius:3px;"></div></div></td>'
+              + '<td style="padding:3px 0;font-size:11px;color:#c8d5e4;text-align:right;white-space:nowrap;">' + fE(p.rev) + '</td></tr>';
+          }).join('')
+        + '</table>';
+    }
+    html += '<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:10px;"><tr>'
+      + '<td style="width:50%;padding-right:5px;vertical-align:top;"><div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px;">'
+      + dsMini('Paketa (Kompania)', ds.packages, '#14b8a6') + '</div></td>'
+      + '<td style="width:50%;padding-left:5px;vertical-align:top;"><div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px;">'
+      + dsMini('Nacionaliteti', ds.nats, '#8b5cf6') + '</div></td>'
+      + '</tr></table>';
+
+    // stay-month distribution
+    var dsMaxMo = ds.months.reduce(function (m, x) { return Math.max(m, x.rev); }, 1);
+    html += inner('<div style="font-size:9px;color:#c9a84c;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;font-weight:700;">Për cilët muaj u shit</div>'
+      + '<table width="100%" cellpadding="0" cellspacing="0">'
+      + ds.months.map(function (m) {
+          return '<tr><td style="padding:3px 6px 3px 0;font-size:11px;color:#94a3b8;width:22%;">' + m.label + '</td>'
+            + '<td style="padding:3px 4px;"><div style="background:#111e30;border-radius:3px;height:7px;overflow:hidden;"><div style="background:#3b82f6;height:7px;width:' + Math.max(2, Math.round(m.rev / dsMaxMo * 100)) + '%;border-radius:3px;"></div></div></td>'
+            + '<td style="padding:3px 6px;font-size:11px;color:#8496aa;text-align:right;white-space:nowrap;">' + fL(m.nights) + ' netë</td>'
+            + '<td style="padding:3px 0;font-size:11px;color:#c8d5e4;text-align:right;white-space:nowrap;">' + fE(m.rev) + '</td></tr>';
+        }).join('')
+      + '</table>', 10);
+  }
+  html += '</td></tr>' + HR;
+
+  // ── 06 SALES REPORT ──────────────────────────────────────────
+  html += '<tr><td style="' + SEC + '">'
+    + '<div style="font-size:10px;color:#38bdf8;text-transform:uppercase;letter-spacing:.14em;font-weight:700;margin-bottom:3px;">06 \u2014 Daily Pick Up \u2014 Vjetor</div>';
 
   if (!sr) {
     html += '<div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px;font-size:11px;color:#475569;text-align:center;margin-top:8px;">Nuk ka t\u00eb dh\u00ebna Sales \u2014 ngarko Excel-in n\u00eb dashboard.</div>';
@@ -456,19 +562,122 @@ function buildEmailHTML(date, d, p) {
   html += '</td></tr>' + HR;
 
   // ── VLERËSIM MANAXHERIAL ─────────────────────────────────────
+  var yoyPct   = lyTotalLek > 0 ? ((totalLek - lyTotalLek) / lyTotalLek) * 100 : null;
+  var netLek   = totalLek - expT;
+  var expRatio = totalLek > 0 ? expT / totalLek : 0;
+  var dsRunPct = (ds && ds.avg7 > 0) ? ((ds.rev - ds.avg7) / ds.avg7) * 100 : null;
+  var dsTopCh  = (ds && ds.channels && ds.channels[0]) ? ds.channels[0] : null;
+  var dsTopMo  = null;
+  if (ds && ds.months && ds.months.length) {
+    dsTopMo = ds.months.slice().sort(function (a, b) { return b.nights - a.nights; })[0];
+  }
+
+  // Traffic-light signal card
+  function sig(label, value, note, state) {
+    var c = state === 'ok' ? '#22c55e' : state === 'warn' ? '#f59e0b' : state === 'bad' ? '#ef4444' : '#64748b';
+    var w = state === 'ok' ? 'Mirë' : state === 'warn' ? 'Kujdes' : state === 'bad' ? 'Dobët' : '—';
+    return '<td style="padding:0 4px 0 0;vertical-align:top;"><div style="background:#0d1b3e;border:1px solid #1e3a5f;border-top:2px solid ' + c + ';border-radius:7px;padding:10px 9px;">'
+      + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.06em;">' + label + '</div>'
+      + '<div style="font-size:17px;font-weight:700;color:#e2e8f0;line-height:1.15;margin-top:4px;">' + value + '</div>'
+      + '<div style="font-size:10px;color:#475a72;margin-top:3px;">' + note + '</div>'
+      + '<div style="font-size:9px;font-weight:700;color:' + c + ';margin-top:5px;text-transform:uppercase;letter-spacing:.06em;">● ' + w + '</div>'
+      + '</div></td>';
+  }
+  var sigOcc  = occ >= 75 ? 'ok' : occ >= 50 ? 'warn' : 'bad';
+  var sigYoy  = yoyPct == null ? 'na' : yoyPct >= 5 ? 'ok' : yoyPct >= -5 ? 'warn' : 'bad';
+  // A day with no cash-flow row at all is "no data", not a warning.
+  var cfHas   = (cfIn !== 0 || cfOut !== 0);
+  var sigCf   = !cfHas ? 'na' : cfNet > 0 ? 'ok' : cfNet === 0 ? 'warn' : 'bad';
+  var sigDs   = !ds ? 'na' : dsRunPct == null ? 'warn' : dsRunPct >= 10 ? 'ok' : dsRunPct >= -15 ? 'warn' : 'bad';
+
+  // Bullet points — rule generated, most important first
+  var pts = [];
+  function pt(state, txt) { pts.push({ s:state, t:txt }); }
+  if (occ < 50) pt('bad','Occupancy <strong>' + fL(occ,1) + '%</strong> (' + rooms + '/' + TR + ' dhoma) — nën pragun e 50%; shqyrto oferta last-minute dhe rishikim çmimi për ditët në vijim.');
+  else if (occ >= 80) pt('ok','Occupancy <strong>' + fL(occ,1) + '%</strong> — shumë e lartë; ruaj disiplinën e çmimit dhe kontrollo mbivendosjet e dhomave.');
+  else pt('warn','Occupancy <strong>' + fL(occ,1) + '%</strong> (' + rooms + '/' + TR + ' dhoma) — hapësirë për mbushje pa ulur ADR-në.');
+  if (yoyPct != null) {
+    pt(yoyPct >= 0 ? 'ok' : 'bad','Të ardhurat e ditës <strong>' + (yoyPct >= 0 ? '+' : '−') + Math.abs(yoyPct).toFixed(1) + '%</strong> kundrejt ' + (year - 1) + ' (' + fL(lyTotalLek) + ' L → ' + fL(totalLek) + ' L).');
+  }
+  if (!cfHas) pt('warn','Nuk ka lëvizje cash të regjistruara për këtë ditë — plotëso rreshtin e Cash Flow-it ditor.');
+  else if (cfNet < 0) pt('bad','Cash flow neto <strong>' + fL(cfNet) + ' L</strong> — daljet tejkalojnë hyrjet; kontrollo radhën e pagesave ndaj furnitorëve.');
+  else pt('ok','Cash flow neto <strong>+' + fL(cfNet) + ' L</strong> (hyrje ' + fL(cfIn) + ' L / dalje ' + fL(cfOut) + ' L).');
+  if (expT > 0 && expRatio > 0.8) pt('warn','Shpenzimet operative zënë <strong>' + (expRatio * 100).toFixed(0) + '%</strong> të të ardhurave të ditës — marzh neto ' + fL(netLek) + ' L.');
+  if (ds) {
+    if (dsRunPct != null) {
+      pt(dsRunPct >= 0 ? 'ok' : 'warn','Shitjet e ditës <strong>' + fE(ds.rev) + '</strong> — ' + (dsRunPct >= 0 ? '+' : '−') + Math.abs(dsRunPct).toFixed(0) + '% ndaj mesatares 7-ditore (' + fE(ds.avg7) + ').');
+    }
+    if (dsTopCh && dsTopCh.share >= 0.35) pt('warn','<strong>' + dsTopCh.name + '</strong> prodhoi ' + (dsTopCh.share * 100).toFixed(0) + '% të shitjeve të ditës — përqendrim i lartë në një kanal.');
+    else if (dsTopCh) pt('ok','Kanali kryesor i ditës: <strong>' + dsTopCh.name + '</strong> (' + (dsTopCh.share * 100).toFixed(0) + '% · ADR ' + fE(dsTopCh.adr) + ').');
+    if (adrEur > 0 && ds.adr > 0 && ds.adr < adrEur * 0.9) pt('warn','ADR i shitjeve të reja <strong>' + fE(ds.adr) + '</strong> është nën ADR-në e realizuar sot (' + fE(adrEur) + ') — kujdes me uljet.');
+    if (ds.lead != null && ds.lead < 7) pt('warn','Lead time mesatar <strong>' + Math.round(ds.lead) + ' ditë</strong> — shitja është kryesisht last-minute.');
+    if (dsTopMo && ds.nights > 0) pt('ok','<strong>' + (dsTopMo.nights / ds.nights * 100).toFixed(0) + '%</strong> e netëve të shitura sot shkojnë për <strong>' + dsTopMo.label + '</strong>.');
+  } else {
+    pt('warn','Nuk ka të dhëna shitjesh për këtë ditë — ngarko Excel-in e Trinisoft në dashboard që ky seksion të plotësohet.');
+  }
+  var ptsH = pts.slice(0, 6).map(function (x) {
+    var c = x.s === 'ok' ? '#22c55e' : x.s === 'warn' ? '#f59e0b' : '#ef4444';
+    return '<tr><td style="padding:5px 8px 5px 0;vertical-align:top;width:12px;"><span style="color:' + c + ';font-size:13px;line-height:1.5;">●</span></td>'
+      + '<td style="padding:5px 0;font-size:12px;color:#94a3b8;line-height:1.6;">' + x.t + '</td></tr>';
+  }).join('');
+
   html += '<tr><td style="' + SEC + 'padding-bottom:22px;">'
-    + secHead('','Vler\u00ebsim Manaxherial','#94a3b8')
-    + '<div style="background:#0a1f42;border-left:3px solid #3b82f6;border-radius:0 7px 7px 0;padding:12px 14px;">'
-    + '<div style="font-size:9px;color:#3b82f6;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;font-weight:700;">P\u00ebrmbyllje \u00b7 ' + date + '</div>'
+    + secHead('','Vlerësim Manaxherial','#94a3b8');
+
+  // traffic lights
+  html += '<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;"><tr>'
+    + sig('Occupancy', fL(occ,1) + '%', rooms + '/' + TR + ' dhoma · LY ' + fL(lyOcc,1) + '%', sigOcc)
+    + sig('Të ardhura vs LY', yoyPct == null ? fL(totalLek) + ' L' : (yoyPct >= 0 ? '+' : '−') + Math.abs(yoyPct).toFixed(1) + '%', fL(totalLek) + ' L · €' + fL(totalEur), sigYoy)
+    + sig('Cash Flow Neto', fL(cfNet) + ' L', 'hyrje ' + fL(cfIn) + ' L / dalje ' + fL(cfOut) + ' L', sigCf)
+    + sig('Shitjet e Ditës', ds ? fE(ds.rev) : '—', ds ? (ds.res + ' rez. · ' + fL(ds.nights) + ' netë · ADR ' + fE(ds.adr)) : 'pa të dhëna', sigDs)
+    + '</tr></table>';
+
+  // narrative
+  html += '<div style="background:#0a1f42;border-left:3px solid #3b82f6;border-radius:0 7px 7px 0;padding:13px 15px;">'
+    + '<div style="font-size:9px;color:#3b82f6;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;font-weight:700;">Përmbyllje · ' + dateLabel + '</div>'
+
+    + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:4px;">Operacioni</div>'
+    + '<div style="font-size:12px;color:#94a3b8;line-height:1.7;margin-bottom:10px;">'
+    + 'Dita shënon një performancë <strong style="color:#bfdbfe;">' + mgrOcc + '</strong>, me <strong style="color:#bfdbfe;">' + rooms + '</strong> dhoma të zëna nga ' + TR + ' (' + fL(occ,1) + '%'
+    + (lyOcc > 0 ? ', kundrejt ' + fL(lyOcc,1) + '% një vit më parë' : '') + '). '
+    + 'ADR-ja qëndron në <strong style="color:#bfdbfe;">' + fL(adr) + ' L</strong> (€' + fL(adrEur) + ') dhe RevPAR në <strong style="color:#bfdbfe;">' + fL(revpar) + ' L</strong>'
+    + (lyAdr > 0 ? ' (ADR ' + (adr >= lyAdr ? '+' : '−') + Math.abs(((adr - lyAdr) / lyAdr) * 100).toFixed(1) + '% vs LY)' : '') + '. '
+    + 'Të ardhurat totale arritën <strong style="color:#bfdbfe;">' + fL(totalLek) + ' L</strong> (€' + fL(totalEur) + ') ' + mgrYoy
+    + (prevDayLek > 0 ? ', ' + (dodDiff >= 0 ? 'në rritje' : 'në rënie') + ' me <strong style="color:' + dodC + ';">' + (dodDiff >= 0 ? '+' : '−') + Math.abs(dodPct2).toFixed(1) + '%</strong> ndaj një dite më parë' : '')
+    + (mtdTotalLek > 0 ? '. Muaji deri sot: <strong style="color:#bfdbfe;">' + fL(mtdTotalLek) + ' L</strong>' : '') + '.'
+    + '</div>'
+
+    + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:4px;">Financat</div>'
+    + '<div style="font-size:12px;color:#94a3b8;line-height:1.7;margin-bottom:10px;">'
+    + (expT > 0
+        ? 'Shpenzimet operative të ditës ishin <strong style="color:#bfdbfe;">' + fL(expT) + ' L</strong> (' + (expRatio * 100).toFixed(0) + '% e të ardhurave), duke lënë një rezultat neto prej <strong style="color:' + (netLek >= 0 ? '#22c55e' : '#ef4444') + ';">' + fL(netLek) + ' L</strong>. '
+        : 'Nuk ka shpenzime operative të regjistruara për këtë ditë. ')
+    + (!cfHas
+        ? 'Fleta ditore e Cash Flow-it nuk ka lëvizje të regjistruara për këtë datë.'
+        : 'Balanca cash ditore rezulton <strong style="color:' + cfNetC + ';">' + fL(cfNet) + ' L</strong> (hyrje ' + fL(cfIn) + ' L / dalje ' + fL(cfOut) + ' L)'
+          + (cfNet < 0 ? ', duke kërkuar vëmendje për menaxhimin e likuiditetit.' : ', e shëndetshme në raport me shpenzimet operative.'))
+    + '</div>'
+
+    + '<div style="font-size:9px;color:#4a6fa5;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:4px;">Shitjet e ditës</div>'
     + '<div style="font-size:12px;color:#94a3b8;line-height:1.7;">'
-    + 'Dita e <strong style="color:#bfdbfe;">' + date + '</strong> sh\u00ebnon nj\u00eb performanc\u00eb '
-    + '<strong style="color:#bfdbfe;">' + mgrOcc + '</strong>, me ' + rooms + ' dhoma t\u00eb z\u00ebna (' + fL(occ,1) + '%) '
-    + 'dhe t\u00eb ardhura totale prej <strong style="color:#bfdbfe;">' + fL(totalLek) + ' L ' + mgrYoy + '</strong>. '
-    + 'Balanca cash ditore rezulton <strong style="color:' + cfNetC + ';">' + fL(cfNet) + ' L</strong>'
-    + (cfNet < 0 ? ', duke k\u00ebrkuar v\u00ebmendje p\u00ebr menaxhimin e likuiditetit.' : ', e sh\u00ebnd\u00ebtshme n\u00eb raport me shpenzimet operative.')
-    + (expT > 0 ? ' Shpenzimet operative arrit\u00ebn <strong style="color:#bfdbfe;">' + fL(expT) + ' L</strong>, me neto <strong style="color:#bfdbfe;">' + fL(totalLek-expT) + ' L</strong>.' : '')
-    + '</div></div>'
-    + '</td></tr>';
+    + (ds
+        ? 'U krijuan <strong style="color:#bfdbfe;">' + ds.res + '</strong> rezervime të reja për <strong style="color:#bfdbfe;">' + fL(ds.nights) + '</strong> netë dhe <strong style="color:#c9a84c;">' + fE(ds.rev) + '</strong> (ADR ' + fE(ds.adr) + ', ALOS ' + ds.alos.toFixed(1) + ' netë'
+          + (ds.lead != null ? ', lead time ' + Math.round(ds.lead) + ' ditë' : '') + '). '
+          + (dsTopCh ? 'Kanali kryesor ishte <strong style="color:#bfdbfe;">' + dsTopCh.name + '</strong> me ' + fE(dsTopCh.rev) + ' (' + (dsTopCh.share * 100).toFixed(0) + '% e shitjeve, ADR ' + fE(dsTopCh.adr) + '), nga ' + ds.channelsTotal + ' kanale aktive. ' : '')
+          + (dsTopMo && ds.nights > 0 ? 'Pjesa më e madhe e netëve të shitura — <strong style="color:#bfdbfe;">' + (dsTopMo.nights / ds.nights * 100).toFixed(0) + '%</strong> — shkon për <strong style="color:#bfdbfe;">' + dsTopMo.label + '</strong>. ' : '')
+          + (dsRunPct != null ? 'Krahasuar me mesataren e 7 ditëve të fundit (' + fE(ds.avg7) + '), dita është <strong style="color:' + (dsRunPct >= 0 ? '#22c55e' : '#ef4444') + ';">' + (dsRunPct >= 0 ? '+' : '−') + Math.abs(dsRunPct).toFixed(0) + '%</strong>. ' : '')
+          + 'Muaji deri sot ka prodhuar <strong style="color:#bfdbfe;">' + fE(ds.mtd.rev) + '</strong> nga ' + ds.mtd.res + ' rezervime.'
+        : 'Nuk ka të dhëna për shitjet e ditës — ngarko Excel-in e Trinisoft në dashboard (kolona AF “Data Krijimit”).')
+    + '</div>'
+    + '</div>';
+
+  // key points
+  html += '<div style="background:#0d1b3e;border:1px solid #1e3a5f;border-radius:7px;padding:12px 14px;margin-top:10px;">'
+    + '<div style="font-size:9px;color:#c9a84c;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:4px;">Pika kyçe &amp; vëmendje</div>'
+    + '<table width="100%" cellpadding="0" cellspacing="0">' + ptsH + '</table>'
+    + '</div>';
+
+  html += '</td></tr>';
 
   // ── FOOTER ───────────────────────────────────────────────────
   html += '<tr><td style="background:#0D1B3E;padding:12px 28px;border:1px solid #1e3a5f;border-top:2px solid #1e3a6e;border-radius:0 0 12px 12px;">'
