@@ -416,6 +416,66 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #srToast.show{opacity:1;transform:translateY(0);}
 #srToast.ok{color:#86efac;border-color:#14532d;}
 #srToast.err{color:#fca5a5;border-color:#7f1d1d;}
+/* ══ MOBILE: HORIZONTAL SCROLL AFFORDANCE ═══════════════════════════════════
+   Wide tables already sat in overflow-x:auto boxes, but on phones the overlay
+   scrollbar is invisible, so a cut-off table reads as "broken / can't scroll".
+   hsScan() (bottom of the page) tags every scroll box that actually overflows;
+   these rules give it a permanent slim scrollbar + edge shadows + a hint chip. */
+.hscroll{-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+ scrollbar-width:thin;scrollbar-color:#2d5aa0 rgba(255,255,255,.06);}
+.hscroll::-webkit-scrollbar{height:7px;}
+.hscroll::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:4px;}
+.hscroll::-webkit-scrollbar-thumb{background:#2d5aa0;border-radius:4px;}
+.hscroll::-webkit-scrollbar-thumb:hover{background:#3b6fd4;}
+/* edge shadows — background-attachment defaults to `scroll`, so on a scroll
+   container they stay pinned to the box instead of sliding with the content */
+.hs-l,.hs-r{background-repeat:no-repeat;}
+.hs-r{background-image:linear-gradient(to left,rgba(4,10,22,.9),rgba(4,10,22,0));
+ background-position:right center;background-size:26px 100%;}
+.hs-l{background-image:linear-gradient(to right,rgba(4,10,22,.9),rgba(4,10,22,0));
+ background-position:left center;background-size:26px 100%;}
+.hs-l.hs-r{background-image:linear-gradient(to right,rgba(4,10,22,.9),rgba(4,10,22,0)),
+ linear-gradient(to left,rgba(4,10,22,.9),rgba(4,10,22,0));
+ background-position:left center,right center;background-size:26px 100%,26px 100%;}
+.hs-hint{display:none;}
+@media(max-width:760px){
+ .hs-hint{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;
+  color:var(--gold);background:rgba(201,168,76,.10);border:1px solid rgba(201,168,76,.22);
+  border-radius:20px;padding:4px 11px;margin:7px 0 2px;width:max-content;max-width:100%;}
+ .hs-hint.gone{display:none!important;}
+}
+
+/* ── Tab bar: show that it slides ── */
+#navTabs{position:relative;}
+@media(max-width:760px){
+ #navTabs{scrollbar-width:thin;scrollbar-color:rgba(201,168,76,.5) transparent;}
+ #navTabs::-webkit-scrollbar{display:block;height:3px;}
+ #navTabs::-webkit-scrollbar-track{background:transparent;}
+ #navTabs::-webkit-scrollbar-thumb{background:rgba(201,168,76,.5);border-radius:2px;}
+}
+
+/* ── Admin filter bar: the two dropdowns were squeezed to ~64px ── */
+@media(max-width:768px){
+ #adm-filter-bar{flex-wrap:wrap!important;}
+ #adm-month,#adm-cmp{flex:1 1 170px!important;min-width:150px!important;
+  padding:6px 8px!important;text-overflow:ellipsis;}
+}
+@media(max-width:430px){
+ #adm-month,#adm-cmp{flex:1 1 100%!important;}
+}
+
+/* ── Compact the widest tables so less of them hides off-screen ── */
+@media(max-width:600px){
+ #ci-table table{min-width:600px!important;}
+ #ci-table table th,#ci-table table td{padding:7px 6px!important;font-size:10px!important;}
+ #ci-table table th{letter-spacing:0!important;}
+ .ds-tbl[style*="min-width:760px"]{min-width:660px!important;}
+ .tn-grid{min-width:660px!important;}
+ .hms-table th,.hms-table td{padding:5px 5px!important;font-size:10px!important;}
+ #adm-rev-table-wrap table th,#adm-rev-table-wrap table td{padding:6px 6px!important;font-size:10px!important;}
+ #salesMonthTable{min-width:520px!important;}
+ .ds-tbl th,.ds-tbl td{padding:6px 6px!important;}
+}
 </style>
 </head>
 <body>
@@ -5368,5 +5428,72 @@ function sendDailyReport(){
 
 
 
+<script>
+/* ── MOBILE HORIZONTAL-SCROLL AFFORDANCE ─────────────────────────────────────
+   Tables across the dashboard live in overflow-x:auto boxes, but phones draw no
+   visible scrollbar, so a cut-off table looks broken rather than scrollable.
+   This tags every such box that actually overflows with .hscroll (slim permanent
+   scrollbar), .hs-l/.hs-r (edge shadows showing which way there is more) and
+   inserts a one-off "⇄ rrëshqit anash" chip that disappears once it is used.
+   Tables are rendered dynamically all over the app, so it re-scans cheaply. */
+(function(){
+ 'use strict';
+ function scrollerOf(el){
+  var a=el.parentElement;
+  while(a && a!==document.body){
+   var c=getComputedStyle(a);
+   if(c.overflowX==='auto'||c.overflowX==='scroll') return a;
+   a=a.parentElement;
+  }
+  return null;
+ }
+ function paint(box){
+  var slack=box.scrollWidth-box.clientWidth, on=slack>2;
+  box.classList.toggle('hs-l', on && box.scrollLeft>2);
+  box.classList.toggle('hs-r', on && box.scrollLeft < slack-2);
+  if(box.__hsHint) box.__hsHint.classList.toggle('gone', !on || !!box.__hsUsed);
+ }
+ function bind(box, withHint){
+  box.classList.add('hscroll');
+  if(!box.__hsBound){
+   box.__hsBound=1;
+   box.addEventListener('scroll', function(){ box.__hsUsed=1; paint(box); }, {passive:true});
+   if(withHint && box.parentNode){
+    var h=document.createElement('div');
+    h.className='hs-hint gone';
+    h.textContent='⇄ rrëshqit anash për kolonat e tjera';
+    box.parentNode.insertBefore(h, box.nextSibling);
+    box.__hsHint=h;
+   }
+  }
+  paint(box);
+ }
+ function scan(){
+  try{
+   var seen=[];
+   var tabs=document.getElementById('navTabs');
+   if(tabs) bind(tabs, false);
+   var tbls=document.querySelectorAll('table');
+   for(var i=0;i<tbls.length;i++){
+    var t=tbls[i];
+    if(!t.offsetParent) continue;
+    var b=scrollerOf(t);
+    if(b && seen.indexOf(b)<0){ seen.push(b); bind(b, true); }
+   }
+  }catch(e){}
+ }
+ window.hsScan=scan;
+ // re-run on the events that change what is on screen
+ window.addEventListener('resize', scan);
+ window.addEventListener('orientationchange', function(){ setTimeout(scan,150); });
+ if(typeof window.showSec==='function'){
+  var _ss=window.showSec;
+  window.showSec=function(){ var r=_ss.apply(this,arguments); setTimeout(scan,80); return r; };
+ }
+ setInterval(scan, 3000);
+ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', scan);
+ else scan();
+})();
+</script>
 </body>
 </html>
