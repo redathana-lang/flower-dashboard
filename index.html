@@ -238,6 +238,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  #salesMonthTable th,#salesMonthTable td{padding:7px 8px!important;font-size:10px!important;}
 }
 
+/* ── SHITJET DITORE (DAILY SALES) ── */
+.ds-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:18px;position:relative;overflow:hidden;}
+.ds-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.ds-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.ds-title{font-size:16px;font-weight:800;color:var(--gold);letter-spacing:-.2px;}
+.ds-sub{font-size:11px;color:var(--muted);margin-top:3px;}
+.ds-filters{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.ds-chip{background:var(--bg);border:1px solid var(--border);color:var(--muted);font-size:11px;font-weight:700;padding:6px 11px;border-radius:20px;cursor:pointer;white-space:nowrap;}
+.ds-chip.on{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a1628;border-color:transparent;}
+.ds-date{background:var(--bg);border:1px solid var(--border);color:var(--text);font-size:11px;padding:5px 8px;border-radius:8px;color-scheme:dark;}
+.ds-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;}
+.ds-kpis .kpi-card{background:var(--bg);}
+.ds-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ds-grid>*{min-width:0;}
+.ds-panel{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:14px;min-width:0;}
+.ds-phdr{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+.ds-tabs{display:flex;gap:6px;}
+.ds-tab{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:700;padding:4px 9px;border-radius:14px;cursor:pointer;white-space:nowrap;}
+.ds-tab.on{background:rgba(201,168,76,.15);color:var(--gold);border-color:var(--gold);}
+.ds-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.ds-row-n{flex:0 0 120px;font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ds-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;min-width:0;}
+.ds-bar{height:100%;border-radius:4px;}
+.ds-row-v{flex:0 0 78px;text-align:right;font-size:11px;font-weight:700;}
+.ds-row-s{flex:0 0 44px;text-align:right;font-size:10px;color:var(--muted);}
+.ds-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.ds-tbl th{color:var(--gold);text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:7px 8px;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:700;}
+.ds-tbl td{padding:7px 8px;border-bottom:1px solid rgba(26,51,88,.55);white-space:nowrap;}
+.ds-tbl tr:last-child td{border-bottom:none;}
+.ds-tbl .num{text-align:right;}
+.ds-tot td{background:rgba(201,168,76,.06);font-weight:700;color:var(--gold);}
+.ds-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.ds-list-scroll{max-height:330px;overflow:auto;-webkit-overflow-scrolling:touch;}
+.ds-empty{color:var(--muted);font-size:12px;text-align:center;padding:26px 0;}
+.ds-pill{padding:2px 8px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(201,168,76,.15);color:var(--gold);}
+@media(max-width:820px){
+ .ds-kpis{grid-template-columns:repeat(2,1fr);}
+ .ds-kpis .kpi-val{font-size:18px;}
+ .ds-grid{grid-template-columns:1fr;}
+ .ds-wrap{padding:12px;}
+ .ds-row-n{flex:0 0 92px;font-size:10px;}
+ .ds-row-v{flex:0 0 66px;font-size:10px;}
+}
+
 /* ── ADMIN PANEL ── */
 .adm-kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 16px;position:relative;overflow:hidden;}
 .adm-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);}
@@ -499,6 +543,94 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
  <input type="file" accept=".xls,.xlsx" style="display:none" onchange="salesUpload(this)" />
  </label>
  </div>
+ </div>
+
+ <!-- ══ SHITJET DITORE (DAILY SALES) ══════════════════════════════════════ -->
+ <div class="ds-wrap" id="ds-wrap">
+  <div class="ds-head">
+   <div>
+    <div class="ds-title">Shitjet Ditore</div>
+    <div class="ds-sub" id="ds-sub">Ngarko Excel-in e rezervimeve për të parë shitjet ditore</div>
+   </div>
+   <div class="ds-filters">
+    <button class="ds-chip on" id="ds-r-today" onclick="dsSetRange('today')">Sot</button>
+    <button class="ds-chip" id="ds-r-yday" onclick="dsSetRange('yday')">Dje</button>
+    <button class="ds-chip" id="ds-r-7" onclick="dsSetRange('7')">7 ditë</button>
+    <button class="ds-chip" id="ds-r-30" onclick="dsSetRange('30')">30 ditë</button>
+    <button class="ds-chip" id="ds-r-month" onclick="dsSetRange('month')">Ky muaj</button>
+    <button class="ds-chip" id="ds-r-all" onclick="dsSetRange('all')">Të gjitha</button>
+    <input type="date" class="ds-date" id="ds-from" onchange="dsCustomRange()"/>
+    <span style="color:var(--muted);font-size:11px">→</span>
+    <input type="date" class="ds-date" id="ds-to" onchange="dsCustomRange()"/>
+   </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="ds-kpis">
+   <div class="kpi-card"><div class="kpi-lbl">Rezervime të reja</div><div class="kpi-val" id="ds-k-res">—</div><div class="kpi-sub" id="ds-k-res-s">—</div></div>
+   <div class="kpi-card"><div class="kpi-lbl">Netë të shitura</div><div class="kpi-val" id="ds-k-nights">—</div><div class="kpi-sub" id="ds-k-nights-s">—</div></div>
+   <div class="kpi-card"><div class="kpi-lbl">Shitje (€)</div><div class="kpi-val" id="ds-k-rev" style="color:var(--gold)">—</div><div class="kpi-sub" id="ds-k-rev-s">—</div></div>
+   <div class="kpi-card"><div class="kpi-lbl">ADR</div><div class="kpi-val" id="ds-k-adr">—</div><div class="kpi-sub" id="ds-k-adr-s">—</div></div>
+   <div class="kpi-card"><div class="kpi-lbl">Lead time</div><div class="kpi-val" id="ds-k-lead">—</div><div class="kpi-sub" id="ds-k-lead-s">ditë deri në mbërritje</div></div>
+  </div>
+
+  <!-- DAILY CHART -->
+  <div class="ds-panel" style="margin-bottom:12px;">
+   <div class="ds-phdr">
+    <span id="ds-chart-title">Shitjet sipas ditës</span>
+    <div class="ds-tabs">
+     <button class="ds-tab on" id="ds-t-created" onclick="dsChartTab('created')">Dita e shitjes</button>
+     <button class="ds-tab" id="ds-t-stay" onclick="dsChartTab('stay')">Dita e qëndrimit (nga sot)</button>
+    </div>
+   </div>
+   <div style="position:relative;width:100%;height:240px;"><canvas id="ds-chart"></canvas></div>
+   <div id="ds-chart-note" style="font-size:10px;color:var(--muted);margin-top:8px;"></div>
+  </div>
+
+  <!-- CHANNEL + STAY MONTHS -->
+  <div class="ds-grid" style="margin-bottom:12px;">
+   <div class="ds-panel">
+    <div class="ds-phdr"><span>Sipas Kanalit &amp; ADR</span><span id="ds-ch-cnt" style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
+    <div class="ds-scroll"><table class="ds-tbl" style="min-width:420px;">
+     <thead><tr><th>Kanali</th><th class="num">Rez.</th><th class="num">Netë</th><th class="num">Shitje €</th><th class="num">ADR</th><th class="num">Pjesa</th></tr></thead>
+     <tbody id="ds-ch-body"><tr><td colspan="6" class="ds-empty">—</td></tr></tbody>
+    </table></div>
+   </div>
+   <div class="ds-panel">
+    <div class="ds-phdr"><span>Shpërndarja sipas muajve të qëndrimit</span>
+     <div class="ds-tabs">
+      <button class="ds-tab on" id="ds-m-rev" onclick="dsMonTab('rev')">€</button>
+      <button class="ds-tab" id="ds-m-nights" onclick="dsMonTab('nights')">Netë</button>
+     </div>
+    </div>
+    <div style="position:relative;width:100%;height:200px;"><canvas id="ds-mon-chart"></canvas></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:8px;">Netët e çdo rezervimi ndahen në muajt që flihen realisht (p.sh. 28 Gusht + 5 netë → 4 Gusht + 1 Shtator).</div>
+   </div>
+  </div>
+
+  <!-- PACKAGE + NATIONALITY -->
+  <div class="ds-grid" style="margin-bottom:12px;">
+   <div class="ds-panel">
+    <div class="ds-phdr"><span>Sipas Paketës (Kompania)</span><span id="ds-pk-cnt" style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
+    <div id="ds-pk-list"><div class="ds-empty">—</div></div>
+   </div>
+   <div class="ds-panel">
+    <div class="ds-phdr"><span>Sipas Nacionalitetit</span><span id="ds-nat-cnt" style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span></div>
+    <div id="ds-nat-list"><div class="ds-empty">—</div></div>
+   </div>
+  </div>
+
+  <!-- DETAIL LIST -->
+  <div class="ds-panel">
+   <div class="ds-phdr">
+    <span>Lista e shitjeve <span id="ds-list-cnt" style="color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0"></span></span>
+    <button class="ds-tab" onclick="dsExportCSV()">⬇ CSV</button>
+   </div>
+   <div class="ds-list-scroll ds-scroll"><table class="ds-tbl" style="min-width:760px;">
+    <thead><tr><th>Krijuar</th><th>Nr.</th><th>Klienti</th><th>Dhoma</th><th>Check-in</th><th class="num">Netë</th><th>Paketa</th><th>Kanali</th><th>Nacionaliteti</th><th class="num">€</th></tr></thead>
+    <tbody id="ds-list-body"><tr><td colspan="10" class="ds-empty">—</td></tr></tbody>
+   </table></div>
+  </div>
  </div>
 
  <!-- FLOWER / GARDEN BREAKDOWN -->
@@ -2162,7 +2294,11 @@ function salesParseCSV(csv){
  var nights=parseNum(v[10]); if(nights<=0) nights=1;
  var rev=parseNum(v[11]);
  out.push({yr:d.yr,mo:d.mo,nights:nights,rev:rev,room:room,
- source:normSource(v[21]),nat:(v[22]||'').trim(),din:d});
+ source:normSource(v[21]),nat:(v[22]||'').trim(),din:d,
+ // ── Shitjet Ditore: col H "Kompania" (paketa) + col AF "Data Krijimit" ──
+ pkg:normPkg(v[7]),natN:normNat(v[22]),no:(v[0]||'').trim(),
+ client:(v[5]||'').replace(/\s+/g,' ').trim(),
+ crk:dsKey(parseDate(v[31]||'')),skey:dsKey(d)});
  }
  return out;
 }
@@ -2190,7 +2326,11 @@ function salesParseXML(xmlStr){
  var nights=parseNum(v[10]); if(nights<=0) nights=1;
  var rev=parseNum(v[11]);
  out.push({yr:d.yr,mo:d.mo,nights:nights,rev:rev,room:room,
- source:normSource(v[21]),nat:(v[22]||'').trim(),din:d});
+ source:normSource(v[21]),nat:(v[22]||'').trim(),din:d,
+ // ── Shitjet Ditore: col H "Kompania" (paketa) + col AF "Data Krijimit" ──
+ pkg:normPkg(v[7]),natN:normNat(v[22]),no:(v[0]||'').trim(),
+ client:(v[5]||'').replace(/\s+/g,' ').trim(),
+ crk:dsKey(parseDate(v[31]||'')),skey:dsKey(d)});
  }
  return out;
 }
@@ -2240,7 +2380,9 @@ function salesAggregate(rows){
  addMo(r.yr,r.mo,r.nights,r.rev,r.room,s,true);
  }
  });
- return {mo:mo,src:src,nat:nat,tN:tN,tR:tR,tRes:tRes,fN:fN,fR:fR,gN:gN,gR:gR};
+ // Compact per-reservation payload for the Shitjet Ditore block. It travels with
+ // the aggregate so /api/sales-state keeps working unchanged.
+ return {mo:mo,src:src,nat:nat,tN:tN,tR:tR,tRes:tRes,fN:fN,fR:fR,gN:gN,gR:gR,dailyPack:dsPack(rows)};
 }
 
 // ── Render ───────────────────────────────────────────────────────────────────
@@ -2256,6 +2398,9 @@ function euro(v){return '\u20ac'+Math.round(v).toLocaleString('de-DE');}
 function pct(v){return (v*100).toFixed(1)+'%';}
 
 function salesRender(agg){
+ // ── Shitjet Ditore (top block) — fed by the same aggregate ──
+ dsBuild(dsUnpack(agg.dailyPack));
+ dsSetRange(DS.mode||'today');
  var tN=agg.tN,tR=agg.tR,tRes=agg.tRes;
  // Total available = full 2026 capacity (all 12 months, incl. months with no bookings yet) = 50,252.
  var tAv=0; for(var _am=1;_am<=12;_am++) tAv+=avail(2026,_am);
@@ -2400,6 +2545,376 @@ function salesUpload(input){
  };
  reader.readAsText(file,'UTF-8');
 }
+
+// ═══ SHITJET DITORE (DAILY SALES) ════════════════════════════════════════════
+// Driven by column AF "Data Krijimit" of the Trinosoft reservations export.
+// Each record = one reservation, keyed by the DAY IT WAS SOLD (created), so the
+// block answers "what did we sell today / in the last N days", broken down by
+// channel + ADR, stay-month, nationality and package (col H "Kompania").
+var DS={rows:[],days:[],from:'',to:'',mode:'today',chartTab:'created',monTab:'rev',
+        charts:{main:null,mon:null},last:''};
+var DS_PAL=['#c9a84c','#3b82f6','#14b8a6','#8b5cf6','#ef4444','#22c55e','#f59e0b','#ec4899','#06b6d4','#a3a3a3'];
+
+function pad2(n){return (n<10?'0':'')+n;}
+function dsKey(d){return d?d.yr+'-'+pad2(d.mo)+'-'+pad2(d.day):'';}
+function dsTodayKey(){var n=new Date();return n.getFullYear()+'-'+pad2(n.getMonth()+1)+'-'+pad2(n.getDate());}
+function dsShift(key,days){var p=key.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);d.setDate(d.getDate()+days);
+ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());}
+function dsDiffDays(a,b){var pa=a.split('-'),pb=b.split('-');
+ return Math.round((Date.UTC(+pb[0],+pb[1]-1,+pb[2])-Date.UTC(+pa[0],+pa[1]-1,+pa[2]))/86400000);}
+function dsLabel(key){var p=key.split('-');return +p[2]+' '+(MAL[+p[1]]||'').substring(0,3);}
+function dsFullLabel(key){var p=key.split('-');return +p[2]+' '+(MAL[+p[1]]||'')+' '+p[0];}
+
+// Package (col H "Kompania") — normalise case/spacing, keep the business name.
+function normPkg(s){
+ s=(s||'').replace(/\s+/g,' ').trim();
+ if(!s) return 'Pa paketë';
+ var lo=s.toLowerCase().replace(/\.$/,'');
+ var M={'all inclusive':'All Inclusive','bed & breakfast':'Bed & Breakfast','half board':'Half Board',
+  'full board':'Full Board','itaka':'ITAKA','1 janar':'1 Janar','2 janar':'2 Janar',
+  'paketa 1 dhe 2 janar':'1 & 2 Janar','viti i ri':'Viti i Ri','shen valentin':'Shën Valentin',
+  'romantic':'Paketa Romantike','paketa romantike':'Paketa Romantike','ramazani':'Ramazani',
+  '7 mars':'7 Mars','8 mars':'8 Mars','pavarsia kosoves':'Pavarësia e Kosovës',
+  'hotel beds':'Hotel Beds','sondor travel':'Sondor Travel'};
+ return M[lo]||s;
+}
+// Nationality — the export mixes ISO codes, English and Albanian spellings.
+function normNat(s){
+ s=(s||'').replace(/\s+/g,' ').trim();
+ if(!s||s==='0'||s==='00') return 'Pa specifikuar';
+ var lo=s.toLowerCase();
+ var M={'al':'Shqipëri','albania':'Shqipëri','shqiperi':'Shqipëri','shqipëri':'Shqipëri','shq':'Shqipëri','durres':'Shqipëri',
+  'xk':'Kosovë','kosovo':'Kosovë','kosove':'Kosovë','kosovë':'Kosovë',
+  'gb':'Mbretëria e Bashkuar','united kingdom':'Mbretëria e Bashkuar','england':'Mbretëria e Bashkuar',
+  'pl':'Poloni','poland':'Poloni','poloni':'Poloni',
+  'mk':'Maqedoni','macedonia':'Maqedoni','maqedoni':'Maqedoni','north macedonia':'Maqedoni',
+  'fr':'Francë','france':'Francë','franca':'Francë',
+  'de':'Gjermani','germany':'Gjermani','hu':'Hungari','hungary':'Hungari',
+  'us':'SHBA','usa':'SHBA','united states':'SHBA','ch':'Zvicër','switzerland':'Zvicër',
+  'nl':'Holandë','netherlands':'Holandë','it':'Itali','italy':'Itali',
+  'es':'Spanjë','spain':'Spanjë','se':'Suedi','sweden':'Suedi','dk':'Danimarkë','denmark':'Danimarkë',
+  'no':'Norvegji','norway':'Norvegji','be':'Belgjikë','belgium':'Belgjikë','at':'Austri','austria':'Austri',
+  'ca':'Kanada','canada':'Kanada','pt':'Portugali','portugal':'Portugali','ie':'Irlandë','ireland':'Irlandë',
+  'gr':'Greqi','greece':'Greqi','tr':'Turqi','turkey':'Turqi','me':'Mal i Zi','montenegro':'Mal i Zi',
+  'hr':'Kroaci','croatia':'Kroaci','rs':'Serbi','serbia':'Serbi','ro':'Rumani','romania':'Rumani',
+  'bg':'Bullgari','bulgaria':'Bullgari','cz':'Çeki','czech republic':'Çeki','fi':'Finlandë','finland':'Finlandë',
+  'is':'Islandë','iceland':'Islandë','il':'Izrael','israel':'Izrael','cy':'Qipro','cyprus':'Qipro','qipro':'Qipro',
+  'mt':'Maltë','malta':'Maltë','si':'Slloveni','slovenia':'Slloveni','lu':'Luksemburg','luxembourg':'Luksemburg',
+  'ua':'Ukrainë','ukraine':'Ukrainë','ru':'Rusi','russia (russian fed.)':'Rusi','dz':'Algjeri','algeria':'Algjeri',
+  'sa':'Arabia Saudite','ae':'Emiratet e Bashkuara','united arab emirates':'Emiratet e Bashkuara',
+  'in':'Indi','india':'Indi','cn':'Kinë','china':'Kinë','br':'Brazil','au':'Australi','australia':'Australi'};
+ return M[lo]||s;
+}
+
+// ── Build the daily index from parsed reservation rows ───────────────────────
+function dsBuild(rows){
+ DS.rows=(rows||[]).filter(function(r){return r.crk;});
+ var seen={};
+ DS.rows.forEach(function(r){seen[r.crk]=1;});
+ DS.days=Object.keys(seen).sort();
+ DS.last=DS.days.length?DS.days[DS.days.length-1]:'';
+}
+// Compact wire format so the aggregate survives the /api/sales-state round-trip.
+function dsPack(rows){
+ var ch=[],na=[],pk=[],ci={},ni={},pi={},out=[];
+ function ix(v,arr,map){if(map[v]===undefined){map[v]=arr.length;arr.push(v);}return map[v];}
+ // Keep the payload bounded as the export grows year after year: only the last
+ // ~13 months of sold-on dates are useful for a daily pick-up view.
+ var newest='';
+ (rows||[]).forEach(function(r){if(r.crk&&r.crk>newest) newest=r.crk;});
+ var floor=newest?dsShift(newest,-400):'';
+ (rows||[]).forEach(function(r){
+  if(!r.crk||r.crk<floor) return;
+  out.push([r.crk,r.skey,r.nights,Math.round(r.rev*100)/100,
+   ix(r.source||'N/A',ch,ci),ix(r.natN||normNat(r.nat)||'',na,ni),ix(r.pkg||'',pk,pi),r.room||'',r.no||'',r.client||'']);
+ });
+ return {ch:ch,na:na,pk:pk,r:out};
+}
+function dsUnpack(p){
+ if(!p||!p.r) return [];
+ return p.r.map(function(a){
+  var sd=a[1]?a[1].split('-'):null;
+  return {crk:a[0],skey:a[1],din:sd?{yr:+sd[0],mo:+sd[1],day:+sd[2]}:null,
+   nights:a[2],rev:a[3],source:p.ch[a[4]],nat:p.na[a[5]],pkg:p.pk[a[6]],
+   room:a[7],no:a[8],client:a[9]};
+ });
+}
+
+// ── Range handling ───────────────────────────────────────────────────────────
+function dsSetRange(mode){
+ DS.mode=mode;
+ var today=dsTodayKey();
+ if(mode==='today'){DS.from=DS.to=today;}
+ else if(mode==='yday'){DS.from=DS.to=dsShift(today,-1);}
+ else if(mode==='7'){DS.to=today;DS.from=dsShift(today,-6);}
+ else if(mode==='30'){DS.to=today;DS.from=dsShift(today,-29);}
+ else if(mode==='month'){DS.to=today;DS.from=today.substring(0,8)+'01';}
+ else if(mode==='all'){DS.from=DS.days[0]||today;DS.to=DS.days[DS.days.length-1]||today;}
+ // If the picked window has nothing (e.g. today's file not uploaded yet) fall
+ // back to the most recent day that DOES have sales, and say so.
+ DS.fallback='';
+ if(mode!=='all' && DS.last && !dsHasRows(DS.from,DS.to)){
+  DS.fallback=DS.last; DS.from=DS.to=DS.last;
+ }
+ dsSyncChips(); dsRender();
+}
+function dsHasRows(f,t){
+ for(var i=0;i<DS.rows.length;i++){var k=DS.rows[i].crk;if(k>=f&&k<=t) return true;}
+ return false;
+}
+function dsCustomRange(){
+ var f=document.getElementById('ds-from').value,t=document.getElementById('ds-to').value;
+ if(!f&&!t) return;
+ DS.from=f||t; DS.to=t||f;
+ if(DS.from>DS.to){var x=DS.from;DS.from=DS.to;DS.to=x;}
+ DS.mode='custom'; DS.fallback=''; dsSyncChips(); dsRender();
+}
+function dsSyncChips(){
+ ['today','yday','7','30','month','all'].forEach(function(m){
+  var el=document.getElementById('ds-r-'+m);
+  if(el) el.classList.toggle('on',DS.mode===m);
+ });
+ var f=document.getElementById('ds-from'),t=document.getElementById('ds-to');
+ if(f) f.value=DS.from; if(t) t.value=DS.to;
+}
+function dsChartTab(t){DS.chartTab=t;
+ document.getElementById('ds-t-created').classList.toggle('on',t==='created');
+ document.getElementById('ds-t-stay').classList.toggle('on',t==='stay');
+ dsDrawMain();}
+function dsMonTab(t){DS.monTab=t;
+ document.getElementById('ds-m-rev').classList.toggle('on',t==='rev');
+ document.getElementById('ds-m-nights').classList.toggle('on',t==='nights');
+ dsDrawMon();}
+
+// ── Aggregate the selected window ────────────────────────────────────────────
+function dsSelected(){
+ return DS.rows.filter(function(r){return r.crk>=DS.from&&r.crk<=DS.to;});
+}
+function dsAgg(sel){
+ var a={res:sel.length,nights:0,rev:0,lead:0,leadN:0,ch:{},pkg:{},nat:{},mon:{},byDay:{},byStay:{}};
+ sel.forEach(function(r){
+  a.nights+=r.nights; a.rev+=r.rev;
+  if(r.skey){var L=dsDiffDays(r.crk,r.skey); if(L>-30&&L<900){a.lead+=L;a.leadN++;}}
+  function bump(o,k){if(!o[k])o[k]={res:0,nights:0,rev:0};o[k].res++;o[k].nights+=r.nights;o[k].rev+=r.rev;}
+  bump(a.ch,r.source||'N/A'); bump(a.pkg,r.pkg||'Pa paketë'); bump(a.nat,r.nat||'Pa specifikuar');
+  if(!a.byDay[r.crk]) a.byDay[r.crk]={rev:0,res:0,nights:0};
+  a.byDay[r.crk].rev+=r.rev; a.byDay[r.crk].res++; a.byDay[r.crk].nights+=r.nights;
+  if(r.skey){if(!a.byStay[r.skey])a.byStay[r.skey]={rev:0,res:0,nights:0};
+   a.byStay[r.skey].rev+=r.rev;a.byStay[r.skey].res++;a.byStay[r.skey].nights+=r.nights;}
+  // stay months — split the nights across the months actually slept
+  if(r.din&&r.nights>1){
+   var yr=r.din.yr,mo=r.din.mo,day=r.din.day||1,rem=r.nights,s=0;
+   while(rem>0&&s<24){s++;
+    var dim=new Date(yr,mo,0).getDate(), inMo=Math.min(rem,dim-day+1);
+    if(inMo<=0) inMo=rem;
+    var mk=yr+'-'+pad2(mo);
+    if(!a.mon[mk]) a.mon[mk]={nights:0,rev:0};
+    a.mon[mk].nights+=inMo; a.mon[mk].rev+=r.rev*(inMo/r.nights);
+    rem-=inMo; day=1; mo++; if(mo>12){mo=1;yr++;}
+   }
+  } else if(r.din){
+   var k1=r.din.yr+'-'+pad2(r.din.mo);
+   if(!a.mon[k1]) a.mon[k1]={nights:0,rev:0};
+   a.mon[k1].nights+=r.nights; a.mon[k1].rev+=r.rev;
+  }
+ });
+ a.adr=a.nights>0?a.rev/a.nights:0;
+ a.avgLead=a.leadN>0?a.lead/a.leadN:0;
+ a.alos=a.res>0?a.nights/a.res:0;
+ return a;
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function dsRender(){
+ // The "Refresh Google Sheets" feed has no "Data Krijimit" column, so the block
+ // simply asks for the Trinosoft Excel instead of showing a row of zeros.
+ if(!DS.rows.length){
+  var s0=document.getElementById('ds-sub');
+  if(s0) s0.innerHTML='Ngarko Excel-in e Trinisoft (me kolonën AF “Data Krijimit”) për të parë shitjet ditore.';
+  ['ds-k-res','ds-k-nights','ds-k-rev','ds-k-adr','ds-k-lead'].forEach(function(i){
+   var e=document.getElementById(i); if(e) e.textContent='—';});
+  ['ds-k-res-s','ds-k-nights-s','ds-k-rev-s','ds-k-adr-s'].forEach(function(i){
+   var e=document.getElementById(i); if(e) e.textContent='—';});
+  ['ds-ch-cnt','ds-pk-cnt','ds-nat-cnt','ds-list-cnt','ds-chart-note'].forEach(function(i){
+   var e=document.getElementById(i); if(e) e.textContent='';});
+  document.getElementById('ds-ch-body').innerHTML='<tr><td colspan="6" class="ds-empty">—</td></tr>';
+  document.getElementById('ds-list-body').innerHTML='<tr><td colspan="10" class="ds-empty">—</td></tr>';
+  document.getElementById('ds-pk-list').innerHTML='<div class="ds-empty">—</div>';
+  document.getElementById('ds-nat-list').innerHTML='<div class="ds-empty">—</div>';
+  DS.agg=null; dsDestroy('main'); dsDestroy('mon');
+  return;
+ }
+ var sel=dsSelected(), a=dsAgg(sel);
+ DS.agg=a; DS.sel=sel;
+
+ var span=(DS.from===DS.to)?dsFullLabel(DS.from)
+   :(dsFullLabel(DS.from)+' — '+dsFullLabel(DS.to)+' ('+(dsDiffDays(DS.from,DS.to)+1)+' ditë)');
+ var note='';
+ if(DS.fallback) note=' · <span style="color:var(--gold)">nuk ka shitje për periudhën e zgjedhur — po shfaqet dita e fundit me të dhëna</span>';
+ var sub=document.getElementById('ds-sub');
+ if(sub) sub.innerHTML='Sipas datës së krijimit (kolona AF) · '+span+note;
+
+ document.getElementById('ds-k-res').textContent=a.res.toLocaleString();
+ document.getElementById('ds-k-res-s').textContent='ALOS '+a.alos.toFixed(1)+' netë/rez.';
+ document.getElementById('ds-k-nights').textContent=Math.round(a.nights).toLocaleString();
+ document.getElementById('ds-k-nights-s').textContent=Object.keys(a.ch).length+' kanale · '+Object.keys(a.nat).length+' kombësi';
+ document.getElementById('ds-k-rev').textContent=euro(a.rev);
+ document.getElementById('ds-k-rev-s').textContent=(DS.from===DS.to?'shitur këtë ditë':'shitur në periudhë');
+ document.getElementById('ds-k-adr').textContent=euro(a.adr);
+ document.getElementById('ds-k-adr-s').textContent='mesatare për natë';
+ document.getElementById('ds-k-lead').textContent=a.leadN?Math.round(a.avgLead)+' d':'—';
+ document.getElementById('ds-k-lead-s').textContent='ditë deri në mbërritje';
+
+ dsRenderChannels(a); dsRenderBars('ds-pk-list','ds-pk-cnt',a.pkg,'#14b8a6');
+ dsRenderBars('ds-nat-list','ds-nat-cnt',a.nat,'#8b5cf6');
+ dsRenderList(sel);
+ dsDrawMain(); dsDrawMon();
+}
+function dsRenderChannels(a){
+ var rows=Object.entries(a.ch).sort(function(x,y){return y[1].rev-x[1].rev;});
+ var body=document.getElementById('ds-ch-body');
+ document.getElementById('ds-ch-cnt').textContent=rows.length+' kanale';
+ if(!rows.length){body.innerHTML='<tr><td colspan="6" class="ds-empty">Nuk ka shitje për këtë periudhë</td></tr>';return;}
+ var html=rows.map(function(e){
+  var c=e[1], adr=c.nights>0?c.rev/c.nights:0, sh=a.rev>0?c.rev/a.rev:0;
+  return '<tr><td style="color:var(--text);font-weight:600">'+e[0]+'</td>'
+   +'<td class="num">'+c.res+'</td>'
+   +'<td class="num" style="color:var(--muted)">'+Math.round(c.nights)+'</td>'
+   +'<td class="num" style="color:var(--gold);font-weight:700">'+euro(c.rev)+'</td>'
+   +'<td class="num">'+euro(adr)+'</td>'
+   +'<td class="num" style="color:var(--muted)">'+(sh*100).toFixed(1)+'%</td></tr>';
+ }).join('');
+ html+='<tr class="ds-tot"><td>TOTALI</td><td class="num">'+a.res+'</td><td class="num">'+Math.round(a.nights)
+  +'</td><td class="num">'+euro(a.rev)+'</td><td class="num">'+euro(a.adr)+'</td><td class="num">100%</td></tr>';
+ body.innerHTML=html;
+}
+function dsRenderBars(listId,cntId,obj,color){
+ var rows=Object.entries(obj).sort(function(x,y){return y[1].rev-x[1].rev;});
+ var el=document.getElementById(listId), cnt=document.getElementById(cntId);
+ if(cnt) cnt.textContent=rows.length?(rows.length+' gjithsej'):'';
+ if(!rows.length){el.innerHTML='<div class="ds-empty">Nuk ka shitje për këtë periudhë</div>';return;}
+ var tot=rows.reduce(function(s,e){return s+e[1].rev;},0)||1;
+ var top=rows.slice(0,8), mx=top[0][1].rev||1;
+ var html=top.map(function(e){
+  return '<div class="ds-row"><div class="ds-row-n" title="'+e[0]+'">'+e[0]+'</div>'
+   +'<div class="ds-bar-wrap"><div class="ds-bar" style="background:'+color+';width:'+Math.max(2,Math.round(e[1].rev/mx*100))+'%"></div></div>'
+   +'<div class="ds-row-v" style="color:'+color+'">'+euro(e[1].rev)+'</div>'
+   +'<div class="ds-row-s">'+(e[1].rev/tot*100).toFixed(0)+'%</div></div>';
+ }).join('');
+ if(rows.length>8){
+  var rest=rows.slice(8).reduce(function(s,e){return s+e[1].rev;},0);
+  html+='<div class="ds-row"><div class="ds-row-n" style="color:var(--muted);font-style:italic">+'+(rows.length-8)+' të tjera</div>'
+   +'<div class="ds-bar-wrap"><div class="ds-bar" style="background:#3d5680;width:'+Math.max(2,Math.round(rest/mx*100))+'%"></div></div>'
+   +'<div class="ds-row-v" style="color:var(--muted)">'+euro(rest)+'</div>'
+   +'<div class="ds-row-s">'+(rest/tot*100).toFixed(0)+'%</div></div>';
+ }
+ el.innerHTML=html;
+}
+function dsRenderList(sel){
+ var rows=sel.slice().sort(function(a,b){
+  if(a.crk!==b.crk) return a.crk<b.crk?1:-1;
+  return (+b.no||0)-(+a.no||0);
+ });
+ document.getElementById('ds-list-cnt').textContent='('+rows.length+')';
+ var body=document.getElementById('ds-list-body');
+ if(!rows.length){body.innerHTML='<tr><td colspan="10" class="ds-empty">Nuk ka shitje për këtë periudhë</td></tr>';return;}
+ body.innerHTML=rows.slice(0,400).map(function(r){
+  return '<tr><td style="color:var(--muted)">'+dsLabel(r.crk)+'</td>'
+   +'<td style="color:var(--muted)">'+r.no+'</td>'
+   +'<td style="color:var(--text)">'+(r.client||'—')+'</td>'
+   +'<td>'+(r.room||'—')+'</td>'
+   +'<td>'+(r.skey?dsLabel(r.skey):'—')+'</td>'
+   +'<td class="num">'+r.nights+'</td>'
+   +'<td><span class="ds-pill">'+r.pkg+'</span></td>'
+   +'<td>'+r.source+'</td>'
+   +'<td style="color:var(--muted)">'+r.nat+'</td>'
+   +'<td class="num" style="color:var(--gold);font-weight:700">'+euro(r.rev)+'</td></tr>';
+ }).join('')+(rows.length>400?'<tr><td colspan="10" class="ds-empty">… '+(rows.length-400)+' rreshta të tjerë (shkarko CSV)</td></tr>':'');
+}
+function dsExportCSV(){
+ var rows=(DS.sel||[]).slice().sort(function(a,b){return a.crk<b.crk?1:-1;});
+ var out=['Data Krijimit;Nr. Prenotimit;Klienti;Dhoma;Check-in;Nete;Paketa;Kanali;Nacionaliteti;Shitje EUR'];
+ rows.forEach(function(r){
+  out.push([r.crk,r.no,(r.client||'').replace(/;/g,','),r.room,r.skey,r.nights,r.pkg,r.source,r.nat,r.rev.toFixed(2)].join(';'));
+ });
+ var blob=new Blob(['﻿'+out.join('\n')],{type:'text/csv;charset=utf-8;'});
+ var a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download='shitjet_ditore_'+DS.from+'_'+DS.to+'.csv';
+ document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function dsDestroy(k){if(DS.charts[k]){DS.charts[k].destroy();DS.charts[k]=null;}}
+function dsDrawMain(){
+ var a=DS.agg; if(!a) return;
+ var tc='#a0aec0',gc='rgba(255,255,255,0.06)';
+ var keys=[],vals=[],cnts=[],title='',note='';
+ if(DS.chartTab==='created'){
+  // every day of the selected window (or of the current month when a single day
+  // is selected, so the day sits in its monthly context)
+  var f=DS.from,t=DS.to,single=(DS.from===DS.to);
+  if(single){f=f.substring(0,8)+'01';t=DS.to;}
+  for(var k=f;k<=t;k=dsShift(k,1)){keys.push(k);
+   var d=a.byDay[k]||null;vals.push(d?Math.round(d.rev):0);cnts.push(d?d.res:0);}
+  if(single){
+   // single-day view: recompute the month's bars from ALL rows, not just the day
+   vals=[];cnts=[];
+   keys.forEach(function(k){
+    var rev=0,res=0;
+    DS.rows.forEach(function(r){if(r.crk===k){rev+=r.rev;res++;}});
+    vals.push(Math.round(rev));cnts.push(res);
+   });
+   note='Muaji aktual — dita e zgjedhur ('+dsFullLabel(DS.to)+') është e theksuar.';
+  } else note='Shitjet e krijuara në çdo ditë të periudhës së zgjedhur.';
+  title='Shitjet sipas ditës së shitjes (€)';
+ } else {
+  var today=dsTodayKey();
+  var end=dsShift(today.substring(0,8)+'01',0);
+  var p=end.split('-'); var em=+p[1]+1, ey=+p[0]; if(em>12){em=1;ey++;}
+  end=ey+'-'+pad2(em)+'-'+pad2(new Date(ey,em,0).getDate()); // end of NEXT month
+  for(var k2=today;k2<=end;k2=dsShift(k2,1)){keys.push(k2);
+   var d2=a.byStay[k2]||null;vals.push(d2?Math.round(d2.rev):0);cnts.push(d2?d2.res:0);}
+  title='Shitjet sipas ditës së qëndrimit (check-in), nga sot e tutje';
+  note='Vetëm rezervimet e shitura në periudhën e zgjedhur, të shpërndara sipas datës së check-in nga '+dsFullLabel(today)+' deri më '+dsFullLabel(end)+'.';
+ }
+ document.getElementById('ds-chart-title').textContent=title;
+ document.getElementById('ds-chart-note').textContent=note;
+ var hi=DS.from===DS.to?DS.to:null;
+ dsDestroy('main');
+ DS.charts.main=new Chart(document.getElementById('ds-chart'),{
+  type:'bar',
+  data:{labels:keys.map(dsLabel),datasets:[{data:vals,borderRadius:4,
+   backgroundColor:keys.map(function(k){return hi?(k===hi?'#e8c96d':'rgba(201,168,76,.32)'):'#c9a84c';})}]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{display:false},tooltip:{callbacks:{
+    title:function(x){return dsFullLabel(keys[x[0].dataIndex]);},
+    label:function(x){return euro(x.raw)+'  ·  '+cnts[x.dataIndex]+' rez.';}}}},
+   scales:{x:{ticks:{color:tc,font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:16},grid:{display:false}},
+    y:{ticks:{color:tc,font:{size:10},callback:function(v){return v>=1000?'€'+(v/1000).toFixed(0)+'K':'€'+v;}},grid:{color:gc}}}}
+ });
+}
+function dsDrawMon(){
+ var a=DS.agg; if(!a) return;
+ var keys=Object.keys(a.mon).sort();
+ var tc='#a0aec0',gc='rgba(255,255,255,0.06)';
+ dsDestroy('mon');
+ if(!keys.length){return;}
+ var isRev=DS.monTab==='rev';
+ DS.charts.mon=new Chart(document.getElementById('ds-mon-chart'),{
+  type:'bar',
+  data:{labels:keys.map(function(k){var p=k.split('-');return (MAL[+p[1]]||'').substring(0,3)+' '+p[0].substring(2);}),
+   datasets:[{data:keys.map(function(k){return isRev?Math.round(a.mon[k].rev):Math.round(a.mon[k].nights);}),
+    backgroundColor:isRev?'#c9a84c':'#3b82f6',borderRadius:4}]},
+  options:{responsive:true,maintainAspectRatio:false,
+   plugins:{legend:{display:false},tooltip:{callbacks:{label:function(x){
+    var k=keys[x.dataIndex];
+    return isRev?(euro(a.mon[k].rev)+' · '+Math.round(a.mon[k].nights)+' netë')
+                :(Math.round(a.mon[k].nights)+' netë · '+euro(a.mon[k].rev));}}}},
+   scales:{x:{ticks:{color:tc,font:{size:10}},grid:{display:false}},
+    y:{ticks:{color:tc,font:{size:10},callback:function(v){return isRev?(v>=1000?'€'+(v/1000).toFixed(0)+'K':'€'+v):v;}},grid:{color:gc}}}}
+ });
+}
+window.dsSetRange=dsSetRange; window.dsCustomRange=dsCustomRange;
+window.dsChartTab=dsChartTab; window.dsMonTab=dsMonTab; window.dsExportCSV=dsExportCSV;
 
 window.salesUpload=salesUpload;
 window.salesLoadSheets=salesLoadSheets;
