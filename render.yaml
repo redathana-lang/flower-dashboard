@@ -4,4 +4,12 @@ services:
     env: node
     buildCommand: npm install
     startCommand: node server.js
-    plan: free
+    # Verified in the Render dashboard 2026-08-27: this service runs on Starter
+    # (0.5 CPU / 512 MB, Oregon). It used to say `free`, which was wrong and
+    # would have downgraded the service on a blueprint sync.
+    plan: starter
+    # NOTE: the persistent disk mounted at /data is managed in the Render
+    # dashboard, not here. Runtime state (sales_state.json, sales_prev.json,
+    # hms_state.json, kontrollo_state.json) is written there so it survives a
+    # deploy — do not declare a `disk:` block here without checking the existing
+    # one first, or you risk creating a second, empty disk.
