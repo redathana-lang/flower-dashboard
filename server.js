@@ -1511,8 +1511,14 @@ app.get('/api/sheets-debug', function(req, res) {
 // ─── SALES STATE PERSISTENCE ──────────────────────────────────────────────────
 const fs_sales = require('fs');
 const path_sales = require('path');
-const SALES_FILE = path_sales.join(__dirname, 'sales_state.json');
-const PREV_FILE = path_sales.join(__dirname, 'sales_prev.json');
+// Keep these on the mounted disk like HMS_FILE / kontrollo STATE_FILE do — the
+// app directory is rebuilt on every deploy, so state written there is lost.
+const SALES_FILE = fs_sales.existsSync('/data')
+  ? '/data/sales_state.json'
+  : path_sales.join(__dirname, 'sales_state.json');
+const PREV_FILE = fs_sales.existsSync('/data')
+  ? '/data/sales_prev.json'
+  : path_sales.join(__dirname, 'sales_prev.json');
 
 let salesState = null;
 let prevSales = { tR: null, tN: null, filename: null, ts: null };
