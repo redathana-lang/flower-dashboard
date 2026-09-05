@@ -1676,16 +1676,58 @@ async function drvAccessToken() {
  return j.access_token;
 }
 
-async function drvFindByName(token, name) {
- const q = encodeURIComponent("name='" + name.replace(/'/g, "\\'") + "' and '" + RAW_DRIVE_FOLDER_ID + "' in parents and trashed=false");
+async function drvFindByName(token, name, folderId) {
+ const q = encodeURIComponent("name='" + name.replace(/'/g, "\\'") + "' and '" + folderId + "' in parents and trashed=false");
  const r = await drvRequest('GET', 'https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name)', { Authorization: 'Bearer ' + token });
  const j = JSON.parse(r.body || '{}'); return (j.files && j.files[0]) ? j.files[0].id : null;
 }
 
+// The OAuth token may only see files this app created (drive.file scope), so a
+// folder made elsewhere shows up as "File not found". In that case create our own
+// folder once, remember its id on the persistent disk and share it with the owner.
+const RAW_DRIVE_FOLDER_NAME = process.env.RAW_DRIVE_FOLDER_NAME || 'Flower Data Layer - exports';
+const RAW_DRIVE_SHARE_WITH  = process.env.RAW_DRIVE_SHARE_WITH  || 'redathana@gmail.com';
+const RAW_DRIVE_ID_FILE     = fs_sales.existsSync('/data') ? '/data/raw_drive_folder.json' : path_sales.join(__dirname, 'raw_drive_folder.json');
+let rawDriveFolderId = null;
+try { rawDriveFolderId = JSON.parse(fs_sales.readFileSync(RAW_DRIVE_ID_FILE, 'utf8')).id || null; } catch(e){}
+
+async function drvFolderVisible(token, id) {
+ const r = await drvRequest('GET', 'https://www.googleapis.com/drive/v3/files/' + id + '?fields=id,name,trashed', { Authorization: 'Bearer ' + token });
+ if (r.status !== 200) return false;
+ const j = JSON.parse(r.body || '{}'); return !j.trashed;
+}
+
+async function drvEnsureFolder(token) {
+ for (const cand of [rawDriveFolderId, RAW_DRIVE_FOLDER_ID]) {
+ if (cand && await drvFolderVisible(token, cand)) { rawDriveFolderId = cand; return cand; }
+ }
+ // Look for a folder we created earlier under that name (survives a disk reset)
+ const q = encodeURIComponent("name='" + RAW_DRIVE_FOLDER_NAME.replace(/'/g, "\\'") + "' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+ const found = await drvRequest('GET', 'https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name)', { Authorization: 'Bearer ' + token });
+ const fj = JSON.parse(found.body || '{}');
+ let id = (fj.files && fj.files[0]) ? fj.files[0].id : null;
+ if (!id) {
+ const body = JSON.stringify({ name: RAW_DRIVE_FOLDER_NAME, mimeType: 'application/vnd.google-apps.folder' });
+ const cr = await drvRequest('POST', 'https://www.googleapis.com/drive/v3/files?fields=id', { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, body);
+ if (cr.status !== 200) throw new Error('folder create failed: ' + cr.status + ' ' + cr.body.slice(0, 200));
+ id = JSON.parse(cr.body).id;
+ console.log('[SALES-RAW] Created Drive folder', RAW_DRIVE_FOLDER_NAME, id);
+ if (RAW_DRIVE_SHARE_WITH) {
+ const perm = JSON.stringify({ role: 'writer', type: 'user', emailAddress: RAW_DRIVE_SHARE_WITH });
+ const pr = await drvRequest('POST', 'https://www.googleapis.com/drive/v3/files/' + id + '/permissions?sendNotificationEmail=false', { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(perm) }, perm);
+ console.log('[SALES-RAW] Share folder with', RAW_DRIVE_SHARE_WITH, '->', pr.status); // 4xx here is fine if the token account already owns it
+ }
+ }
+ rawDriveFolderId = id;
+ try { fs_sales.writeFileSync(RAW_DRIVE_ID_FILE, JSON.stringify({ id: id, name: RAW_DRIVE_FOLDER_NAME }), 'utf8'); } catch(e){}
+ return id;
+}
+
 async function drvUploadRaw(name, xml) {
  const token = await drvAccessToken();
- const existing = await drvFindByName(token, name);
- const meta = existing ? {} : { name: name, parents: [RAW_DRIVE_FOLDER_ID] };
+ const folderId = await drvEnsureFolder(token);
+ const existing = await drvFindByName(token, name, folderId);
+ const meta = existing ? {} : { name: name, parents: [folderId] };
  const metaStr = JSON.stringify(meta);
  const initUrl = existing
  ? 'https://www.googleapis.com/upload/drive/v3/files/' + existing + '?uploadType=resumable'
@@ -1699,7 +1741,7 @@ async function drvUploadRaw(name, xml) {
  const put = await drvRequest('PUT', init.headers.location, { 'Content-Type': 'application/vnd.ms-excel', 'Content-Length': data.length }, data);
  if (put.status !== 200 && put.status !== 201) throw new Error('upload failed: ' + put.status + ' ' + put.body.slice(0, 200));
  const j = JSON.parse(put.body || '{}');
- return { id: j.id, replaced: !!existing };
+ return { id: j.id, replaced: !!existing, folder: folderId };
 }
 
 // ─── MONTHLY MANAGEMENT REPORT ────────────────────────────────────────────────
