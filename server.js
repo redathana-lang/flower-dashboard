@@ -1556,8 +1556,17 @@ app.get('/api/sales-state', function(req, res){
  else res.json({ok:false, data:null});
 });
 
+function salesAdminOk(req, res){
+ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'Rep26';
+ const t = (req.body && req.body.token) || (req.query && req.query.token) || req.get('x-admin-token');
+ if (t !== ADMIN_TOKEN) { res.status(403).json({ error: 'Nuk keni leje.' }); return false; }
+ return true;
+}
+
 app.post('/api/sales-state', function(req, res){
  try {
+ if(!salesAdminOk(req, res)) return;
+ if(req.body) delete req.body.token; // never persist the token with the state
  if(salesState && salesState.agg){
  prevSales = { tR: salesState.agg.tR||0, tN: salesState.agg.tN||0, filename: salesState.filename||null, ts: salesState.ts||null };
  savePrevSales();
@@ -1572,10 +1581,126 @@ app.post('/api/sales-state', function(req, res){
 });
 
 app.get('/api/sales-clear', function(req, res){
+ if(!salesAdminOk(req, res)) return;
  salesState = null;
  try { if(fs_sales.existsSync(SALES_FILE)) fs_sales.unlinkSync(SALES_FILE); } catch(e){}
  res.json({ok:true, message:'Sales cache cleared'});
 });
+
+// ─── RAW SALES EXPORT ARCHIVE ─────────────────────────────────────────────────
+// The browser only sends the *aggregate* of the Trinisoft "Prenotimet në
+// recepsion" export to /api/sales-state; the file itself was never kept. This
+// keeps a dated copy of every upload on the persistent disk so other tools
+// (weekly commercial brief, shared data layer) can read the same file the
+// dashboard was fed, and so day-to-day snapshots exist for cancellation /
+// modification tracking. Oldest copies are pruned beyond SALES_RAW_KEEP.
+const RAW_DIR  = fs_sales.existsSync('/data') ? '/data/sales-raw' : path_sales.join(__dirname, 'sales-raw');
+const RAW_KEEP = parseInt(process.env.SALES_RAW_KEEP) || 40; // ~15 MB each → ~600 MB; raise via env once disk size is confirmed
+const RAW_NAME = /^Prenotimet_\d{4}-\d{2}-\d{2}\.xls$/;
+
+function rawList(){
+ try { return fs_sales.readdirSync(RAW_DIR).filter(function(f){ return RAW_NAME.test(f); }).sort(); }
+ catch(e){ return []; }
+}
+
+app.post('/api/sales-raw', async function(req, res){
+ if(!salesAdminOk(req, res)) return;
+ try {
+ const xml = req.body && req.body.xml;
+ if(typeof xml !== 'string' || xml.length < 100) return res.status(400).json({ error: 'Skedar bosh ose i pavlefshëm.' });
+ fs_sales.mkdirSync(RAW_DIR, { recursive: true });
+ const name = 'Prenotimet_' + new Date().toISOString().slice(0,10) + '.xls'; // one per day, latest upload wins
+ fs_sales.writeFileSync(path_sales.join(RAW_DIR, name), xml, 'utf8');
+ const files = rawList();
+ while(files.length > RAW_KEEP){ try { fs_sales.unlinkSync(path_sales.join(RAW_DIR, files.shift())); } catch(e){} }
+ console.log('[SALES-RAW] Saved', name, 'bytes:', xml.length, 'kept:', files.length, 'source:', req.body.filename || '?');
+ // Copy to Drive (Flower Data Layer/exports). Failure here never blocks the local archive.
+ let drive = null, driveError = null;
+ try { drive = await drvUploadRaw(name, xml); console.log('[SALES-RAW] Drive copy', drive.replaced ? 'replaced' : 'created', drive.id); }
+ catch(e){ driveError = e.message; console.warn('[SALES-RAW] Drive copy failed:', e.message); }
+ res.json({ ok: true, file: name, kept: files.length, drive: drive, driveError: driveError });
+ } catch(e){ res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/sales-raw?token=…            → list of archived files (newest last)
+// GET /api/sales-raw/latest?token=…     → newest file
+// GET /api/sales-raw/<name>?token=…     → a specific file
+app.get('/api/sales-raw', function(req, res){
+ if(!salesAdminOk(req, res)) return;
+ res.setHeader('Cache-Control','no-store');
+ res.json({ ok: true, files: rawList() });
+});
+app.get('/api/sales-raw/:name', function(req, res){
+ if(!salesAdminOk(req, res)) return;
+ const files = rawList();
+ const name = req.params.name === 'latest' ? files[files.length-1] : req.params.name;
+ if(!name || !RAW_NAME.test(name) || files.indexOf(name) < 0) return res.status(404).json({ error: 'Nuk u gjet.' });
+ res.setHeader('Cache-Control','no-store');
+ res.setHeader('Content-Type','application/vnd.ms-excel; charset=utf-8');
+ res.setHeader('Content-Disposition','attachment; filename="'+name+'"');
+ res.send(fs_sales.readFileSync(path_sales.join(RAW_DIR, name), 'utf8'));
+});
+
+// ─── DRIVE COPY OF THE RAW EXPORT ─────────────────────────────────────────────
+// Cloud agents (weekly commercial brief) cannot reach Render, so each archived
+// export is also copied to the Google Drive folder "Flower Data Layer/exports".
+// Uses the same GOOGLE_CREDENTIALS / GOOGLE_TOKEN env vars as gmail-worker.js
+// (copy them onto this service in Render) — plain HTTPS, no new dependencies.
+// Resumable upload (multipart is capped at 5 MB; the export is ~15 MB).
+// One file per day: a second upload the same day replaces the Drive copy.
+const https_drv = require('https');
+const RAW_DRIVE_FOLDER_ID = process.env.RAW_DRIVE_FOLDER_ID || '1CbzQzolU0Jx5IyjwqXL85na13s59GDuy';
+
+function drvRequest(method, url, headers, body) {
+ return new Promise(function(resolve, reject){
+ const u = new URL(url);
+ const req = https_drv.request({ method, hostname: u.hostname, path: u.pathname + u.search, headers }, function(res){
+ let data = ''; res.on('data', function(c){ data += c; });
+ res.on('end', function(){ resolve({ status: res.statusCode, headers: res.headers, body: data }); });
+ });
+ req.on('error', reject);
+ if (body) req.write(body);
+ req.end();
+ });
+}
+
+async function drvAccessToken() {
+ if (!process.env.GOOGLE_CREDENTIALS || !process.env.GOOGLE_TOKEN) throw new Error('GOOGLE_CREDENTIALS / GOOGLE_TOKEN not set');
+ const creds = JSON.parse(process.env.GOOGLE_CREDENTIALS); const c = creds.installed || creds.web;
+ const tok = JSON.parse(process.env.GOOGLE_TOKEN);
+ if (!tok.refresh_token) throw new Error('GOOGLE_TOKEN has no refresh_token');
+ const form = new URLSearchParams({ client_id: c.client_id, client_secret: c.client_secret, refresh_token: tok.refresh_token, grant_type: 'refresh_token' }).toString();
+ const r = await drvRequest('POST', 'https://oauth2.googleapis.com/token', { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(form) }, form);
+ const j = JSON.parse(r.body || '{}');
+ if (!j.access_token) throw new Error('token refresh failed: ' + r.body.slice(0, 200));
+ return j.access_token;
+}
+
+async function drvFindByName(token, name) {
+ const q = encodeURIComponent("name='" + name.replace(/'/g, "\\'") + "' and '" + RAW_DRIVE_FOLDER_ID + "' in parents and trashed=false");
+ const r = await drvRequest('GET', 'https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name)', { Authorization: 'Bearer ' + token });
+ const j = JSON.parse(r.body || '{}'); return (j.files && j.files[0]) ? j.files[0].id : null;
+}
+
+async function drvUploadRaw(name, xml) {
+ const token = await drvAccessToken();
+ const existing = await drvFindByName(token, name);
+ const meta = existing ? {} : { name: name, parents: [RAW_DRIVE_FOLDER_ID] };
+ const metaStr = JSON.stringify(meta);
+ const initUrl = existing
+ ? 'https://www.googleapis.com/upload/drive/v3/files/' + existing + '?uploadType=resumable'
+ : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable';
+ const data = Buffer.from(xml, 'utf8');
+ const init = await drvRequest(existing ? 'PATCH' : 'POST', initUrl, {
+ Authorization: 'Bearer ' + token, 'Content-Type': 'application/json; charset=UTF-8', 'Content-Length': Buffer.byteLength(metaStr),
+ 'X-Upload-Content-Type': 'application/vnd.ms-excel', 'X-Upload-Content-Length': data.length
+ }, metaStr);
+ if (init.status !== 200 || !init.headers.location) throw new Error('resumable init failed: ' + init.status + ' ' + init.body.slice(0, 200));
+ const put = await drvRequest('PUT', init.headers.location, { 'Content-Type': 'application/vnd.ms-excel', 'Content-Length': data.length }, data);
+ if (put.status !== 200 && put.status !== 201) throw new Error('upload failed: ' + put.status + ' ' + put.body.slice(0, 200));
+ const j = JSON.parse(put.body || '{}');
+ return { id: j.id, replaced: !!existing };
+}
 
 // ─── MONTHLY MANAGEMENT REPORT ────────────────────────────────────────────────
 app.post('/api/send-monthly-report', async function(req, res) {

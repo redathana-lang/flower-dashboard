@@ -2576,7 +2576,7 @@ function salesLoadSheets(){
  salesSetTs('Google Sheets ('+rows.length+' rez.)');
  // Save CSV to server so all users see same data
  fetch('/api/sales-state',{method:'POST',headers:{'Content-Type':'application/json'},
- body:JSON.stringify({csv:csv,filename:'Google Sheets ('+rows.length+' rez.)',ts:new Date().toISOString()})
+ body:JSON.stringify({csv:csv,filename:'Google Sheets ('+rows.length+' rez.)',ts:new Date().toISOString(),token:ADMIN.pass})
  }).catch(function(){});
  if(btn){btn.textContent='\ud83d\udd04 Refresh Google Sheets';btn.disabled=false;}
  })
@@ -2598,8 +2598,15 @@ function salesUpload(input){
  salesRender(agg);
  salesSetTs('Excel: '+file.name+' ('+rows.length+' rez.)');
  fetch('/api/sales-state',{method:'POST',headers:{'Content-Type':'application/json'},
- body:JSON.stringify({agg:agg,filename:file.name+' ('+rows.length+' rez.)',ts:new Date().toISOString()})
+ body:JSON.stringify({agg:agg,filename:file.name+' ('+rows.length+' rez.)',ts:new Date().toISOString(),token:ADMIN.pass})
  }).catch(function(){});
+ // Keep a dated copy of the raw export on the server (see /api/sales-raw) so
+ // the weekly brief and the shared data layer read the same file as the dashboard.
+ fetch('/api/sales-raw',{method:'POST',headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({xml:e.target.result,filename:file.name,token:ADMIN.pass})
+ }).then(function(r){return r.json();})
+ .then(function(j){ if(!j||!j.ok) console.warn('[SALES-RAW] not archived:', j&&j.error); })
+ .catch(function(err){ console.warn('[SALES-RAW] archive failed:', err&&err.message); });
  }catch(err){alert('Gabim: '+err.message);}
  input.value='';
  };
