@@ -2193,9 +2193,14 @@ app.post('/api/send-report', async function(req, res) {
  .sort(function(a,b){ return a[0].localeCompare(b[0]); });
  const MAL = {1:'Janar',2:'Shkurt',3:'Mars',4:'Prill',5:'Maj',6:'Qershor',7:'Korrik',8:'Gusht',9:'Shtator',10:'Tetor',11:'Nëntor',12:'Dhjetor'};
  function daysInMonth(yr,mo){ return new Date(yr,mo,0).getDate(); }
+ // Available room-nights per month for 2026 - same table as the dashboard (index.html AVAIL_2026),
+ // from the FO sheet "Nights Available" column: 110 rooms until May, Garden ramp-up in June, 160 from July.
+ // Other years fall back to the flat 110 rooms x days-in-month.
+ const AVAIL_2026 = {1:3410,2:3080,3:3407,4:3270,5:3405,6:4240,7:4960,8:4960,9:4800,10:4960,11:4800,12:4960};
+ function monthAvail(yr,mo){ return (yr===2026 && AVAIL_2026[mo]!=null) ? AVAIL_2026[mo] : daysInMonth(yr,mo) * TR; }
  const monthRows = seasonEntries.map(function(e){
  const m = e[1];
- const avail = daysInMonth(m.yr, m.mo) * TR;
+ const avail = monthAvail(Number(m.yr), Number(m.mo));
  const mOcc = avail > 0 ? (m.nights / avail * 100).toFixed(1) : 0;
  const mAdr = m.nights > 0 ? (m.rev / m.nights).toFixed(0) : 0;
  const topSrc = Object.entries(m.src || {}).sort(function(a,b){ return b[1].rev - a[1].rev; })[0];
