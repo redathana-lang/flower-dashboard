@@ -4114,7 +4114,7 @@ function admGfMigrateLegacy(){
  }catch(e){}
 }
 
-function admGfRestoreSaved(){ admGfMigrateLegacy(); admGfSyncMonth(); }
+function admGfRestoreSaved(){ admGfMigrateLegacy(); admGfSyncMonth(); } var ADM_GF_MONTH_NUM={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12}; function admGfFetchServer(){ var key=admCurKey||'all'; fetch('/api/reviews/state',{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){ if(!j||!j.ok||!j.months||!j.months.length) return; var want=null; if(key==='all'){ want=j.months[j.months.length-1].month; } else { var mm=ADM_GF_MONTH_NUM[key]; if(!mm) return; want=String(new Date().getFullYear())+'-'+String(mm).padStart(2,'0'); if(!j.months.some(function(m){return m.month===want;})) return; } return fetch('/api/reviews/file/'+want,{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('no file'); return r.arrayBuffer(); }).then(function(buf){ if(typeof XLSX==='undefined') return; var wb=XLSX.read(buf,{type:'array'}); var data=admGfParse(wb); data.autoFrom='email'; if((admCurKey||'all')!==key) return; try{ localStorage.setItem(admGfKey(key), JSON.stringify(data)); }catch(e){} admGfShowPanel(data); var badge=document.getElementById('adm-gf-badge'); if(badge) badge.textContent='Guestflip · '+(data.period||want)+' · automatik nga email-i'; }); }).catch(function(e){ console.warn('[GF] server report not available:', e&&e.message); }); } var _admGfSyncMonth0=admGfSyncMonth; admGfSyncMonth=function(){ _admGfSyncMonth0(); var up=document.getElementById('adm-gf-upload-card'); if(up && up.style.display!=='none') admGfFetchServer(); };
 
 function admGfParse(wb){
  var sh=function(name){ return wb.Sheets[name]?XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''}):null; };
