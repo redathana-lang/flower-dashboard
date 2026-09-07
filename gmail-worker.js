@@ -20,6 +20,7 @@
 
 const { google }   = require('googleapis');
 const XLSX         = require('xlsx');
+const { beat }     = require('./heartbeat');
 const JSZip        = require('jszip');
 const express      = require('express');
 const https        = require('https');
@@ -131,6 +132,7 @@ function startHealthServer() {
       ]);
       const r = results[0] || {};
       console.log(`[hotel-xlsx] ${isoDate} → ${hotelValues.nightsOccupied}/${hotelValues.nightsAvailable} rev ${hotelValues.revenue} · written=${!!r.hotelWritten}`);
+      if (r.hotelWritten) beat('workbook-writer-agent', 'gmail-worker → Power BI workbook', 'HOTEL DAILY PERFORMANCE ' + isoDate, { minGapMs: 0 });
       return res.json({ ok: !!r.hotelWritten, date: isoDate, hotelWritten: !!r.hotelWritten, hotelValues });
     } catch (e) {
       console.error('[hotel-xlsx] error:', e.message);
