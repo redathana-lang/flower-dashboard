@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const webpush = require('web-push');
 const { sendDailyReport, buildEmailHTML, sendFile } = require('./emailService');
+const { beat } = require('./heartbeat'); // agent registry heartbeats (HEARTBEAT_URL / HEARTBEAT_KEY)
 // Load .env if present (local dev — production uses platform env vars)
 try { require('dotenv').config(); } catch(_) {}
 
@@ -1617,7 +1618,7 @@ app.post('/api/sales-raw', async function(req, res){
  // Copy to Drive (Flower Data Layer/exports). Failure here never blocks the local archive.
  let drive = null, driveError = null;
  try { drive = await drvUploadRaw(name, xml); console.log('[SALES-RAW] Drive copy', drive.replaced ? 'replaced' : 'created', drive.id); }
- catch(e){ driveError = e.message; console.warn('[SALES-RAW] Drive copy failed:', e.message); }
+ catch(e){ driveError = e.message; console.warn('[SALES-RAW] Drive copy failed:', e.message); } beat('export-archive-agent', 'FLOW Dashboard → Google Drive', name + (drive ? ' → Drive' : ' (local only: ' + driveError + ')'), { minGapMs: 0 }); beat('pick-up-agent', 'FLOW Dashboard', 'yearly export uploaded ' + name, { minGapMs: 0 });
  res.json({ ok: true, file: name, kept: files.length, drive: drive, driveError: driveError });
  } catch(e){ res.status(500).json({ error: e.message }); }
 });
@@ -2620,7 +2621,7 @@ app.post('/api/hms/close-day', async (req, res) => {
 // updates HOTEL DAILY PERFORMANCE via Apps Script and labels the email
 // "processed-report". See emailIngest.js.
 try {
- require('./emailIngest').init(app);
+ require('./emailIngest').init(app); try { require('./reviewsIngest').init(app); } catch (e) { console.warn('[REVIEWS] init failed:', e.message); } // GuestFlip monthly report (see reviewsIngest.js)
 } catch (e) {
  console.warn('[KONTROLLO] init failed (dashboard continues without it):', e.message);
 }
