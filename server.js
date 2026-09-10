@@ -229,7 +229,12 @@ function parseFinance(rows, date) {
  hoteli: n(r[14]),
  mag_garden: n(r[15]),
  paga_util: n(r[16]),
- total: n(r[17]),
+ // The day's TOTAL. gviz exports the cell's DISPLAYED text, so a percent-formatted
+ // TOTAL in the workbook arrives as "51,301,313.00%" and n() would strip the sign
+ // and report 100× the real spend (it happened on 2026-09-09). Treat a percentage
+ // as no total at all — the caller then sums the categories, which is the same
+ // figure. gmail-worker repairs the cell's format on its next write.
+ total: String(r[17]).includes('%') ? 0 : n(r[17]),
  };
 }
 

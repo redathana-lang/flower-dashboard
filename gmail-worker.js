@@ -370,6 +370,9 @@ const EXP_COL_MAP = {
   'paga':'Q', 'paga & utilitete':'Q', 'overheads':'H', 'overheads f&b':'H',
 };
 const EXP_EXCLUDE = ['flower tirane', 'tirane']; // separate property — not on this sheet
+// Fallback cell style for the TOTAL column (#,##0.00 on the filled row) — used only
+// when no earlier day carries a usable one.
+const DEFAULT_EXP_TOTAL_STYLE = '30';
 const normMag = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim().replace(/[.:]+$/, '').trim();
 
 // True if the workbook looks like a purchases report (has the standard-currency
@@ -645,11 +648,66 @@ function readCellVal(rowXml, col, r) {
   return m ? parseFloat(m[1]) : 0;
 }
 
+// Whole XML of one cell by its reference ("R163"), or null when it isn't there.
+function readCell(xml, ref) {
+  return xml.match(new RegExp(`<c r="${ref}"(?:[^>]*\\/>|[^>]*>[\\s\\S]*?<\\/c>)`))?.[0] || null;
+}
+const cellStyle = cellXml => (cellXml && cellXml.match(/\bs="(\d+)"/)?.[1]) || null;
+
+// Cell-style indexes (positions in <cellXfs>) that render as a PERCENTAGE — the
+// built-in "0%" / "0.00%" formats (numFmtId 9 / 10) plus any custom format whose
+// code carries an unescaped '%'. Read once per workbook from styles.xml.
+function readPercentStyles(stylesXml) {
+  const pctFmts = new Set(['9', '10']);
+  for (const m of stylesXml.matchAll(/<numFmt\b[^>]*\bnumFmtId="(\d+)"[^>]*\bformatCode="([^"]*)"/g)) {
+    if (m[2].replace(/\\%/g, '').includes('%')) pctFmts.add(m[1]);
+  }
+  const xfs = (stylesXml.match(/<cellXfs\b[^>]*>([\s\S]*?)<\/cellXfs>/)?.[1] || '')
+    .match(/<xf\b[^>]*\/>|<xf\b[^>]*>[\s\S]*?<\/xf>/g) || [];
+  const pctStyles = new Set();
+  xfs.forEach((xf, i) => { if (pctFmts.has(xf.match(/\bnumFmtId="(\d+)"/)?.[1])) pctStyles.add(String(i)); });
+  return pctStyles;
+}
+
+// Style of the nearest TOTAL cell ABOVE row r that holds a number and is not
+// percent-formatted — i.e. "the format the previous days use".
+function prevTotalStyle(expXml, r, pctStyles) {
+  for (let i = r - 1; i >= 2 && i >= r - 60; i--) {
+    const cell = readCell(expXml, `R${i}`);
+    if (!cell || !/<v>[\d.\-]+<\/v>/.test(cell)) continue;
+    const st = cellStyle(cell);
+    if (st && !pctStyles.has(st)) return st;
+  }
+  return null;
+}
+
+// Column R of DAILY EXPENSES is the day's spend in LEK, never a ratio. On
+// 2026-09-09 that cell carried a 0.00% style, so 513 013.13 rendered as
+// 51 301 313.00% — and because the dashboard reads the workbook through gviz CSV
+// (which exports the DISPLAYED text) the daily report picked the percentage up too.
+// Re-point every percent-formatted TOTAL cell at the format its previous days use.
+function fixExpenseTotalFormats(expXml, pctStyles) {
+  const fixed = [];
+  for (const m of expXml.matchAll(/<row r="(\d+)"/g)) {
+    const r = parseInt(m[1]);
+    const cell = readCell(expXml, `R${r}`);
+    const st = cellStyle(cell);
+    if (!st || !pctStyles.has(st)) continue;
+    const want = prevTotalStyle(expXml, r, pctStyles) || DEFAULT_EXP_TOTAL_STYLE;
+    expXml = expXml.replace(cell, cell.replace(/\bs="\d+"/, `s="${want}"`));
+    fixed.push(`R${r}(s${st}→s${want})`);
+  }
+  if (fixed.length) console.log(`  EXP: TOTAL format repaired → ${fixed.join(' ')}`);
+  return { expXml, fixed };
+}
+
 // Patch one DAILY EXPENSES (sheet5) date row — SELECTIVE per-column update: only the
 // magazine columns from the report are touched, every other cell (Beach Bar, SPA,
 // Paga & Utilitete, manual entries…) is preserved. TOTAL (col R) is recomputed but
-// keeps its shared formula. Returns the new XML, or null if the date row wasn't found.
-function patchExpensesRow(expXml, isoDate, expValues) {
+// keeps its shared formula and its style — unless that style is a PERCENTAGE one, in
+// which case the previous days' format is used instead (a total is an amount, never
+// a ratio). Returns the new XML, or null if the date row wasn't found.
+function patchExpensesRow(expXml, isoDate, expValues, pctStyles = new Set()) {
   const info = findRowForDate(expXml, isoDate);
   if (!info) { console.error(`  EXP: date ${isoDate} not found in DAILY EXPENSES sheet!`); return null; }
   const r = info.rowNum;
@@ -670,7 +728,11 @@ function patchExpensesRow(expXml, isoDate, expValues) {
   'BCDEFGHIJKLMNOPQ'.split('').forEach(c => { total += (expValues[c] != null ? expValues[c] : readCellVal(newRow, c, r)); });
   total = Math.round(total * 100) / 100;
   const rM = newRow.match(new RegExp(`<c r="R${r}"([^>]*?)>([\\s\\S]*?)<\\/c>`));
-  const rStyle = (rM && rM[1].match(/\bs="(\d+)"/)) ? rM[1].match(/\bs="(\d+)"/)[1] : '27';
+  const curStyle = (rM && rM[1].match(/\bs="(\d+)"/)) ? rM[1].match(/\bs="(\d+)"/)[1] : null;
+  const rStyle = (curStyle && !pctStyles.has(curStyle))
+    ? curStyle
+    : (prevTotalStyle(expXml, r, pctStyles) || DEFAULT_EXP_TOTAL_STYLE);
+  if (curStyle && curStyle !== rStyle) console.log(`    TOTAL style s${curStyle} is a percentage — using s${rStyle} (as previous days)`);
   const fM = rM ? rM[2].match(/<f[^>]*\/>|<f[^>]*>[\s\S]*?<\/f>/) : null;
   const rCell = `<c r="R${r}" s="${rStyle}">${fM ? fM[0] : '<f t="shared" si="1"/>'}<v>${total}</v></c>`;
   newRow = newRow.replace(new RegExp(`<c r="R${r}"(?:[^>]*\\/>|[^>]*>[\\s\\S]*?<\\/c>)`), rCell);
@@ -734,6 +796,13 @@ async function patchXlsx(drive, updates) {
   let expXml   = await zip.file(expPath).async('string');
   let fnbChanged = false, hotelChanged = false, expChanged = false;
 
+  // Which cell styles render as a percentage — needed to keep the expenses TOTAL a
+  // number. Repair any TOTAL cell that already carries one, whatever this run writes:
+  // the dashboard reads the sheet's DISPLAYED text, so one such cell skews the report.
+  const pctStyles = readPercentStyles(await zip.file('xl/styles.xml').async('string'));
+  const repaired  = fixExpenseTotalFormats(expXml, pctStyles);
+  if (repaired.fixed.length) { expXml = repaired.expXml; expChanged = true; }
+
   // Mirror each update with whether its row actually landed (date row found).
   const results = list.map(u => {
     let fnbWritten = false, hotelWritten = false, expWritten = false;
@@ -746,7 +815,7 @@ async function patchXlsx(drive, updates) {
       if (next) { hotelXml = next; hotelChanged = true; hotelWritten = true; }
     }
     if (u.writeExp) {
-      const next = patchExpensesRow(expXml, u.isoDate, u.expValues);
+      const next = patchExpensesRow(expXml, u.isoDate, u.expValues, pctStyles);
       if (next) { expXml = next; expChanged = true; expWritten = true; }
     }
     return { isoDate: u.isoDate, fnbValues: u.fnbValues, hotelValues: u.hotelValues, expValues: u.expValues, fnbWritten, hotelWritten, expWritten };
