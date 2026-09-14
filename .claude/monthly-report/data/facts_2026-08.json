@@ -1,0 +1,1734 @@
+{
+ "period": {
+  "month": "Gusht",
+  "year": 2026,
+  "ay": "2026-08",
+  "ly": "2025-08",
+  "prev": "2026-07"
+ },
+ "kpi": {
+  "nights": {
+   "ay": 4816,
+   "ly": 3340,
+   "d": 44.2
+  },
+  "avail": {
+   "ay": 4960,
+   "ly": 3410,
+   "d": 45.5
+  },
+  "occ": {
+   "ay": 97.1,
+   "ly": 97.9,
+   "dPts": -0.9
+  },
+  "adr": {
+   "ay": 207.7,
+   "ly": 209.2,
+   "d": -0.7
+  },
+  "revpar": {
+   "ay": 201.7,
+   "ly": 206.4,
+   "d": -2.3
+  },
+  "trevpar": {
+   "ay": 232.5,
+   "ly": 259.4,
+   "d": -10.4
+  },
+  "alos": {
+   "ay": 3.95,
+   "ly": 4.11,
+   "d": -3.9
+  },
+  "rev": {
+   "ay": 1153310,
+   "ly": 884520,
+   "d": 30.4,
+   "bud": 1181794,
+   "vsBud": 97.6,
+   "gap": -28485
+  },
+  "exp": {
+   "ay": 445443,
+   "ly": 404891,
+   "d": 10,
+   "bud": 487502,
+   "vsBud": 91.4,
+   "gap": -42059
+  },
+  "gop": {
+   "ay": 734076,
+   "ly": 504510,
+   "d": 45.5,
+   "marginAy": 63.6,
+   "marginLy": 57
+  },
+  "ebitda": {
+   "ay": 733397,
+   "ly": 503975,
+   "d": 45.5
+  },
+  "nop": {
+   "ay": 707866,
+   "ly": 479629,
+   "d": 47.6,
+   "marginAy": 61.4,
+   "marginLy": 54.2,
+   "bud": 694292,
+   "vsBud": 102,
+   "gap": 13574
+  },
+  "labor": {
+   "ay": 143854,
+   "ly": 121713,
+   "d": 18.2,
+   "pctAy": 12.5,
+   "pctLy": 13.8,
+   "fteAy": 141,
+   "fteLy": 129,
+   "avgAy": 1020,
+   "avgLy": 944,
+   "perSoldAy": 29.9,
+   "perSoldLy": 36.4
+  },
+  "cpor": {
+   "ay": 41,
+   "ly": 50.9,
+   "sheetAy": 92.5,
+   "sheetLy": 50.9
+  },
+  "roomsRev": {
+   "ay": 1000451,
+   "ly": 696297,
+   "d": 43.7
+  },
+  "fnbRev": {
+   "ay": 128247,
+   "ly": 177508,
+   "d": -27.8
+  },
+  "otherRev": {
+   "ay": 24612,
+   "ly": 10715,
+   "d": 129.7
+  },
+  "deptExp": {
+   "ay": 305660,
+   "ly": 293326,
+   "d": 4.2,
+   "pctAy": 26.5,
+   "pctLy": 33.2
+  },
+  "undistExp": {
+   "ay": 113574,
+   "ly": 86683,
+   "d": 31,
+   "pctAy": 9.8
+  },
+  "houseUse": {
+   "ay": 15151,
+   "ly": 24694
+  },
+  "avgCheck": {
+   "flowerAy": 79,
+   "flowerLy": 128.63,
+   "brutalAy": 126,
+   "brutalLy": 147.81
+  }
+ },
+ "flowThrough": 84.9,
+ "revDelta": 268790,
+ "prfDelta": 228238,
+ "vsPrev": {
+  "rev": 1037154,
+  "nop": 592251,
+  "adr": 186.4,
+  "occ": 95.6,
+  "nights": 4740,
+  "revD": 11.2,
+  "nopD": 19.5,
+  "adrD": 11.4
+ },
+ "ytd": {
+  "ay": {
+   "rev": 4052751,
+   "nop": 1493641,
+   "nights": 19182,
+   "avail": 30730
+  },
+  "ly": {
+   "rev": 3167782,
+   "nop": 1010629,
+   "nights": 13575,
+   "avail": 26840
+  },
+  "revD": 27.9,
+  "nopD": 47.8,
+  "budRev": 4207897,
+  "budPrf": 1801349,
+  "prfGap": -307708
+ },
+ "channels": [
+  {
+   "channel": "DIRECT",
+   "rev": 478879,
+   "nights": 1887,
+   "res": 627,
+   "adr": 253.8,
+   "alos": 3.01,
+   "share": 47.9,
+   "lyRev": 316171,
+   "d": 51.5,
+   "commission": 0
+  },
+  {
+   "channel": "ITAKA",
+   "rev": 169765,
+   "nights": 1171,
+   "res": 205,
+   "adr": 145,
+   "alos": 5.71,
+   "share": 17,
+   "lyRev": 160067,
+   "d": 6.1,
+   "commission": 0
+  },
+  {
+   "channel": "W2M",
+   "rev": 97945,
+   "nights": 541,
+   "res": 117,
+   "adr": 181,
+   "alos": 4.62,
+   "share": 9.8,
+   "lyRev": 13563,
+   "d": 622.1,
+   "commission": 0
+  },
+  {
+   "channel": "HOTELBEDS",
+   "rev": 74470,
+   "nights": 363,
+   "res": 79,
+   "adr": 205.2,
+   "alos": 4.59,
+   "share": 7.4,
+   "lyRev": 24576,
+   "d": 203,
+   "commission": 0
+  },
+  {
+   "channel": "OTS",
+   "rev": 40058,
+   "nights": 193,
+   "res": 39,
+   "adr": 207.6,
+   "alos": 4.95,
+   "share": 4,
+   "lyRev": 5596,
+   "d": 615.9,
+   "commission": 0
+  },
+  {
+   "channel": "EXPEDIA",
+   "rev": 39149,
+   "nights": 191,
+   "res": 32,
+   "adr": 205,
+   "alos": 5.97,
+   "share": 3.9,
+   "lyRev": 60155,
+   "d": -34.9,
+   "commission": 7410
+  },
+  {
+   "channel": "BOOKING",
+   "rev": 34754,
+   "nights": 165,
+   "res": 44,
+   "adr": 210.6,
+   "alos": 3.75,
+   "share": 3.5,
+   "lyRev": 52252,
+   "d": -33.5,
+   "commission": 6140
+  },
+  {
+   "channel": "WEBSITE",
+   "rev": 30618,
+   "nights": 132,
+   "res": 37,
+   "adr": 232,
+   "alos": 3.57,
+   "share": 3.1,
+   "lyRev": 14497,
+   "d": 111.2,
+   "commission": 0
+  },
+  {
+   "channel": "7 BEDS",
+   "rev": 14740,
+   "nights": 77,
+   "res": 21,
+   "adr": 191.4,
+   "alos": 3.67,
+   "share": 1.5,
+   "lyRev": 0,
+   "d": null,
+   "commission": 0
+  },
+  {
+   "channel": "WEBBEDS",
+   "rev": 9742,
+   "nights": 41,
+   "res": 8,
+   "adr": 237.6,
+   "alos": 5.13,
+   "share": 1,
+   "lyRev": 20520,
+   "d": -52.5,
+   "commission": 0
+  },
+  {
+   "channel": "TUI DESTIMO",
+   "rev": 4655,
+   "nights": 28,
+   "res": 4,
+   "adr": 166.3,
+   "alos": 7,
+   "share": 0.5,
+   "lyRev": 8692,
+   "d": -46.4,
+   "commission": 0
+  },
+  {
+   "channel": "TRIP.COM",
+   "rev": 3433,
+   "nights": 15,
+   "res": 2,
+   "adr": 228.9,
+   "alos": 7.5,
+   "share": 0.3,
+   "lyRev": 276,
+   "d": 1144.6,
+   "commission": 0
+  },
+  {
+   "channel": "APOLLO",
+   "rev": 1540,
+   "nights": 7,
+   "res": 1,
+   "adr": 220,
+   "alos": 7,
+   "share": 0.2,
+   "lyRev": 6370,
+   "d": -75.8,
+   "commission": 0
+  },
+  {
+   "channel": "SCHAUINSLAND",
+   "rev": 718,
+   "nights": 5,
+   "res": 1,
+   "adr": 143.6,
+   "alos": 5,
+   "share": 0.1,
+   "lyRev": 9713,
+   "d": -92.6,
+   "commission": 0
+  }
+ ],
+ "channelTotal": {
+  "rev": 1000451,
+  "nights": 4816,
+  "res": 1217
+ },
+ "groups": {
+  "wholesale": {
+   "rev": 243868,
+   "share": 24.4
+  },
+  "ota": {
+   "rev": 77336,
+   "share": 7.7,
+   "commission": 13550
+  },
+  "direct": {
+   "rev": 509497,
+   "share": 50.9
+  },
+  "itaka": {
+   "rev": 169765,
+   "share": 17
+  }
+ },
+ "markets": [
+  {
+   "market": "AL",
+   "rev": 264088,
+   "lyRev": 104482,
+   "d": 152.8
+  },
+  {
+   "market": "XK",
+   "rev": 176274,
+   "lyRev": 204190,
+   "d": -13.7
+  },
+  {
+   "market": "PL",
+   "rev": 138838,
+   "lyRev": 121300,
+   "d": 14.5
+  },
+  {
+   "market": "GB",
+   "rev": 138170,
+   "lyRev": 35432,
+   "d": 290
+  },
+  {
+   "market": "OTHER",
+   "rev": 109352,
+   "lyRev": 40880,
+   "d": 167.5
+  },
+  {
+   "market": "HU",
+   "rev": 43843,
+   "lyRev": 41362,
+   "d": 6
+  },
+  {
+   "market": "FR",
+   "rev": 27185,
+   "lyRev": 20857,
+   "d": 30.3
+  },
+  {
+   "market": "US",
+   "rev": 19760,
+   "lyRev": 25767,
+   "d": -23.3
+  },
+  {
+   "market": "DE",
+   "rev": 18490,
+   "lyRev": 41601,
+   "d": -55.6
+  },
+  {
+   "market": "NL",
+   "rev": 14607,
+   "lyRev": 5041,
+   "d": 189.8
+  },
+  {
+   "market": "ES",
+   "rev": 14169,
+   "lyRev": 13801,
+   "d": 2.7
+  },
+  {
+   "market": "IT",
+   "rev": 12670,
+   "lyRev": 24074,
+   "d": -47.4
+  }
+ ],
+ "board": [
+  {
+   "board": "ALL INCLUSIVE",
+   "rev": 763299,
+   "share": 76.3,
+   "lyShare": 88.5
+  },
+  {
+   "board": "BB",
+   "rev": 237152,
+   "share": 23.7,
+   "lyShare": 11.5
+  }
+ ],
+ "segments": [
+  {
+   "segment": "DIRECT SALES",
+   "rev": 509482,
+   "share": 50.9,
+   "lyRev": 328128,
+   "d": 55.3
+  },
+  {
+   "segment": "WHOLESALERS",
+   "rev": 185590,
+   "share": 18.6,
+   "lyRev": 58935,
+   "d": 214.9
+  },
+  {
+   "segment": "GUARANTEE",
+   "rev": 169765,
+   "share": 17,
+   "lyRev": 160067,
+   "d": 6.1
+  },
+  {
+   "segment": "OTA",
+   "rev": 73903,
+   "share": 7.4,
+   "lyRev": 112407,
+   "d": -34.3
+  },
+  {
+   "segment": "ALLOTMENT",
+   "rev": 61711,
+   "share": 6.2,
+   "lyRev": 39170,
+   "d": 57.5
+  }
+ ],
+ "expenses": [
+  {
+   "cat": "Wages & Salaries",
+   "lek": 14385359,
+   "lekM": 14.39,
+   "budget": 12779883,
+   "varr": 1605476,
+   "lyLek": 12171317,
+   "d": 18.2,
+   "share": 32.3
+  },
+  {
+   "cat": "Hotel & Spa F&B All Inclusive",
+   "lek": 9810511,
+   "lekM": 9.81,
+   "budget": 10453448,
+   "varr": -642937,
+   "lyLek": 8858854,
+   "d": 10.7,
+   "share": 22
+  },
+  {
+   "cat": "F&B Cost of Sale",
+   "lek": 4964475,
+   "lekM": 4.96,
+   "budget": 7600000,
+   "varr": -2635525,
+   "lyLek": 6477592,
+   "d": -23.4,
+   "share": 11.1
+  },
+  {
+   "cat": "Utilities and Taxes",
+   "lek": 4853908,
+   "lekM": 4.85,
+   "budget": 3706537,
+   "varr": 1147371,
+   "lyLek": 3530035,
+   "d": 37.5,
+   "share": 10.9
+  },
+  {
+   "cat": "Hotel & Spa",
+   "lek": 3628433,
+   "lekM": 3.63,
+   "budget": 5786370,
+   "varr": -2157937,
+   "lyLek": 3181063,
+   "d": 14.1,
+   "share": 8.1
+  },
+  {
+   "cat": "Loan",
+   "lek": 2362440,
+   "lekM": 2.36,
+   "budget": 2200000,
+   "varr": 162440,
+   "lyLek": 1936640,
+   "d": 22,
+   "share": 5.3
+  },
+  {
+   "cat": "Entertainment",
+   "lek": 1648000,
+   "lekM": 1.65,
+   "budget": 2500000,
+   "varr": -852000,
+   "lyLek": 1679000,
+   "d": -1.8,
+   "share": 3.7
+  },
+  {
+   "cat": "Marketing",
+   "lek": 1560506,
+   "lekM": 1.56,
+   "budget": 2363589,
+   "varr": -803083,
+   "lyLek": 1543370,
+   "d": 1.1,
+   "share": 3.5
+  },
+  {
+   "cat": "Repairs & Maintenance",
+   "lek": 688313,
+   "lekM": 0.69,
+   "budget": 250000,
+   "varr": 438313,
+   "lyLek": 72330,
+   "d": 851.6,
+   "share": 1.5
+  },
+  {
+   "cat": "Overheads F&B",
+   "lek": 574483,
+   "lekM": 0.57,
+   "budget": 985420,
+   "varr": -410937,
+   "lyLek": 985420,
+   "d": -41.7,
+   "share": 1.3
+  },
+  {
+   "cat": "Insurance",
+   "lek": 67890,
+   "lekM": 0.07,
+   "budget": 125000,
+   "varr": -57110,
+   "lyLek": 53500,
+   "d": 26.9,
+   "share": 0.2
+  }
+ ],
+ "expenseTotalLek": 44544318,
+ "outlets": [
+  {
+   "outlet": "Brutal Garden",
+   "lek": 6708438,
+   "lyLek": 7565870,
+   "d": -11.3
+  },
+  {
+   "outlet": "Flower Restaurant",
+   "lek": 3704265,
+   "lyLek": 6417660,
+   "d": -42.3
+  },
+  {
+   "outlet": "Beach Bar",
+   "lek": 2326240,
+   "lyLek": 4241480,
+   "d": -45.2
+  },
+  {
+   "outlet": "Pool Bar",
+   "lek": 791240,
+   "lyLek": 901625,
+   "d": -12.2
+  },
+  {
+   "outlet": "Pool Bar Garden",
+   "lek": 715715,
+   "lyLek": 1095940,
+   "d": -34.7
+  }
+ ],
+ "outletTotal": {
+  "lek": 14245898,
+  "lyLek": 20222575,
+  "d": -29.6
+ },
+ "cashIn": [
+  {
+   "label": "Non Cash Bank Euro",
+   "eur": 378414
+  },
+  {
+   "label": "recepsion Cash Euro",
+   "eur": 288837
+  },
+  {
+   "label": "Allotments/guarantee Euro",
+   "eur": 179053
+  },
+  {
+   "label": "F&B Lek",
+   "eur": 72851
+  },
+  {
+   "label": "Non Cash Lek",
+   "eur": 50975
+  },
+  {
+   "label": "MICE Euro",
+   "eur": 11530
+  },
+  {
+   "label": "Recepsion Cash Lek",
+   "eur": 2
+  }
+ ],
+ "cashOut": [
+  {
+   "label": "Investime Banke Leke",
+   "eur": 150675
+  },
+  {
+   "label": "Furnitore Banke Leke",
+   "eur": 137311
+  },
+  {
+   "label": "Investime Banke Euro",
+   "eur": 136946
+  },
+  {
+   "label": "Paga Lek",
+   "eur": 125799
+  },
+  {
+   "label": "Taksa dhe Utilitete Lek",
+   "eur": 75454
+  },
+  {
+   "label": "Kredi Euro",
+   "eur": 52839
+  },
+  {
+   "label": "Furnitore Cash Lek",
+   "eur": 32447
+  },
+  {
+   "label": "Kredi Leke",
+   "eur": 21714
+  },
+  {
+   "label": "Furnitore Banke Euro",
+   "eur": 18407
+  },
+  {
+   "label": "House Use Lek",
+   "eur": 10885
+  },
+  {
+   "label": "Furnitore Cash Euro",
+   "eur": 9331
+  }
+ ],
+ "cashTotals": {
+  "in": 981662,
+  "out": 771808,
+  "net": 209854
+ },
+ "cashPrev": {
+  "in": 981484,
+  "out": 765638,
+  "net": 215846
+ },
+ "marketing": {
+  "totalEur": 17899,
+  "houseUse": 6060,
+  "cashEur": 11839,
+  "meta": 9910,
+  "google": 128.7,
+  "advertising": 500,
+  "subscriptions": 1300,
+  "pctOfRev": 1.6,
+  "prev": {
+   "totalEur": 21517,
+   "meta": 8317,
+   "google": 105.25,
+   "pctOfRev": 2.1
+  },
+  "accountingLineLek": 1560506,
+  "googleShare": 1.1
+ },
+ "daily": [
+  {
+   "day": 1,
+   "occ": 100,
+   "nights": 160,
+   "rev": 25806
+  },
+  {
+   "day": 2,
+   "occ": 95,
+   "nights": 152,
+   "rev": 24048
+  },
+  {
+   "day": 3,
+   "occ": 99.4,
+   "nights": 159,
+   "rev": 26243
+  },
+  {
+   "day": 4,
+   "occ": 98.8,
+   "nights": 158,
+   "rev": 26336
+  },
+  {
+   "day": 5,
+   "occ": 100.6,
+   "nights": 161,
+   "rev": 26830
+  },
+  {
+   "day": 6,
+   "occ": 96.9,
+   "nights": 155,
+   "rev": 26031
+  },
+  {
+   "day": 7,
+   "occ": 100,
+   "nights": 160,
+   "rev": 27637
+  },
+  {
+   "day": 8,
+   "occ": 99.4,
+   "nights": 159,
+   "rev": 27131
+  },
+  {
+   "day": 9,
+   "occ": 92.5,
+   "nights": 148,
+   "rev": 25334
+  },
+  {
+   "day": 10,
+   "occ": 100.6,
+   "nights": 161,
+   "rev": 28205
+  },
+  {
+   "day": 11,
+   "occ": 100.6,
+   "nights": 161,
+   "rev": 27628
+  },
+  {
+   "day": 12,
+   "occ": 100.6,
+   "nights": 161,
+   "rev": 28049
+  },
+  {
+   "day": 13,
+   "occ": 98.8,
+   "nights": 158,
+   "rev": 27416
+  },
+  {
+   "day": 14,
+   "occ": 97.5,
+   "nights": 156,
+   "rev": 27433
+  },
+  {
+   "day": 15,
+   "occ": 100.6,
+   "nights": 161,
+   "rev": 28593
+  },
+  {
+   "day": 16,
+   "occ": 89.4,
+   "nights": 143,
+   "rev": 23703
+  },
+  {
+   "day": 17,
+   "occ": 99.4,
+   "nights": 159,
+   "rev": 27846
+  },
+  {
+   "day": 18,
+   "occ": 100,
+   "nights": 160,
+   "rev": 28235
+  },
+  {
+   "day": 19,
+   "occ": 100,
+   "nights": 160,
+   "rev": 28437
+  },
+  {
+   "day": 20,
+   "occ": 100,
+   "nights": 160,
+   "rev": 27907
+  },
+  {
+   "day": 21,
+   "occ": 101.3,
+   "nights": 162,
+   "rev": 28416
+  },
+  {
+   "day": 22,
+   "occ": 100.6,
+   "nights": 161,
+   "rev": 28172
+  },
+  {
+   "day": 23,
+   "occ": 98.8,
+   "nights": 158,
+   "rev": 27978
+  },
+  {
+   "day": 24,
+   "occ": 100,
+   "nights": 160,
+   "rev": 28530
+  },
+  {
+   "day": 25,
+   "occ": 100,
+   "nights": 160,
+   "rev": 28412
+  },
+  {
+   "day": 26,
+   "occ": 99.4,
+   "nights": 159,
+   "rev": 28007
+  },
+  {
+   "day": 27,
+   "occ": 98.1,
+   "nights": 157,
+   "rev": 28433
+  },
+  {
+   "day": 28,
+   "occ": 100,
+   "nights": 160,
+   "rev": 28814
+  },
+  {
+   "day": 29,
+   "occ": 98.8,
+   "nights": 158,
+   "rev": 28299
+  },
+  {
+   "day": 30,
+   "occ": 77.5,
+   "nights": 124,
+   "rev": 18187
+  },
+  {
+   "day": 31,
+   "occ": 76.9,
+   "nights": 123,
+   "rev": 17476
+  }
+ ],
+ "weakDays": [
+  {
+   "day": 16,
+   "occ": 89.4
+  },
+  {
+   "day": 30,
+   "occ": 77.5
+  },
+  {
+   "day": 31,
+   "occ": 76.9
+  }
+ ],
+ "fullDays": 19,
+ "series": [
+  {
+   "month": "2025-01",
+   "rev": 143289,
+   "nop": -27378,
+   "budRev": 161199
+  },
+  {
+   "month": "2025-02",
+   "rev": 108723,
+   "nop": -62496,
+   "budRev": 140775
+  },
+  {
+   "month": "2025-03",
+   "rev": 118454,
+   "nop": -63584,
+   "budRev": 152381
+  },
+  {
+   "month": "2025-04",
+   "rev": 164594,
+   "nop": -33259,
+   "budRev": 270856
+  },
+  {
+   "month": "2025-05",
+   "rev": 368669,
+   "nop": 93311,
+   "budRev": 337967
+  },
+  {
+   "month": "2025-06",
+   "rev": 577051,
+   "nop": 219117,
+   "budRev": 596656
+  },
+  {
+   "month": "2025-07",
+   "rev": 802483,
+   "nop": 405290,
+   "budRev": 858508
+  },
+  {
+   "month": "2025-08",
+   "rev": 884520,
+   "nop": 479629,
+   "budRev": 928352
+  },
+  {
+   "month": "2025-09",
+   "rev": 583880,
+   "nop": 270700,
+   "budRev": 681848
+  },
+  {
+   "month": "2025-10",
+   "rev": 334559,
+   "nop": 64181,
+   "budRev": 224773
+  },
+  {
+   "month": "2025-11",
+   "rev": 128857,
+   "nop": -79120,
+   "budRev": 164093
+  },
+  {
+   "month": "2025-12",
+   "rev": 157895,
+   "nop": -121543,
+   "budRev": 203219
+  },
+  {
+   "month": "2026-01",
+   "rev": 193884,
+   "nop": -36078,
+   "budRev": 185000
+  },
+  {
+   "month": "2026-02",
+   "rev": 151964,
+   "nop": -79733,
+   "budRev": 180254
+  },
+  {
+   "month": "2026-03",
+   "rev": 186915,
+   "nop": -55524,
+   "budRev": 204988
+  },
+  {
+   "month": "2026-04",
+   "rev": 282619,
+   "nop": 28746,
+   "budRev": 272520
+  },
+  {
+   "month": "2026-05",
+   "rev": 358270,
+   "nop": 63762,
+   "budRev": 405089
+  },
+  {
+   "month": "2026-06",
+   "rev": 688636,
+   "nop": 272350,
+   "budRev": 731206
+  },
+  {
+   "month": "2026-07",
+   "rev": 1037154,
+   "nop": 592251,
+   "budRev": 1047046
+  },
+  {
+   "month": "2026-08",
+   "rev": 1153310,
+   "nop": 707866,
+   "budRev": 1181794
+  }
+ ],
+ "reputationAvailable": true,
+ "reputation": {
+  "period": "01 Gusht 2026 – 31 Gusht 2026",
+  "source": "Guestflip",
+  "overall": {
+   "reviews": 131,
+   "rating": 4.31,
+   "benchmarkRating": 4.09,
+   "responseRate": 65,
+   "positive": 103,
+   "negative": 28
+  },
+  "platforms": [
+   {
+    "platform": "Google",
+    "reviews": 103,
+    "rating": 4.57,
+    "scale": 5,
+    "normalized": 4.57,
+    "positive": 89,
+    "negative": 14
+   },
+   {
+    "platform": "Booking.com",
+    "reviews": 14,
+    "rating": 6.36,
+    "scale": 10,
+    "normalized": 3.18,
+    "positive": 7,
+    "negative": 7
+   },
+   {
+    "platform": "TripAdvisor",
+    "reviews": 13,
+    "rating": 3.43,
+    "scale": 5,
+    "normalized": 3.43,
+    "positive": 6,
+    "negative": 7
+   },
+   {
+    "platform": "HolidayCheck",
+    "reviews": 1,
+    "rating": 6,
+    "scale": 10,
+    "normalized": 3,
+    "positive": 1,
+    "negative": 0
+   }
+  ],
+  "categories": [
+   {
+    "category": "Service",
+    "rating": 4.59,
+    "benchmark": 4.35,
+    "diff": 0.06
+   },
+   {
+    "category": "Room (Overall)",
+    "rating": 4.58,
+    "benchmark": 4.46,
+    "diff": 0.03
+   },
+   {
+    "category": "Location",
+    "rating": 4.52,
+    "benchmark": 4.39,
+    "diff": 0.03
+   },
+   {
+    "category": "Overall",
+    "rating": 4.3,
+    "benchmark": 4.06,
+    "diff": 0.06
+   },
+   {
+    "category": "Cleanliness",
+    "rating": 3.86,
+    "benchmark": 4,
+    "diff": -0.04
+   },
+   {
+    "category": "Sleep Quality",
+    "rating": 3.67,
+    "benchmark": 3.8,
+    "diff": -0.03
+   },
+   {
+    "category": "Value",
+    "rating": 2.86,
+    "benchmark": 3.8,
+    "diff": -0.25
+   }
+  ],
+  "competition": [
+   {
+    "hotel": "Klajdi Resort",
+    "gri": 0.9,
+    "cqi": 1.08,
+    "reviews": 124,
+    "positive": 107,
+    "negative": 17
+   },
+   {
+    "hotel": "Flower Hotel Resort",
+    "gri": 0.86,
+    "cqi": 1.02,
+    "reviews": 131,
+    "positive": 103,
+    "negative": 28
+   },
+   {
+    "hotel": "Premium Hotel Beach",
+    "gri": 0.86,
+    "cqi": 1.01,
+    "reviews": 74,
+    "positive": 62,
+    "negative": 12
+   },
+   {
+    "hotel": "AMR Hotel - Durres",
+    "gri": 0.85,
+    "cqi": 1.01,
+    "reviews": 31,
+    "positive": 24,
+    "negative": 7
+   },
+   {
+    "hotel": "Grand Blue Fafa",
+    "gri": 0.76,
+    "cqi": 0.88,
+    "reviews": 87,
+    "positive": 50,
+    "negative": 37
+   }
+  ],
+  "ourRank": 2,
+  "competitors": 5,
+  "ourGri": 0.86,
+  "stars": {
+   "s1": 6,
+   "s2": 5,
+   "s3": 11,
+   "s4": 20,
+   "s5": 89,
+   "total": 131,
+   "pct5": 67.9,
+   "pct1": 4.6
+  },
+  "byWeek": [
+   {
+    "week": "Week 31 2026",
+    "s1": 0,
+    "s2": 1,
+    "s3": 1,
+    "s4": 3,
+    "s5": 6,
+    "total": 11
+   },
+   {
+    "week": "Week 32 2026",
+    "s1": 0,
+    "s2": 0,
+    "s3": 2,
+    "s4": 6,
+    "s5": 41,
+    "total": 49
+   },
+   {
+    "week": "Week 33 2026",
+    "s1": 3,
+    "s2": 0,
+    "s3": 4,
+    "s4": 6,
+    "s5": 18,
+    "total": 31
+   },
+   {
+    "week": "Week 34 2026",
+    "s1": 1,
+    "s2": 2,
+    "s3": 4,
+    "s4": 2,
+    "s5": 12,
+    "total": 21
+   },
+   {
+    "week": "Week 35 2026",
+    "s1": 2,
+    "s2": 2,
+    "s3": 0,
+    "s4": 3,
+    "s5": 12,
+    "total": 19
+   }
+  ],
+  "starsBySource": [
+   {
+    "source": "Google",
+    "s1": 3,
+    "s2": 1,
+    "s3": 6,
+    "s4": 12,
+    "s5": 81,
+    "total": 103
+   },
+   {
+    "source": "Booking.com",
+    "s1": 2,
+    "s2": 1,
+    "s3": 2,
+    "s4": 7,
+    "s5": 2,
+    "total": 14
+   },
+   {
+    "source": "TripAdvisor",
+    "s1": 1,
+    "s2": 3,
+    "s3": 3,
+    "s4": 1,
+    "s5": 5,
+    "total": 13
+   },
+   {
+    "source": "HolidayCheck",
+    "s1": 0,
+    "s2": 0,
+    "s3": 0,
+    "s4": 0,
+    "s5": 1,
+    "total": 1
+   }
+  ],
+  "sentiment": {
+   "score": "80.4%",
+   "mentions": 281,
+   "positive": 226,
+   "negative": 55
+  },
+  "sentimentSources": [
+   {
+    "source": "TripAdvisor",
+    "mentions": 121,
+    "positive": 80,
+    "negative": 41,
+    "share": 43.1,
+    "rating": 3.31
+   },
+   {
+    "source": "Google",
+    "mentions": 154,
+    "positive": 145,
+    "negative": 9,
+    "share": 54.8,
+    "rating": 4.71
+   },
+   {
+    "source": "Booking.com",
+    "mentions": 6,
+    "positive": 1,
+    "negative": 5,
+    "share": 2.1,
+    "rating": 0.83
+   }
+  ],
+  "sentimentCategories": [
+   {
+    "category": "Experience",
+    "reviews": 87,
+    "mentions": 179,
+    "positivePct": 82.8,
+    "positiveMentions": 139,
+    "negativeMentions": 40
+   },
+   {
+    "category": "Customer Service",
+    "reviews": 75,
+    "mentions": 145,
+    "positivePct": 85.3,
+    "positiveMentions": 135,
+    "negativeMentions": 10
+   },
+   {
+    "category": "Food and Drinks",
+    "reviews": 28,
+    "mentions": 126,
+    "positivePct": 82.1,
+    "positiveMentions": 92,
+    "negativeMentions": 34
+   },
+   {
+    "category": "Facilities",
+    "reviews": 44,
+    "mentions": 117,
+    "positivePct": 75,
+    "positiveMentions": 103,
+    "negativeMentions": 14
+   },
+   {
+    "category": "Rooms",
+    "reviews": 38,
+    "mentions": 96,
+    "positivePct": 73.7,
+    "positiveMentions": 78,
+    "negativeMentions": 18
+   },
+   {
+    "category": "Housekeeping",
+    "reviews": 9,
+    "mentions": 25,
+    "positivePct": 100,
+    "positiveMentions": 19,
+    "negativeMentions": null
+   },
+   {
+    "category": "Front office",
+    "reviews": 2,
+    "mentions": 16,
+    "positivePct": 1600,
+    "positiveMentions": 2,
+    "negativeMentions": null
+   },
+   {
+    "category": "Spa",
+    "reviews": 2,
+    "mentions": 12,
+    "positivePct": 100,
+    "positiveMentions": 10,
+    "negativeMentions": null
+   },
+   {
+    "category": "Other",
+    "reviews": 8,
+    "mentions": 12,
+    "positivePct": 62.5,
+    "positiveMentions": 3,
+    "negativeMentions": 9
+   },
+   {
+    "category": "Maintenance",
+    "reviews": 4,
+    "mentions": 10,
+    "positivePct": 25,
+    "positiveMentions": 4,
+    "negativeMentions": 6
+   },
+   {
+    "category": "Entertainment",
+    "reviews": 3,
+    "mentions": 6,
+    "positivePct": 66.7,
+    "positiveMentions": 4,
+    "negativeMentions": 2
+   },
+   {
+    "category": "Value",
+    "reviews": 1,
+    "mentions": 4,
+    "positivePct": 100,
+    "positiveMentions": 3,
+    "negativeMentions": null
+   },
+   {
+    "category": "Internet",
+    "reviews": 0,
+    "mentions": 2,
+    "positivePct": 0,
+    "positiveMentions": 0,
+    "negativeMentions": null
+   }
+  ],
+  "segments": [
+   {
+    "segment": "Not available",
+    "reviews": 55,
+    "score": 4.71
+   },
+   {
+    "segment": "Other",
+    "reviews": 51,
+    "score": 4.28
+   },
+   {
+    "segment": "Families",
+    "reviews": 7,
+    "score": 3.89
+   },
+   {
+    "segment": "Group",
+    "reviews": 5,
+    "score": 3.8
+   },
+   {
+    "segment": "Couples",
+    "reviews": 10,
+    "score": 3.11
+   },
+   {
+    "segment": "Friends",
+    "reviews": 3,
+    "score": 3.33
+   }
+  ],
+  "julyReference": {
+   "rating": 4.03,
+   "gri": 0.806,
+   "rank": 3,
+   "reviews": 126,
+   "pct1": 11.1,
+   "value": 3.22,
+   "responseRate": 92.7,
+   "tripadvisor": 3
+  }
+ },
+ "cash": {
+  "ay": {
+   "in": [
+    {
+     "label": "Non Cash Bankë Euro",
+     "eur": 378414
+    },
+    {
+     "label": "Recepsion Cash Euro",
+     "eur": 288837
+    },
+    {
+     "label": "Allotments/garanci Euro",
+     "eur": 179053
+    },
+    {
+     "label": "F&B Lek",
+     "eur": 72851
+    },
+    {
+     "label": "Non Cash Lek",
+     "eur": 50975
+    },
+    {
+     "label": "MICE Euro",
+     "eur": 11530
+    },
+    {
+     "label": "Recepsion Cash Lek",
+     "eur": 2
+    },
+    {
+     "label": "Disbursim Kredi Euro",
+     "eur": 0
+    },
+    {
+     "label": "MICE Lek",
+     "eur": 0
+    }
+   ],
+   "out": [
+    {
+     "label": "Investime Bankë Lek",
+     "eur": 150675
+    },
+    {
+     "label": "Furnitorë Bankë Lek",
+     "eur": 137311
+    },
+    {
+     "label": "Investime Bankë Euro",
+     "eur": 136946
+    },
+    {
+     "label": "Paga Lek",
+     "eur": 125799
+    },
+    {
+     "label": "Taksa dhe Utilitete Lek",
+     "eur": 75454
+    },
+    {
+     "label": "Kredi Euro",
+     "eur": 52839
+    },
+    {
+     "label": "Furnitorë Cash Lek",
+     "eur": 32447
+    },
+    {
+     "label": "Kredi Lek",
+     "eur": 21714
+    },
+    {
+     "label": "Furnitorë Bankë Euro",
+     "eur": 18407
+    },
+    {
+     "label": "House Use Lek",
+     "eur": 10885
+    },
+    {
+     "label": "Furnitorë Cash Euro",
+     "eur": 9331
+    }
+   ],
+   "totals": {
+    "in": 981662,
+    "out": 771808,
+    "net": 209854
+   },
+   "broken": [
+    {
+     "field": "Investime Cash Lek",
+     "value": "#REF!"
+    }
+   ],
+   "missing": [
+    "Detyrimet e Furnitoreve ne fillim te muajit  Lek",
+    "Detyrimet e Investimeve ne fillim te muajit Lek",
+    "Detyrimet e Furnitoreve ne fund te muajit  Lek",
+    "Detyrimet e Investimeve ne fund te muajit  Lek",
+    "Pagesa per tu mbledhur nga MICE Euro",
+    "Pagesa per tu mbledhur nga OTA Euro"
+   ]
+  },
+  "prev": {
+   "in": [
+    {
+     "label": "Non Cash Bankë Euro",
+     "eur": 399291
+    },
+    {
+     "label": "Allotments/garanci Euro",
+     "eur": 226461
+    },
+    {
+     "label": "Recepsion Cash Euro",
+     "eur": 204229
+    },
+    {
+     "label": "F&B Lek",
+     "eur": 62927
+    },
+    {
+     "label": "Non Cash Lek",
+     "eur": 59199
+    },
+    {
+     "label": "MICE Euro",
+     "eur": 28041
+    },
+    {
+     "label": "MICE Lek",
+     "eur": 1335
+    },
+    {
+     "label": "Recepsion Cash Lek",
+     "eur": 2
+    },
+    {
+     "label": "Disbursim Kredi Euro",
+     "eur": 0
+    }
+   ],
+   "out": [
+    {
+     "label": "Furnitorë Bankë Lek",
+     "eur": 234923
+    },
+    {
+     "label": "Paga Lek",
+     "eur": 119102
+    },
+    {
+     "label": "Investime Bankë Euro",
+     "eur": 118740
+    },
+    {
+     "label": "Investime Bankë Lek",
+     "eur": 90557
+    },
+    {
+     "label": "Taksa dhe Utilitete Lek",
+     "eur": 66732
+    },
+    {
+     "label": "Kredi Euro",
+     "eur": 52363
+    },
+    {
+     "label": "Furnitorë Cash Lek",
+     "eur": 33525
+    },
+    {
+     "label": "Kredi Lek",
+     "eur": 21724
+    },
+    {
+     "label": "Furnitorë Cash Euro",
+     "eur": 19258
+    },
+    {
+     "label": "House Use Lek",
+     "eur": 4300
+    },
+    {
+     "label": "Investime Cash Lek",
+     "eur": 2235
+    },
+    {
+     "label": "Furnitorë Bankë Euro",
+     "eur": 2178
+    }
+   ],
+   "totals": {
+    "in": 981485,
+    "out": 765637,
+    "net": 215848
+   },
+   "broken": [],
+   "missing": []
+  },
+  "groups": {
+   "investime": {
+    "ay": 287621,
+    "ly": 211532
+   },
+   "furnitore": {
+    "ay": 197496,
+    "ly": 289884
+   },
+   "paga": {
+    "ay": 125799,
+    "ly": 119102
+   },
+   "kredi": {
+    "ay": 74553,
+    "ly": 74087
+   },
+   "taksa": {
+    "ay": 75454,
+    "ly": 66732
+   },
+   "investimeShare": 37.3,
+   "furnitoreDelta": -31.9
+  },
+  "obligationsPrev": {
+   "furnitoreStart": 633465,
+   "furnitoreEnd": 541628,
+   "investimeStart": 448222,
+   "investimeEnd": 382557,
+   "miceReceivable": 9442,
+   "otaReceivable": 83375
+  },
+  "dataGaps": {
+   "brokenFormula": "Dalje Investime Cash Lek = #REF!",
+   "brokenPrevValue": 2235,
+   "emptyColumns": [
+    "Detyrimet e Furnitorëve në fillim të muajit",
+    "Detyrimet e Investimeve në fillim të muajit",
+    "Detyrimet e Furnitorëve në fund të muajit",
+    "Detyrimet e Investimeve në fund të muajit",
+    "Pagesa për t’u mbledhur nga MICE",
+    "Pagesa për t’u mbledhur nga OTA"
+   ]
+  }
+ }
+}
