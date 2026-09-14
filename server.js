@@ -1728,6 +1728,37 @@ async function drvEnsureFolder(token) {
  return id;
 }
 
+// The monthly performance report is written by the reporting agent and saved to
+// Drive; the dashboard button only has to send it. Full drive scope means this
+// token can read that file even though another app created it.
+const MONTHLY_REPORT_PREFIX = process.env.MONTHLY_REPORT_PREFIX || 'Raporti_Mujor_';
+
+async function drvFindNewest(token, prefix) {
+ const q = encodeURIComponent("name contains '" + prefix.replace(/'/g, "\\'") + "' and trashed=false and mimeType!='application/vnd.google-apps.folder'");
+ const r = await drvRequest('GET', 'https://www.googleapis.com/drive/v3/files?q=' + q
+   + '&orderBy=modifiedTime desc&pageSize=10&fields=files(id,name,modifiedTime,mimeType)', { Authorization: 'Bearer ' + token });
+ if (r.status !== 200) throw new Error('Drive search failed: ' + r.status + ' ' + r.body.slice(0, 200));
+ const j = JSON.parse(r.body || '{}');
+ return (j.files || []).filter(f => /\.html?$/i.test(f.name))[0] || null;
+}
+
+async function drvDownload(token, id) {
+ const r = await drvRequest('GET', 'https://www.googleapis.com/drive/v3/files/' + id + '?alt=media', { Authorization: 'Bearer ' + token });
+ if (r.status !== 200) throw new Error('Drive download failed: ' + r.status);
+ return r.body;
+}
+
+// Returns { name, modifiedTime, html } for the newest monthly report on Drive,
+// or null when there is none — the caller then falls back to the inline summary.
+async function latestMonthlyReport() {
+ const token = await drvAccessToken();
+ const f = await drvFindNewest(token, MONTHLY_REPORT_PREFIX);
+ if (!f) return null;
+ const html = await drvDownload(token, f.id);
+ if (!html || html.length < 500) return null;
+ return { id: f.id, name: f.name, modifiedTime: f.modifiedTime, html: html };
+}
+
 async function drvUpload(name, content, mime) {
  const token = await drvAccessToken();
  const folderId = await drvEnsureFolder(token);
@@ -2203,20 +2234,54 @@ ${repHtml}
 
  const defaultTo = 'redathana@gmail.com, ernestcaci@gmail.com, Financa@hotel-flower.com, info@hotel-flower.com, pandiolakerthi@gmail.com, rinacaci@gmail.com';
  const toField = req.body.testTo ? req.body.testTo : defaultTo;
+
+ // Prefer the full performance report the reporting agent wrote to Drive; the
+ // inline summary above is the fallback for when no report has been produced yet.
+ let bodyHtml = html, source = 'inline';
+ if (req.body.useLatest !== false) {
+ try {
+ const latest = await latestMonthlyReport();
+ if (latest) { bodyHtml = latest.html; source = latest.name; console.log('[FLOW] Monthly report from Drive:', latest.name, latest.modifiedTime); }
+ } catch(e){ console.warn('[FLOW] Drive report lookup failed, sending inline summary:', e.message); }
+ }
+
  await transporter.sendMail({
  from: `"Flower Hotels — FLOW" <${process.env.EMAIL_USER}>`,
  to: toField,
  subject: `${req.body.testTo ? '[TEST] ' : ''}FLOWER HOTELS — Raport Mujor Managerial · ${periodLabel} · ${new Date().toLocaleDateString('sq-AL',{day:'2-digit',month:'long',year:'numeric'})}`,
- html
+ html: bodyHtml
  });
 
- console.log('[FLOW] Monthly report sent:', periodLabel);
- res.json({ ok: true, message: 'Raporti Mujor u dërgua.' });
+ console.log('[FLOW] Monthly report sent:', periodLabel, '· burimi:', source);
+ res.json({ ok: true, message: 'Raporti Mujor u dërgua.', source: source });
 
  } catch(e) {
  console.error('[FLOW] Monthly report error:', e.message);
  res.status(500).json({ error: e.message });
  }
+});
+
+// GET /api/monthly-report/latest?token=… → which report the button would send
+app.get('/api/monthly-report/latest', async function(req, res){
+ if(!salesAdminOk(req, res)) return;
+ try {
+ const latest = await latestMonthlyReport();
+ res.setHeader('Cache-Control','no-store');
+ if (!latest) return res.json({ ok: true, found: false });
+ res.json({ ok: true, found: true, name: latest.name, modifiedTime: latest.modifiedTime, bytes: latest.html.length });
+ } catch(e){ res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/monthly-report/preview?token=… → the report itself, to read before sending
+app.get('/api/monthly-report/preview', async function(req, res){
+ if(!salesAdminOk(req, res)) return;
+ try {
+ const latest = await latestMonthlyReport();
+ if (!latest) return res.status(404).send('Nuk ka raport mujor në Drive.');
+ res.setHeader('Content-Type','text/html; charset=utf-8');
+ res.setHeader('Cache-Control','no-store');
+ res.send(latest.html);
+ } catch(e){ res.status(500).send(e.message); }
 });
 
 // ─── EMAIL REPORT ─────────────────────────────────────────────────────────────
