@@ -110,11 +110,11 @@ Raporti i plotë është ~100 KB HTML; Gmail e pret mesazhin mbi ~102 KB. Pranda
 Që butoni ta gjejë raportin, skedari duhet ruajtur në Drive me emër që fillon me
 `Raporti_Mujor_` dhe mbaron me `.html`.
 
-## Email te financa (Brunilda) — i planifikuar
+## Email te financa (Brunilda) — draft, pa dërgim automatik
 
-**Draft Gmail** `r-2388506497762178891` · te `financa@hotel-flower.com` · dërgohet
-**e martë 15 shtator 2026, 08:30 Tirana** (routine `trig_016fXxPq4YfvS1oCKHGDLvJi`).
-Dërgohet nga llogaria e lidhur `flowreport26@gmail.com`, nënshkruar nga COO-ja.
+**Draft Gmail** `r-2388506497762178891`, te `financa@hotel-flower.com`, në llogarinë
+`flowreport26@gmail.com`. **Dërgimi automatik u anulua** — COO-ja e dërgon vetë nga
+adresa e saj. Asnjë routine nuk e nis.
 
 Temë: *Cash Flow mujor Gusht 2026 — të dhëna që mungojnë, dhe korrigjimi i shpenzimeve
 të marketingut*. Kërkon:
@@ -127,4 +127,6 @@ të marketingut*. Kërkon:
 3. Përputhjen e fletës `MARKETING COST` me korrigjimin e bërë te Google Sheet
    **PROJEKSIONI GUSHT 2026** (`180Ip3PZNToav73B-f_mbA5zt9ARPva_M`, modifikuar 14 shtator 2026).
 
-Nëse drafti fshihet ose dërgohet me dorë, routine-i nuk duhet ta rikrijojë pa pyetur.
+**Kufizim që del përsëri:** konektori Gmail është i lidhur vetëm me
+`flowreport26@gmail.com`. Draftet dhe dërgimet dalin nga ajo adresë. Për të shkruar te
+`redathana@gmail.com` do të duhej lidhur ajo llogari veçmas si konektor.
