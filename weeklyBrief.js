@@ -5,7 +5,7 @@
 // Flower Hotels & Resorts · FLOW Dashboard
 //
 // Builds the weekly commercial brief straight from forecast.js and
-// e-mails it every Sunday at 10:00 (Europe/Tirane) over the same SMTP
+// e-mails it every Monday at 10:00 (Europe/Tirane) over the same SMTP
 // transport the daily report uses. No cloud agent, no connector
 // approval, no manual step — if the server is up, the brief goes out.
 //
@@ -20,7 +20,7 @@ const fc = require('./forecast');
 const RECIPIENTS = process.env.WEEKLY_BRIEF_TO
   || 'redathana@gmail.com, ernestcaci@gmail.com, info@hotel-flower.com';
 const SEND_HOUR = parseInt(process.env.WEEKLY_BRIEF_HOUR || '10', 10);  // local time
-const SEND_DOW  = parseInt(process.env.WEEKLY_BRIEF_DOW  || '0', 10);   // 0 = Sunday
+const SEND_DOW  = parseInt(process.env.WEEKLY_BRIEF_DOW  || '1', 10);   // 0 = Sunday, 1 = Monday
 const TZ        = process.env.WEEKLY_BRIEF_TZ || 'Europe/Tirane';
 
 const GOLD = '#c9a84c', BG = '#0a1628', CARD = '#0d1b3e', TEXT = '#c7d0e3', MUTED = '#8b9bb8';

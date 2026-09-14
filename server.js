@@ -1832,7 +1832,7 @@ app.post('/api/weekly-brief', async function(req, res){
 
 // The weekly send is driven from here, not from a cloud agent: a scheduled
 // agent session stalls the moment a connector asks for approval, and nobody is
-// watching on a Sunday morning. State lives on the disk so a restart inside the
+// watching on a Monday morning. State lives on the disk so a restart inside the
 // send window cannot send the brief twice.
 const WEEKLY_STATE_FILE = fs_sales.existsSync('/data') ? '/data/weekly_brief.json' : path_sales.join(__dirname, 'weekly_brief.json');
 function weeklyLoadState(){ try { return JSON.parse(fs_sales.readFileSync(WEEKLY_STATE_FILE,'utf8')); } catch(e){ return null; } }
