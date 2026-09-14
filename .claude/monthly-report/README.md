@@ -109,3 +109,22 @@ Raporti i plotë është ~100 KB HTML; Gmail e pret mesazhin mbi ~102 KB. Pranda
 
 Që butoni ta gjejë raportin, skedari duhet ruajtur në Drive me emër që fillon me
 `Raporti_Mujor_` dhe mbaron me `.html`.
+
+## Email te financa (Brunilda) — i planifikuar
+
+**Draft Gmail** `r-2388506497762178891` · te `financa@hotel-flower.com` · dërgohet
+**e martë 15 shtator 2026, 08:30 Tirana** (routine `trig_016fXxPq4YfvS1oCKHGDLvJi`).
+Dërgohet nga llogaria e lidhur `flowreport26@gmail.com`, nënshkruar nga COO-ja.
+
+Temë: *Cash Flow mujor Gusht 2026 — të dhëna që mungojnë, dhe korrigjimi i shpenzimeve
+të marketingut*. Kërkon:
+
+1. Rregullimin e formulës `Dalje Investime Cash Lek` që kthen `#REF!` (korrik: 223.500 Lek).
+2. Plotësimin e gjashtë kolonave bosh të gushtit — detyrimet e furnitorëve dhe të
+   investimeve në fillim e në fund të muajit, arkëtimet MICE dhe OTA. Arsyeja që jepet:
+   pagesat ndaj furnitorëve ranë nga ~€290k në ~€197k pikërisht në muajin me xhiron më të
+   lartë, dhe pa këto kolona nuk dihet nëse është ulje borxhi apo shtyrje pagese.
+3. Përputhjen e fletës `MARKETING COST` me korrigjimin e bërë te Google Sheet
+   **PROJEKSIONI GUSHT 2026** (`180Ip3PZNToav73B-f_mbA5zt9ARPva_M`, modifikuar 14 shtator 2026).
+
+Nëse drafti fshihet ose dërgohet me dorë, routine-i nuk duhet ta rikrijojë pa pyetur.
