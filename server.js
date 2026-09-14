@@ -1618,7 +1618,11 @@ app.post('/api/sales-raw', async function(req, res){
  // Copy to Drive (Flower Data Layer/exports). Failure here never blocks the local archive.
  let drive = null, driveError = null;
  try { drive = await drvUploadRaw(name, xml); console.log('[SALES-RAW] Drive copy', drive.replaced ? 'replaced' : 'created', drive.id); }
- catch(e){ driveError = e.message; console.warn('[SALES-RAW] Drive copy failed:', e.message); } beat('export-archive-agent', 'FLOW Dashboard → Google Drive', name + (drive ? ' → Drive' : ' (local only: ' + driveError + ')'), { minGapMs: 0 }); beat('pick-up-agent', 'FLOW Dashboard', 'yearly export uploaded ' + name, { minGapMs: 0 });
+ catch(e){ driveError = e.message; console.warn('[SALES-RAW] Drive copy failed:', e.message); }
+ // A fresh export means a fresh forecast — rebuild it and put forecast.json
+ // next to the export, so the agents read today's numbers, not yesterday's.
+ try { await publishForecast(buildForecastFromArchive({ force: true })); }
+ catch(e){ console.warn('[FORECAST] Publish failed:', e.message); } beat('export-archive-agent', 'FLOW Dashboard → Google Drive', name + (drive ? ' → Drive' : ' (local only: ' + driveError + ')'), { minGapMs: 0 }); beat('pick-up-agent', 'FLOW Dashboard', 'yearly export uploaded ' + name, { minGapMs: 0 });
  res.json({ ok: true, file: name, kept: files.length, drive: drive, driveError: driveError });
  } catch(e){ res.status(500).json({ error: e.message }); }
 });
@@ -1724,7 +1728,7 @@ async function drvEnsureFolder(token) {
  return id;
 }
 
-async function drvUploadRaw(name, xml) {
+async function drvUpload(name, content, mime) {
  const token = await drvAccessToken();
  const folderId = await drvEnsureFolder(token);
  const existing = await drvFindByName(token, name, folderId);
@@ -1733,16 +1737,116 @@ async function drvUploadRaw(name, xml) {
  const initUrl = existing
  ? 'https://www.googleapis.com/upload/drive/v3/files/' + existing + '?uploadType=resumable'
  : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable';
- const data = Buffer.from(xml, 'utf8');
+ const data = Buffer.from(content, 'utf8');
  const init = await drvRequest(existing ? 'PATCH' : 'POST', initUrl, {
  Authorization: 'Bearer ' + token, 'Content-Type': 'application/json; charset=UTF-8', 'Content-Length': Buffer.byteLength(metaStr),
- 'X-Upload-Content-Type': 'application/vnd.ms-excel', 'X-Upload-Content-Length': data.length
+ 'X-Upload-Content-Type': mime, 'X-Upload-Content-Length': data.length
  }, metaStr);
  if (init.status !== 200 || !init.headers.location) throw new Error('resumable init failed: ' + init.status + ' ' + init.body.slice(0, 200));
- const put = await drvRequest('PUT', init.headers.location, { 'Content-Type': 'application/vnd.ms-excel', 'Content-Length': data.length }, data);
+ const put = await drvRequest('PUT', init.headers.location, { 'Content-Type': mime, 'Content-Length': data.length }, data);
  if (put.status !== 200 && put.status !== 201) throw new Error('upload failed: ' + put.status + ' ' + put.body.slice(0, 200));
  const j = JSON.parse(put.body || '{}');
  return { id: j.id, replaced: !!existing, folder: folderId };
+}
+
+function drvUploadRaw(name, xml) { return drvUpload(name, xml, 'application/vnd.ms-excel'); }
+
+// ─── AGJENTI I PARASHIKIMIT (forecast agent) ─────────────────────────────────
+// The weekly brief used to call an /api/forecast endpoint that was never built,
+// and the cloud agents that write the brief cannot reach this server at all.
+// So the forecast is computed here from the archived reservation export and
+// published to Drive as forecast.json, where every agent can read it.
+const forecastEngine = require('./forecast');
+const weeklyBrief = require('./weeklyBrief');
+const FORECAST_FILE = fs_sales.existsSync('/data') ? '/data/forecast.json' : path_sales.join(__dirname, 'forecast.json');
+const FORECAST_DRIVE_NAME = process.env.FORECAST_DRIVE_NAME || 'forecast.json';
+let forecastCache = null; // { key: '<file>@<asOf>', data }
+
+function buildForecastFromArchive(opts) {
+ const files = rawList();
+ if (!files.length) throw new Error('Nuk ka asnjë eksport të arkivuar (POST /api/sales-raw).');
+ const name = (opts && opts.file) || files[files.length - 1];
+ const asOf = (opts && opts.asOf) || name.slice(11, 21);
+ const key = name + '@' + asOf;
+ if (!(opts && opts.force) && forecastCache && forecastCache.key === key) return forecastCache.data;
+ const xml = fs_sales.readFileSync(path_sales.join(RAW_DIR, name), 'utf8');
+ const rows = forecastEngine.parseExportXml(xml);
+ const data = forecastEngine.buildForecast(rows, { asOf: asOf, sourceFile: name });
+ forecastCache = { key: key, data: data };
+ try { fs_sales.writeFileSync(FORECAST_FILE, JSON.stringify(data), 'utf8'); } catch(e){ console.warn('[FORECAST] Save error:', e.message); }
+ console.log('[FORECAST] Built from', name, '—', rows.length, 'rezervime, asOf', asOf);
+ return data;
+}
+
+// Read the forecast without recomputing it — used by the weekly scheduler, and
+// falls back to whatever was last written to disk if the archive is empty.
+function currentForecast() {
+ try { return buildForecastFromArchive(); }
+ catch(e) {
+ try { return JSON.parse(fs_sales.readFileSync(FORECAST_FILE, 'utf8')); }
+ catch(_) { console.warn('[FORECAST]', e.message); return null; }
+ }
+}
+
+async function publishForecast(data) {
+ const res = await drvUpload(FORECAST_DRIVE_NAME, JSON.stringify(data, null, 1), 'application/json');
+ console.log('[FORECAST] Drive copy', res.replaced ? 'replaced' : 'created', res.id);
+ beat('forecast-agent', 'FLOW Dashboard → Google Drive', 'forecast.json ' + data.asOf + ' (' + data.reservations + ' rezervime)', { minGapMs: 0 });
+ return res;
+}
+
+// GET /api/forecast?token=…            → the forecast as JSON
+// GET /api/forecast?token=…&force=1    → recompute even if cached
+app.get('/api/forecast', function(req, res){
+ if(!salesAdminOk(req, res)) return;
+ try {
+ res.setHeader('Cache-Control','no-store');
+ res.json(buildForecastFromArchive({ force: req.query.force === '1', file: req.query.file, asOf: req.query.asOf }));
+ } catch(e){ res.status(503).json({ error: e.message }); }
+});
+
+// POST /api/forecast/publish {token}   → recompute and copy forecast.json to Drive
+app.post('/api/forecast/publish', async function(req, res){
+ if(!salesAdminOk(req, res)) return;
+ try {
+ const data = buildForecastFromArchive({ force: true });
+ const drive = await publishForecast(data);
+ res.json({ ok: true, asOf: data.asOf, drive: drive });
+ } catch(e){ res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/weekly-brief {token, preview?, to?} → build (and send) the weekly brief
+app.post('/api/weekly-brief', async function(req, res){
+ if(!salesAdminOk(req, res)) return;
+ try {
+ const data = buildForecastFromArchive({ force: true });
+ if (req.body && req.body.preview) {
+ res.setHeader('Content-Type','text/html; charset=utf-8');
+ return res.send(weeklyBrief.buildBriefHtml(data));
+ }
+ const info = await weeklyBrief.sendBrief(data, { to: req.body && req.body.to, test: !!(req.body && req.body.test) });
+ weeklySaveState({ lastSent: new Date().toISOString().slice(0,10), asOf: data.asOf, sentAt: new Date().toISOString(), manual: true });
+ res.json({ ok: true, asOf: data.asOf, subject: weeklyBrief.subjectFor(data), messageId: info.messageId });
+ } catch(e){ res.status(500).json({ error: e.message }); }
+});
+
+// The weekly send is driven from here, not from a cloud agent: a scheduled
+// agent session stalls the moment a connector asks for approval, and nobody is
+// watching on a Sunday morning. State lives on the disk so a restart inside the
+// send window cannot send the brief twice.
+const WEEKLY_STATE_FILE = fs_sales.existsSync('/data') ? '/data/weekly_brief.json' : path_sales.join(__dirname, 'weekly_brief.json');
+function weeklyLoadState(){ try { return JSON.parse(fs_sales.readFileSync(WEEKLY_STATE_FILE,'utf8')); } catch(e){ return null; } }
+function weeklySaveState(st){ try { fs_sales.writeFileSync(WEEKLY_STATE_FILE, JSON.stringify(st), 'utf8'); } catch(e){ console.warn('[WEEKLY] State save error:', e.message); } }
+if (process.env.WEEKLY_BRIEF_ENABLED !== '0') {
+ weeklyBrief.startScheduler({
+ getForecast: async function(){
+ const data = currentForecast();
+ if (data) { try { await publishForecast(data); } catch(e){ console.warn('[WEEKLY] Drive publish failed:', e.message); } }
+ return data;
+ },
+ loadState: weeklyLoadState,
+ saveState: weeklySaveState,
+ });
 }
 
 // ─── MONTHLY MANAGEMENT REPORT ────────────────────────────────────────────────
