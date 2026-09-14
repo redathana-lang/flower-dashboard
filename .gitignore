@@ -1,3 +1,7 @@
 node_modules/
 data.json
 .env
+sales-raw/
+forecast.json
+weekly_brief.json
+package-lock.json
