@@ -1,0 +1,201 @@
+<title>Flower AI Galaxy</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#050b18;--card:rgba(10,22,44,.86);--line:#1e3a5f;--ink:#e8eaf6;--text:#c7d0e3;--muted:#8fa3c7;--dim:#6b7fa3;--gold:#c9a84c;
+ --live:#22c55e;--build:#3b82f6;--plan:#8fa3c7;--warn:#ef4444;
+ --display:'Sora',system-ui,sans-serif;--body:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:14px;overflow:hidden}
+#space{position:fixed;inset:0;display:block;cursor:grab}
+#space.drag{cursor:grabbing}
+.top{position:fixed;left:22px;top:18px;pointer-events:none}
+.top .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.top h1{font-family:var(--display);font-size:26px;font-weight:700;color:var(--gold);margin:2px 0 4px;letter-spacing:-.01em}
+.top p{margin:0;color:var(--muted);font-size:13px;max-width:52ch}
+.legend{position:fixed;right:22px;top:22px;display:flex;gap:14px;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+#src{border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:10.5px;color:var(--dim)}#src.live{color:var(--live);border-color:var(--live)}
+.edit{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}.edit summary{cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--gold)}.edit label{display:block;font-size:11px;color:var(--dim);margin-top:6px}.edit input,.edit select,.edit textarea{display:block;width:100%;margin-top:2px;background:#0a1628;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 7px;font:inherit;font-size:12px}.edit textarea{min-height:52px}.edit .row{display:flex;gap:8px;margin-top:8px}.edit button{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--gold);background:none;color:var(--gold);cursor:pointer}.edit button.danger{border-color:var(--warn);color:var(--warn)}.edit .msg{font-size:11px;color:var(--muted);margin-top:6px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;box-shadow:0 0 8px currentColor}
+.dot.live{background:var(--live);color:var(--live)}.dot.build{background:var(--build);color:var(--build)}.dot.plan{background:var(--plan);color:var(--plan)}
+.stages{position:fixed;left:22px;bottom:18px;display:flex;gap:8px;flex-wrap:wrap;max-width:70vw}
+.stages button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);background:rgba(10,22,44,.7);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;backdrop-filter:blur(6px)}
+.stages button.on,.stages button:hover{color:var(--ink);border-color:var(--gold)}
+.stages button i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:middle}
+.card{position:fixed;right:22px;bottom:18px;width:min(380px,calc(100vw - 44px));max-height:min(62vh,560px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(10px);box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(12px);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+.card.show{opacity:1;transform:none;pointer-events:auto}
+.card-h{padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center}
+.card-h .orb{width:14px;height:14px;border-radius:50%;flex:none;box-shadow:0 0 14px currentColor}
+.card-h h2{font-family:var(--display);font-size:16px;margin:0;color:var(--ink);font-weight:600}
+.card-h .sub{font-size:12px;color:var(--muted)}
+.card-h .x{margin-left:auto;background:none;border:0;color:var(--dim);font-size:18px;cursor:pointer;line-height:1}
+.card ul{list-style:none;margin:0;padding:0}
+.card li{padding:10px 16px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:8px 1fr auto;gap:0 10px;align-items:start}
+.card li:last-child{border-bottom:0}
+.card li .st{width:8px;height:8px;border-radius:50%;margin-top:6px;box-shadow:0 0 8px currentColor}
+.card li .n{color:var(--ink);font-weight:600;font-size:13px}
+.card li .s{font-family:var(--mono);font-size:10.5px;color:var(--gold);letter-spacing:.04em;margin-top:2px}
+.card li .d{color:var(--muted);font-size:12px;margin-top:2px}
+.card li .w{font-family:var(--mono);font-size:10.5px;color:var(--text);text-align:right;white-space:nowrap}
+.card li .w small{display:block;color:var(--dim)}
+.card .miss{padding:10px 16px;font-size:12px;color:var(--text);background:rgba(239,68,68,.07)}
+.card .miss b{color:var(--warn);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:3px}
+.card .agentcard{padding:14px 16px}
+.card .agentcard .d{color:var(--muted);font-size:13px;margin:6px 0 10px}
+.pill{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid}
+.pill.live{color:var(--live);border-color:var(--live)}.pill.build{color:var(--build);border-color:var(--build)}.pill.plan{color:var(--plan);border-color:var(--plan)}.pill.stale{color:#ef4444;border-color:#ef4444}
+.hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.06em;pointer-events:none}
+@media (max-width:820px){.top p{display:none}.hint{display:none}.stages{max-width:100vw;bottom:auto;top:70px}.card{bottom:12px}}
+@media (prefers-reduced-motion:reduce){.card{transition:none}}
+</style>
+
+<canvas id="space"></canvas>
+<div class="top"><div class="eyebrow">Flower Hotels &amp; Resorts · Golem</div><h1>Flower AI Galaxy</h1><p>Every system and agent Flower runs on, as one living map. The core is the shared data layer; the six arms are the workflow — data intake to feedback. Click any star.</p></div>
+<div class="legend"><span id="src" title="registry version">registry · 2026-09-14</span><span><i class="dot live"></i>Live</span><span><i class="dot build"></i>Në ndërtim</span><span><i class="dot plan"></i>Planifikuar</span><span><i class="dot" style="background:#ef4444;color:#ef4444"></i>Vonesë</span></div>
+<div class="stages" id="stages"></div>
+<div class="hint">drag to move · scroll to zoom · click a star</div>
+<div class="card" id="card"></div>
+
+<script id="registry" type="application/json">
+{"updatedAt": "2026-09-14T16:22:01Z", "stages": [{"id": 1, "name": "Data intake", "sq": "Marrja e të dhënave", "color": "#3b7be0", "missing": "PMS developers still owe the yearly export by email. Phone numbers are absent from exports."}, {"id": 2, "name": "Pre-processing", "sq": "Pastrimi i të dhënave", "color": "#159a8c", "missing": "Kompania field is empty for 2026 bookings, so MICE cannot be separated from Direct in the PMS."}, {"id": 3, "name": "Feature extraction", "sq": "Nxjerrja e treguesve", "color": "#8f72e6", "missing": "Wholesaler release dates are not in the export — allotment exposure is still checked by hand."}, {"id": 4, "name": "Decision & prediction", "sq": "Vendimmarrja dhe parashikimi", "color": "#c9a84c", "missing": ""}, {"id": 5, "name": "Output", "sq": "Rezultati", "color": "#dd6a2a", "missing": ""}, {"id": 6, "name": "Feedback & reflection", "sq": "Reagimi dhe reflektimi", "color": "#22c55e", "missing": "Scheduled runs stall on connector approval: the 13 Sep weekly brief and the daily registry sync both fired on time, then waited for a permission prompt nobody answered. Outcomes of recommendations are not yet written back — the log records proposals, not results."}], "agents": {"attendance-agent": {"d": "Collects staff days, leave and contract data entered by managers.", "intervalH": 30, "n": "Attendance Agent", "order": 4, "s": "Flow HR", "st": "live", "stage": 1, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Daily", "w2": "managers"}, "audience-builder-agent": {"d": "Builds phone-first audiences for Meta Custom Audiences and WhatsApp lists.", "intervalH": 192, "n": "Audience Builder Agent", "order": 5, "s": "Data Layer → Meta · WhatsApp", "st": "plan", "stage": 3, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Weekly", "w2": "phase 2"}, "bank-statement-agent": {"d": "Takes the month-end statement uploads.", "intervalH": 960, "n": "Bank Statement Agent", "order": 5, "s": "Finance · bank dashboard", "st": "live", "stage": 1, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Monthly", "w2": "manual"}, "booking-attribution-agent": {"d": "Assigns each booking to its source (WhatsApp, Meta, website, OTA, wholesaler) for marketing ROI.", "intervalH": 192, "n": "Booking Attribution Agent", "order": 3, "s": "Revenue Management", "st": "build", "stage": 2, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Weekly", "w2": "planned run"}, "campaign-drafting-agent": {"d": "MICE campaign from the previous-client database; October packages; Oct–Dec thematic programme — drafts only.", "n": "Campaign Drafting Agent", "order": 4, "s": "Meta · WhatsApp (via Gonxhe)", "st": "plan", "stage": 5, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Per campaign", "w2": "phase 2"}, "cash-position-agent": {"d": "Cash position and month-end review from statements.", "intervalH": 960, "n": "Cash Position Agent", "order": 3, "s": "Finance · bank dashboard", "st": "live", "stage": 4, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Monthly", "w2": "on upload"}, "commercial-analyst-agent": {"d": "Reads export + workbook, compares pace, segments and rates to last year, writes the weekly judgement.", "intervalH": 192, "lastNote": "13 Sep brief built from workbook + daily reports; Forecast API blocked (403), no forecast columns", "lastRun": "2026-09-13T17:47:29Z", "n": "Commercial Analyst Agent", "nextRun": "2026-09-20T08:00:00Z", "order": 0, "s": "Decision & Prediction (Claude)", "st": "live", "stage": 4, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "Sunday 10:00", "w2": "Europe/Tirane"}, "contract-documents-agent": {"d": "Employment contracts and payroll documents.", "intervalH": 960, "n": "Contract Documents Agent", "order": 3, "s": "Flow HR", "st": "live", "stage": 5, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Monthly", "w2": "managers"}, "contract-terms-agent": {"d": "Turns Itaka, W2M and wholesaler contracts into structured rates, guarantees and release rules.", "n": "Contract Terms Agent", "order": 6, "s": "Commercial · Google Drive", "st": "build", "stage": 1, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Per contract", "w2": "Itaka done"}, "daily-report-agent": {"d": "Receives the daily PMS report every morning and hands it to the parser.", "intervalH": 30, "lastNote": "gmail-worker running · last check 18:03 · ok — processed 1 email(s)", "lastRun": "2026-09-10T18:03:31Z", "n": "Daily Report Agent", "order": 0, "s": "Trinisoft PMS → Gmail (flowreport26)", "st": "live", "stage": 1, "updatedAt": "2026-09-10T18:10:00Z", "updatedBy": "registry-sync", "w": "Daily", "w2": "automatic"}, "dashboard-agent": {"d": "Pick-up, season snapshot, housekeeping, sales state — always on.", "intervalH": 24, "lastNote": "dashboard responding", "lastRun": "2026-09-10T18:08:00Z", "n": "Dashboard Agent", "order": 1, "s": "FLOW Dashboard", "st": "live", "stage": 5, "updatedAt": "2026-09-10T18:10:00Z", "updatedBy": "registry-sync", "w": "Always on", "w2": "onrender.com"}, "data-cleaning-agent": {"d": "Valid nights 1–30, priced > 0, channel→segment map, Itaka at contract value, wing mapping.", "intervalH": 192, "n": "Data Cleaning Agent", "order": 2, "s": "Data Layer · definitions.json", "st": "live", "stage": 2, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Every run", "w2": "shared rules"}, "data-layer-agent": {"d": "Bookings 2025+2026, Nightly, Monthly, Pace, Segments — one truth for every agent.", "intervalH": 192, "n": "Data Layer Agent", "order": 0, "s": "Google Sheets · Flower Shared Data Layer", "st": "live", "stage": 3, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Weekly", "w2": "v1.2"}, "decision-log-agent": {"d": "decision_log.csv — each week’s top recommendation with status proposed → done / dropped.", "intervalH": 192, "lastNote": "13 Sep row appended: MICE campaign for Nov–Dec, status proposed", "lastRun": "2026-09-13T17:53:11Z", "n": "Decision Log Agent", "order": 0, "s": "Google Drive · briefs", "st": "live", "stage": 6, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "Weekly", "w2": "appended"}, "export-archive-agent": {"d": "Takes each upload of the yearly \"Prenotimet në recepsion\" export, archives it and copies it to Drive.", "intervalH": 30, "lastNote": "Prenotimet_2026-09-12.xls → Drive · 15.0 MB · verified in Drive", "lastRun": "2026-09-12T14:29:14Z", "n": "Export Archive Agent", "order": 1, "s": "FLOW Dashboard → Google Drive", "st": "live", "stage": 1, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "Daily", "w2": "on upload"}, "forecast-accuracy-agent": {"d": "Compares predicted occupancy with the final result; recalibrates pick-up curves.", "intervalH": 960, "n": "Forecast Accuracy Agent", "order": 5, "s": "Decision & Prediction (Claude)", "st": "plan", "stage": 6, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Monthly", "w2": "phase 2"}, "forecast-agent": {"d": "On-the-books + last year’s pick-up → implied occupancy per remaining month, split by segment from Burimi Info. Flags months under 60% and, separately, months heading below what last year actually achieved. Tested Node tool at Desktop/flower-forecast, wired into section 3.2 of the weekly brief.", "intervalH": 192, "lastNote": "13 Sep: /api/forecast unreachable from the run (403 at the proxy) — the weekly brief shipped without forecast columns", "lastRun": "2026-09-08T14:00:00Z", "n": "Forecast Agent", "order": 2, "s": "Decision & Prediction → weekly brief", "st": "build", "stage": 4, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "Weekly", "w2": "pending skill sync"}, "guest-advisor-agent": {"d": "Decides how to answer each guest and when to hand over to reception.", "intervalH": 2, "n": "Guest Advisor Agent", "order": 4, "s": "Gonxhe CRM", "st": "live", "stage": 4, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Continuous", "w2": "24/7"}, "guest-feedback-agent": {"d": "Collects what guests say after the stay and flags recurring issues.", "intervalH": 2, "n": "Guest Feedback Agent", "order": 4, "s": "Gonxhe CRM", "st": "live", "stage": 6, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Continuous", "w2": "24/7"}, "guest-inbox-agent": {"d": "Captures guest questions, requests and booking intent from every conversation.", "intervalH": 2, "n": "Guest Inbox Agent", "order": 3, "s": "Hotel Concierge-Web (Gonxhe)", "st": "live", "stage": 1, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Continuous", "w2": "24/7"}, "guest-profile-agent": {"d": "Brings guest history and conversation signals from Gonxhe into the shared data layer.", "intervalH": 192, "n": "Guest Profile Agent", "order": 4, "s": "Gonxhe CRM → Data Layer", "st": "plan", "stage": 3, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Weekly", "w2": "phase 2"}, "guest-reply-agent": {"d": "Answers and booking assistance to guests.", "intervalH": 2, "n": "Guest Reply Agent", "order": 2, "s": "Hotel Concierge-Web (Gonxhe)", "st": "live", "stage": 5, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Continuous", "w2": "24/7"}, "monthly-model-agent": {"d": "Authoritative monthly revenue incl. Itaka guarantee, segments, source markets, marketing cost.", "intervalH": 30, "lastNote": "workbook modified 13 Sep 04:04", "lastRun": "2026-09-13T04:04:10Z", "n": "Monthly Model Agent", "order": 1, "s": "Power BI workbook", "st": "live", "stage": 3, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "Daily", "w2": "automatic"}, "pace-baseline-agent": {"d": "2025 bookings by week booked, for same-date comparison every week.", "n": "Pace Baseline Agent", "order": 3, "s": "Data Layer · Google Drive", "st": "live", "stage": 3, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Yearly", "w2": "rebuilt Jan"}, "payroll-agent": {"d": "Monthly salary calculation from attendance and contracts.", "intervalH": 960, "n": "Payroll Agent", "order": 6, "s": "Flow HR", "st": "live", "stage": 4, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Monthly", "w2": "managers"}, "pick-up-agent": {"d": "Daily pick-up, occupancy vs the capacity calendar, season snapshot.", "intervalH": 30, "lastNote": "dashboard responding", "lastRun": "2026-09-10T18:08:00Z", "n": "Pick-up Agent", "order": 2, "s": "FLOW Dashboard", "st": "live", "stage": 3, "updatedAt": "2026-09-10T18:10:00Z", "updatedBy": "registry-sync", "w": "Daily", "w2": "on upload"}, "registry-sync-agent": {"d": "Checks Drive, Gmail, the gmail-worker and the FLOW dashboard every morning and writes verified last-run times into this map. Never writes a timestamp it could not verify, so a star that stays red is genuinely not running.", "intervalH": 30, "lastNote": "13 Sep 05:04: fired, then blocked on a Gmail permission prompt with 6 more queued — wrote nothing", "lastRun": "2026-09-10T18:10:00Z", "n": "Registry Sync Agent", "order": 6, "s": "Claude scheduled task → Flower AI Galaxy", "st": "build", "stage": 6, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "Daily 07:00", "w2": "Europe/Tirane"}, "release-reviewer": {"d": "Every draft is read and released (or corrected) before it leaves the desk.", "n": "Release Reviewer", "order": 1, "s": "Mireda", "st": "live", "stage": 6, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Per draft", "w2": "human loop"}, "reminder-agent": {"d": "TBO go-live check (10 Sep), DKIM/DMARC check (3 Oct).", "lastNote": "14 Sep: the 3 Oct DKIM/DMARC reminder exists as a one-off Routine; the TBO check never fired", "n": "Reminder Agent", "order": 5, "s": "Claude scheduled tasks", "st": "build", "stage": 5, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "One-off", "w2": "1 scheduled"}, "report-parser-agent": {"d": "Parses each daily email, labels it \"processed-report\", writes the rows to Sheets.", "intervalH": 30, "lastNote": "gmail-worker running · last processed 14:38 · 621 checks", "lastRun": "2026-09-10T18:03:31Z", "n": "Report Parser Agent", "order": 0, "s": "FLOWREPORT (Apps Script)", "st": "live", "stage": 2, "updatedAt": "2026-09-10T18:10:00Z", "updatedBy": "registry-sync", "w": "Daily", "w2": "on email"}, "reputation-agent": {"d": "Review scores — the guest side of the loop.", "intervalH": 960, "n": "Reputation Agent", "order": 3, "s": "Power BI workbook · reviews", "st": "live", "stage": 6, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Monthly", "w2": "automatic"}, "reservation-sync-agent": {"d": "Every new reservation entered in Trinisoft is registered in Cloudbeds automatically.", "intervalH": 2, "n": "Reservation Sync Agent", "order": 2, "s": "Trinisoft PMS → Cloudbeds", "st": "live", "stage": 1, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Real-time", "w2": "automatic"}, "revenue-manager-agent": {"d": "Rate anomalies by room type, OTA vs direct share of remaining inventory, allotment release exposure.", "intervalH": 192, "n": "Revenue Manager Agent", "order": 1, "s": "Revenue Management (Claude)", "st": "build", "stage": 4, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Weekly", "w2": "inside brief"}, "rule-keeper-agent": {"d": "Corrections become rules in the skill (wording, chart method, segment names).", "n": "Rule Keeper Agent", "order": 2, "s": "Claude skills", "st": "live", "stage": 6, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "As needed", "w2": "last 6 Sep"}, "upsell-agent": {"d": "Offer and upgrade suggestions during conversations, priced from the data layer.", "intervalH": 2, "n": "Upsell Agent", "order": 5, "s": "Gonxhe CRM ← Data Layer", "st": "plan", "stage": 4, "updatedAt": "2026-09-06T09:30:00Z", "updatedBy": "claude", "w": "Continuous", "w2": "phase 2"}, "weekly-report-agent": {"d": "FLOW · Raporti Komercial Javor with charts to Mireda, Ernest and info@ — released by Mireda.", "intervalH": 192, "lastNote": "13 Sep brief drafted to 3 recipients, awaiting release; the 10:00 run stalled on the draft approval", "lastRun": "2026-09-13T17:47:29Z", "n": "Weekly Report Agent", "nextRun": "2026-09-20T08:00:00Z", "order": 0, "s": "Decision & Prediction → Gmail", "st": "live", "stage": 5, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "Sunday 10:00", "w2": "3 recipients"}, "workbook-writer-agent": {"d": "Updates daily performance, market segments and P&L tabs.", "intervalH": 30, "lastNote": "workbook written 13 Sep 04:04", "lastRun": "2026-09-13T04:04:10Z", "n": "Workbook Writer Agent", "order": 1, "s": "gmail-worker → Power BI workbook", "st": "live", "stage": 2, "updatedAt": "2026-09-14T16:22:01Z", "updatedBy": "weekly-run", "w": "Daily", "w2": "automatic"}}}
+</script>
+<script>
+const REG=JSON.parse(document.getElementById('registry').textContent);
+const STAGES=REG.stages.map(st=>Object.assign({},st,{agents:Object.entries(REG.agents).filter(([id,a])=>+a.stage===st.id).map(([id,a])=>Object.assign({id},a)).sort((p,q)=>(p.order||0)-(q.order||0)||p.n.localeCompare(q.n))}));
+const STC={live:'#22c55e',build:'#3b82f6',plan:'#8fa3c7',stale:'#ef4444'};
+const LBL={live:'Live',build:'Në ndërtim',plan:'Planifikuar',stale:'Vonesë — nuk ka ekzekutuar'};
+
+// ---------- scene ----------
+const cv=document.getElementById('space'),ctx=cv.getContext('2d');
+let W,H,DPR=Math.min(2,devicePixelRatio||1);
+let cam={x:0,y:0,z:1},drag=null,hover=null,selected=null,filter=null,t=0;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function resize(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);cam.z=Math.min(1,Math.max(.5,Math.min(W,H)/980));}
+addEventListener('resize',resize);resize();
+
+// starfield
+const stars=[];for(let i=0;i<520;i++)stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.3+.2,p:Math.random()*6.28,s:.3+Math.random()*.7});
+// nodes (rebuilt whenever the registry changes)
+let nodes=[],edges=[],pulses=[];const core={id:'core',x:0,y:0,r:26,label:'FLOWER AI',sub:'shared data layer',type:'core'};
+let SRC='static';
+function build(){
+  nodes=[core];edges=[];pulses=[];
+  STAGES.forEach((s,i)=>{
+    const a=-Math.PI/2+i*2*Math.PI/6; const R=250;
+    const sn={id:'s'+s.id,x:Math.cos(a)*R,y:Math.sin(a)*R,r:15,label:s.name,sub:s.sq,type:'stage',stage:s,color:s.color,ang:a,phase:i*1.1};
+    nodes.push(sn);edges.push([core,sn,'trunk']);
+    const k=s.agents.length;
+    s.agents.forEach((ag,j)=>{
+      const spread=Math.PI/3.4; const aa=a-spread/2+spread*(k===1?.5:j/(k-1)); const rr=R+85+((j%2)*46)+(j*7);
+      const an={id:ag.id,x:Math.cos(aa)*rr,y:Math.sin(aa)*rr,r:ag.st==='live'?6:4.5,label:ag.n,sub:ag.s,type:'agent',agent:ag,stage:s,color:STC[health(ag)],phase:(j*2.3+i)%6.28,drift:.6+((j*7)%10)/10};
+      nodes.push(an);edges.push([sn,an,'branch']);
+    });
+  });
+  for(let i=0;i<6;i++){edges.push([nodes.find(n=>n.id==='s'+(i+1)),nodes.find(n=>n.id==='s'+((i+1)%6+1)),'ring']);}
+  edges.forEach((e,i)=>{if(e[2]!=='ring')pulses.push({e,p:(i*.37)%1,v:(e[2]==='trunk'?.0035:.0025)*(0.7+((i*13)%7)/10),dir:e[2]==='trunk'?1:-1});});
+  if(selected){const again=nodes.find(n=>n.id===selected.id);selected=again||null;if(selected)select(selected);}
+  renderStageButtons();
+}
+// health: a live agent whose last run is older than 1.5× its expected interval shows as stale
+function health(ag){ if(ag.st!=='live'||!ag.intervalH||!ag.lastRun)return ag.st; const age=(Date.now()-Date.parse(ag.lastRun))/36e5; return age>ag.intervalH*1.5?'stale':'live'; }
+build();
+function pos(n){ // gentle drift
+  if(n.type==='core')return [n.x,n.y];
+  const d=n.type==='agent'?n.drift*4:2.2;
+  return [n.x+Math.sin(t*.0006+n.phase)*d,n.y+Math.cos(t*.0005+n.phase*1.3)*d];
+}
+function toScreen(x,y){return [W/2+(x+cam.x)*cam.z,H/2+(y+cam.y)*cam.z];}
+function visible(n){ if(!filter)return true; if(n.type==='core')return true; return n.stage&&n.stage.id===filter; }
+
+function draw(){
+  t+=reduce?0:16;
+  ctx.clearRect(0,0,W,H);
+  // nebula
+  const g=ctx.createRadialGradient(W/2+cam.x*cam.z,H/2+cam.y*cam.z,10,W/2+cam.x*cam.z,H/2+cam.y*cam.z,Math.max(W,H)*.7);
+  g.addColorStop(0,'rgba(201,168,76,.10)');g.addColorStop(.25,'rgba(59,123,224,.07)');g.addColorStop(.6,'rgba(143,114,230,.03)');g.addColorStop(1,'rgba(5,11,24,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // stars
+  for(const s of stars){const tw=.5+.5*Math.sin(t*.002*s.s+s.p);ctx.globalAlpha=.25+.55*tw;ctx.fillStyle='#dfe6ff';ctx.beginPath();ctx.arc(s.x*W,s.y*H,s.r,0,6.28);ctx.fill();}
+  ctx.globalAlpha=1;
+  // edges
+  for(const [a,b,kind] of edges){
+    const va=visible(a)&&visible(b); const [x1,y1]=toScreen(...pos(a)),[x2,y2]=toScreen(...pos(b));
+    ctx.beginPath();ctx.moveTo(x1,y1);
+    if(kind==='ring'){const [cx,cy]=toScreen(0,0);const mx=(x1+x2)/2,my=(y1+y2)/2;const dx=mx-cx,dy=my-cy;const L=Math.hypot(dx,dy)||1;ctx.quadraticCurveTo(cx+dx/L*(L*1.16),cy+dy/L*(L*1.16),x2,y2);ctx.strokeStyle='rgba(201,168,76,'+(va?.28:.06)+')';ctx.setLineDash([4,6]);ctx.lineWidth=1;}
+    else{ctx.lineTo(x2,y2);ctx.strokeStyle=kind==='trunk'?'rgba(201,168,76,'+(va?.35:.06)+')':'rgba(143,163,199,'+(va?.28:.05)+')';ctx.setLineDash([]);ctx.lineWidth=kind==='trunk'?1.4:.9;}
+    ctx.stroke();ctx.setLineDash([]);
+  }
+  // pulses
+  if(!reduce)for(const p of pulses){const [a,b]=p.e;if(!(visible(a)&&visible(b)))continue;p.p+=p.v;if(p.p>1)p.p=0;const [x1,y1]=toScreen(...pos(a)),[x2,y2]=toScreen(...pos(b));const q=p.dir>0?p.p:1-p.p;const x=x1+(x2-x1)*q,y=y1+(y2-y1)*q;ctx.fillStyle='rgba(232,234,246,.9)';ctx.shadowColor='#e8eaf6';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(x,y,1.6,0,6.28);ctx.fill();ctx.shadowBlur=0;}
+  // nodes
+  for(const n of nodes){
+    const [x,y]=toScreen(...pos(n)); const vis=visible(n); const isSel=selected===n,isHov=hover===n;
+    if(n.type==='core'){
+      const rg=ctx.createRadialGradient(x,y,0,x,y,n.r*cam.z*3.2);rg.addColorStop(0,'rgba(226,195,106,.55)');rg.addColorStop(.4,'rgba(201,168,76,.18)');rg.addColorStop(1,'rgba(201,168,76,0)');ctx.fillStyle=rg;ctx.beginPath();ctx.arc(x,y,n.r*cam.z*3.2,0,6.28);ctx.fill();
+      ctx.fillStyle='#e2c36a';ctx.shadowColor='#c9a84c';ctx.shadowBlur=30*cam.z;ctx.beginPath();ctx.arc(x,y,n.r*cam.z,0,6.28);ctx.fill();ctx.shadowBlur=0;
+      ctx.fillStyle='#0a1628';ctx.font=`700 ${11*cam.z}px Sora`;ctx.textAlign='center';ctx.fillText('FLOWER',x,y-2*cam.z);ctx.font=`600 ${7.5*cam.z}px "IBM Plex Mono"`;ctx.fillText('AI CORE',x,y+8*cam.z);
+      ctx.fillStyle='rgba(143,163,199,.9)';ctx.font=`${10*cam.z}px "IBM Plex Mono"`;ctx.fillText('shared data layer',x,y+n.r*cam.z+16*cam.z);
+    }else if(n.type==='stage'){
+      const R=n.r*cam.z*(isSel||isHov?1.25:1);
+      const rg=ctx.createRadialGradient(x,y,0,x,y,R*3);rg.addColorStop(0,hex(n.color,vis?.45:.1));rg.addColorStop(1,hex(n.color,0));ctx.fillStyle=rg;ctx.beginPath();ctx.arc(x,y,R*3,0,6.28);ctx.fill();
+      ctx.fillStyle=vis?n.color:hex(n.color,.25);ctx.shadowColor=n.color;ctx.shadowBlur=vis?22*cam.z:0;ctx.beginPath();ctx.arc(x,y,R,0,6.28);ctx.fill();ctx.shadowBlur=0;
+      ctx.strokeStyle='rgba(232,234,246,.6)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,R+4*cam.z,0,6.28);ctx.stroke();
+      ctx.fillStyle=vis?'#e8eaf6':'rgba(232,234,246,.3)';ctx.font=`600 ${12.5*cam.z}px Sora`;ctx.textAlign='center';ctx.fillText(n.label,x,y+R+18*cam.z);
+      const live=n.stage.agents.filter(a=>a.st==='live').length;ctx.fillStyle=vis?'rgba(143,163,199,.95)':'rgba(143,163,199,.3)';ctx.font=`${9.5*cam.z}px "IBM Plex Mono"`;ctx.fillText(`0${n.stage.id} · ${live}/${n.stage.agents.length} live`,x,y+R+31*cam.z);
+    }else{
+      const R=n.r*cam.z*(isSel||isHov?1.6:1);const tw=.75+.25*Math.sin(t*.003+n.phase);
+      const hs=health(n.agent);n.color=STC[hs];if(hs==='plan'){ctx.strokeStyle=vis?hex(n.color,.9):hex(n.color,.2);ctx.setLineDash([2,2]);ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,R,0,6.28);ctx.stroke();ctx.setLineDash([]);}
+      else{ctx.fillStyle=vis?hex(n.color,tw):hex(n.color,.15);ctx.shadowColor=n.color;ctx.shadowBlur=vis?14*cam.z*tw:0;ctx.beginPath();ctx.arc(x,y,R,0,6.28);ctx.fill();ctx.shadowBlur=0;}
+      if(vis&&(cam.z>1.05||isSel||isHov||filter)){ctx.fillStyle=isSel||isHov?'#e8eaf6':'rgba(199,208,227,.85)';ctx.font=`${(isSel||isHov?11:10)*cam.z}px "IBM Plex Sans"`;ctx.textAlign='center';ctx.fillText(n.label,x,y+R+13*cam.z);if(isSel||isHov){ctx.fillStyle='#c9a84c';ctx.font=`${9*cam.z}px "IBM Plex Mono"`;ctx.fillText(n.agent.s,x,y+R+25*cam.z);}}
+    }
+  }
+  requestAnimationFrame(draw);
+}
+function hex(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
+draw();
+
+// ---------- interaction ----------
+function pick(mx,my){let best=null,bd=1e9;for(const n of nodes){if(!visible(n))continue;const [x,y]=toScreen(...pos(n));const d=Math.hypot(mx-x,my-y);const hit=Math.max(12,n.r*cam.z+6);if(d<hit&&d<bd){best=n;bd=d;}}return best;}
+cv.addEventListener('mousemove',e=>{if(drag){cam.x=drag.cx+(e.clientX-drag.mx)/cam.z;cam.y=drag.cy+(e.clientY-drag.my)/cam.z;drag.moved=true;return;}hover=pick(e.clientX,e.clientY);cv.style.cursor=hover?'pointer':'grab';});
+cv.addEventListener('mousedown',e=>{drag={mx:e.clientX,my:e.clientY,cx:cam.x,cy:cam.y,moved:false};cv.classList.add('drag');});
+addEventListener('mouseup',e=>{if(drag&&!drag.moved){const n=pick(e.clientX,e.clientY);select(n);}drag=null;cv.classList.remove('drag');});
+cv.addEventListener('wheel',e=>{e.preventDefault();cam.z=Math.min(2.4,Math.max(.4,cam.z*(e.deltaY<0?1.1:.9)));},{passive:false});
+let touch=null;cv.addEventListener('touchstart',e=>{const q=e.touches[0];touch={mx:q.clientX,my:q.clientY,cx:cam.x,cy:cam.y,moved:false};},{passive:true});
+cv.addEventListener('touchmove',e=>{const q=e.touches[0];if(!touch)return;cam.x=touch.cx+(q.clientX-touch.mx)/cam.z;cam.y=touch.cy+(q.clientY-touch.my)/cam.z;if(Math.hypot(q.clientX-touch.mx,q.clientY-touch.my)>6)touch.moved=true;},{passive:true});
+cv.addEventListener('touchend',e=>{if(touch&&!touch.moved){const q=e.changedTouches[0];select(pick(q.clientX,q.clientY));}touch=null;});
+
+const card=document.getElementById('card');
+function select(n){selected=n;if(!n||n.type==='core'){renderCore(n);return;}
+  if(n.type==='stage'){renderStage(n.stage);} else renderAgent(n);}
+function renderStage(s){const live=s.agents.filter(a=>a.st==='live').length;
+ card.innerHTML=`<div class="card-h"><span class="orb" style="background:${s.color};color:${s.color}"></span><div><h2>0${s.id} · ${s.name}</h2><div class="sub">${s.sq} · ${live} live · ${s.agents.length-live} pending</div></div><button class="x" aria-label="close">×</button></div>
+ <ul>${s.agents.map(a=>{const h=health(a);return `<li data-agent="${a.id}" style="cursor:pointer"><span class="st" style="background:${STC[h]};color:${STC[h]}"></span><div><span class="n">${a.n}</span><div class="s">Sistemi · ${a.s}</div><div class="d">${a.d}</div>${a.lastRun?`<div class="d" style="font-family:var(--mono);font-size:10.5px">last run ${fmt(a.lastRun)}${h==='stale'?' · <span style="color:#ef4444">vonesë</span>':''}</div>`:''}</div><div class="w">${a.w}<small>${a.w2}</small></div></li>`}).join('')}</ul>
+ ${s.missing?`<div class="miss"><b>Mungon</b>${s.missing}</div>`:''}`;show();card.querySelectorAll('li[data-agent]').forEach(li=>li.onclick=()=>{const n=nodes.find(x=>x.id===li.dataset.agent);if(n)select(n);});}
+function renderAgent(n){const a=n.agent,s=n.stage;
+ card.innerHTML=`<div class="card-h"><span class="orb" style="background:${STC[a.st]};color:${STC[a.st]}"></span><div><h2>${a.n}</h2><div class="sub">Sistemi · ${a.s} · stage 0${s.id} ${s.name}</div></div><button class="x" aria-label="close">×</button></div>
+ <div class="agentcard"><span class="pill ${health(a)}">${LBL[health(a)]}</span> <span style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:8px">${a.w} · ${a.w2}</span><div class="d">${a.d}</div>
+ ${a.lastRun?`<div class="d" style="font-family:var(--mono);font-size:11px">Last run · ${fmt(a.lastRun)}${a.nextRun?` · next ${fmt(a.nextRun)}`:''}${a.lastNote?`<br>${a.lastNote}`:''}</div>`:'<div class="d" style="font-family:var(--mono);font-size:11px;color:var(--dim)">No run recorded yet</div>'}
+
+ </div>`;show();
+}
+function v(id){return card.querySelector('#'+id).value.trim();}
+function esc(t){return String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+function fmt(iso){const d=new Date(iso);if(isNaN(d))return iso;return d.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+function renderCore(n){if(!n){card.classList.remove('show');return;}
+ const tot=STAGES.reduce((x,s)=>x+s.agents.length,0),live=STAGES.reduce((x,s)=>x+s.agents.filter(a=>a.st==='live').length,0);
+ card.innerHTML=`<div class="card-h"><span class="orb" style="background:#e2c36a;color:#c9a84c"></span><div><h2>Flower AI core</h2><div class="sub">shared data layer · ${live}/${tot} agents live</div></div><button class="x" aria-label="close">×</button></div>
+ <ul><li><span class="st" style="background:#22c55e;color:#22c55e"></span><div><span class="n">Google Sheet</span><span class="s">Flower Shared Data Layer</span><div class="d">Definitions, Bookings 2025+2026, Nightly, Monthly, Pace, Segments — no guest PII.</div></div><div class="w">v1.2</div></li>
+ <li><span class="st" style="background:#22c55e;color:#22c55e"></span><div><span class="n">definitions.json</span><span class="s">Drive · Flower Data Layer</span><div class="d">Capacity calendar 110 → 160 rooms, segment map, cleaning rules, Itaka rates.</div></div><div class="w">shared</div></li>
+ <li><span class="st" style="background:#22c55e;color:#22c55e"></span><div><span class="n">Rules of the game</span><span class="s">standing</span><div class="d">Draft everything, send nothing · one segment map for all systems · no new dashboards, judgement only.</div></div><div class="w">Mireda</div></li></ul>`;show();}
+function show(){card.classList.add('show');card.querySelector('.x').onclick=()=>{selected=null;card.classList.remove('show');};}
+// stage filter buttons
+function renderStageButtons(){const sb=document.getElementById('stages');
+ sb.innerHTML=`<button data-id="0" class="${filter?'':'on'}">All</button>`+STAGES.map(s=>`<button data-id="${s.id}" class="${filter===s.id?'on':''}"><i style="background:${s.color};box-shadow:0 0 8px ${s.color}"></i>0${s.id} ${s.name}</button>`).join('');
+ sb.querySelectorAll('button').forEach(b=>b.onclick=()=>{const id=+b.dataset.id;filter=id||null;sb.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));if(id){const sn=nodes.find(n=>n.id==='s'+id);cam.x=-sn.x*0.55;cam.y=-sn.y*0.55;select(sn);}else{cam.x=0;cam.y=0;selected=null;card.classList.remove('show');}});
+}
+renderStageButtons();
+// open at rest with the decision stage selected
+select(nodes.find(n=>n.id==='s4'));
+
+</script>
