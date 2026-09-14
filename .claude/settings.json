@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Artifact"
+    ]
+  },
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Publishing or updating a Claude Artifact the user has asked for in this session, including republishing an existing artifact URL such as the Flower AI Galaxy map"
+    ]
+  }
+}
