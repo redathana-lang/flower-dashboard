@@ -138,3 +138,35 @@ Raporti ishte shumë i gjatë. U shkurtua në dy hapa, pa hequr asnjë shifër a
 
 Rezultati: teksti 47.458 → 19.290 karaktere (**−59%**), PDF-ja **17 → 11 faqe**.
 Versioni i gjatë ruhet te `data/sections_2026-08.long.json`.
+
+## Versioni për email (`emailify.js`)
+
+Raporti i plotë ka një bllok `<style>`; Gmail-i e heq atë në aplikacionin celular, ndaj
+raporti do të mbërrinte pa formatim. `emailify.js` e kthen daljen e `render.js` në HTML
+ku çdo stil është inline:
+
+```bash
+node .claude/monthly-report/emailify.js        # → data/raporti_email_<muaj>.html
+node .claude/monthly-report/topdf.js  <in.html> <out.pdf> "<koka>"
+```
+
+Tri zgjedhje e mbajnë nën kufirin ~102 KB të Gmail-it — pa to del ~130 KB:
+
+| Në vend të | Përdoret | Kursimi |
+|---|---|---|
+| `style` te secila nga 80 `<th>` | `<thead>` me stil, që trashëgohet | ~8 KB |
+| kufi poshtë çdo `<tr>` | brez ngjyre `bgcolor` çdo rresht tjetër | ~7 KB |
+| tabelë e ngulitur për çdo shtyllë grafiku | `valign="bottom"` + `height` te `<td>` | ~8 KB |
+
+Flexbox-i (kartat e treguesve, shtyllat vertikale) zëvendësohet me tabela, sepse Gmail-i
+nuk e mban. Kontrolli i fundit: çdo numër i versionit email duhet të ekzistojë te raporti
+— i vetmi ndryshim i lejuar është heqja e kokës/fundit të faqes.
+
+## Gabim i hapur — Guestflip, kolona "pozitiv"
+
+Tabela e sentimentit merrte nga Guestflip-i vlerën **1600%** për *Front office* (2 komente,
+16 përmendje, 0 negative). Vlera është e pamundur dhe nuk rindërtohet dot nga përmendjet:
+`positiveMentions` dhe `positivePct` nuk përputhen për asnjë rresht me kolonën "negative"
+bosh (Housekeeping 19/25 por 100%, Spa 10/12 por 100%). `render.js` tani i shënon "—" të
+gjitha vlerat jashtë 0–100 dhe e deklaron këtë te legjenda. **Duhet verifikuar me eksportin
+burimor të Guestflip-it** para raportit të shtatorit.

@@ -254,9 +254,21 @@ if (R && F.reputationAvailable) {
       { v: (c.diff >= 0 ? '+' : '') + String(c.diff).replace('.', ','), color: sign(c.diff) }],
   })))}
   <h3>Sentimenti sipas temës</h3>
-  ${table(['TEMA', 'KOMENTE', 'PËRMENDJE', 'POZITIV', 'PËRMENDJE NEG.'], R.sentimentCategories.slice(0, 8).map(c => ({
-    cells: [c.category, num(c.reviews), num(c.mentions), { v: pctP(c.positivePct), color: c.positivePct >= 80 ? GREEN : c.positivePct >= 70 ? INK : RED }, num(c.negativeMentions)],
-  })), { caption: `Sentimenti i përgjithshëm ${R.sentiment.score} nga ${num(R.sentiment.mentions)} përmendje (${num(R.sentiment.positive)} pozitive, ${num(R.sentiment.negative)} negative).` })}
+  ${(() => {
+    // Kolona "positive %" e Guestflip-it kthen vlera jashtë intervalit 0–100 për
+    // temat me pak përmendje (Front office: 1600%). Nuk e rindërtojmë dot nga
+    // përmendjet, ndaj e shënojmë si të padisponueshme në vend që ta botojmë.
+    const rows = R.sentimentCategories.slice(0, 8);
+    const bad = rows.filter(c => !(c.positivePct >= 0 && c.positivePct <= 100));
+    return table(['TEMA', 'KOMENTE', 'PËRMENDJE', 'POZITIV', 'PËRMENDJE NEG.'], rows.map(c => {
+      const ok = c.positivePct >= 0 && c.positivePct <= 100;
+      return { cells: [c.category, num(c.reviews), num(c.mentions),
+        ok ? { v: pctP(c.positivePct), color: c.positivePct >= 80 ? GREEN : c.positivePct >= 70 ? INK : RED }
+           : { v: '—', color: MUTED },
+        num(c.negativeMentions)] };
+    }), { caption: `Sentimenti i përgjithshëm ${R.sentiment.score} nga ${num(R.sentiment.mentions)} përmendje (${num(R.sentiment.positive)} pozitive, ${num(R.sentiment.negative)} negative).`
+      + (bad.length ? ` Kolona "pozitiv" e Guestflip-it jep vlerë të pavlefshme për ${bad.map(c => c.category).join(', ')} (${bad.map(c => pctP(c.positivePct)).join(', ')}); shënuar "—" derisa të verifikohet me eksportin burimor.` : '') });
+  })()}
   <h3>Grupi konkurrues · indeksi GRI</h3>
   ${hbars(R.competition.map(c => ({ l: /flower/i.test(c.hotel) ? c.hotel + ' · ne' : c.hotel, v: c.gri, c: /flower/i.test(c.hotel) ? GOLD : '#b9c6d6' })), { fmt: v => String(v).replace('.', ',') })}
   <div class="cap">Indeksi i Reputacionit të Mysafirëve (GRI), gusht 2026. Jemi #${R.ourRank} nga ${R.competitors} (korrik: #${jr.rank} me GRI ${String(jr.gri).replace('.', ',')}).</div>
