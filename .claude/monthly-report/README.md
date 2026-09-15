@@ -124,3 +124,17 @@ të marketingut*. Kërkon:
 **Kufizim që del përsëri:** konektori Gmail është i lidhur vetëm me
 `flowreport26@gmail.com`. Draftet dhe dërgimet dalin nga ajo adresë. Për të shkruar te
 `redathana@gmail.com` do të duhej lidhur ajo llogari veçmas si konektor.
+
+## Përmbledhja e shtatorit 2026 (kërkesë e COO-së)
+
+Raporti ishte shumë i gjatë. U shkurtua në dy hapa, pa hequr asnjë shifër apo rekomandim:
+
+1. **Grafikët e dyfishtë** — u hoqën 6 grafikë që përsërisnin tabelën poshtë tyre
+   (kanalet, outlet-et, shpenzimet, bordi, të ardhurat sipas muajit, tri shtyllat e cash-it).
+   Mbeten 5: zënia ditore, tregjet burim, seria 19-mujore e fitimit, shpërndarja e yjeve, GRI.
+2. **Proza** — një kalim kondensimi (11 agjentë, një për seksion) me rregullin: vetëm **hiq**,
+   asnjë shifër e re, asnjë gjykim i ndryshuar. Pastaj një kontroll programatik i nënbashkësisë:
+   çdo numër i versionit të shkurtër duhet të ekzistojë në të gjatin — ✓ asnjë numër i ri.
+
+Rezultati: teksti 47.458 → 19.290 karaktere (**−59%**), PDF-ja **17 → 11 faqe**.
+Versioni i gjatë ruhet te `data/sections_2026-08.long.json`.
