@@ -123,6 +123,18 @@ F.outlets=OUT.map(o=>({outlet:o, lek:r0(oA[o]||0), lyLek:r0(oL[o]||0), d: oL[o]?
 F.outletTotal={lek:r0(OUT.reduce((s,o)=>s+(oA[o]||0),0)), lyLek:r0(OUT.reduce((s,o)=>s+(oL[o]||0),0))};
 F.outletTotal.d=r1(pct(F.outletTotal.lek,F.outletTotal.lyLek));
 
+// ── korrigjime të dokumentuara të fletës ─────────────────────────────────────
+// Kur fleta mban një vlerë që dihet se është e gabuar, korrigjimi bëhet KËTU dhe
+// raportohet hapur te seksioni përkatës — kurrë në heshtje. Çdo zë ka arsyen.
+const CORRECTIONS = {
+  '2026-08': [
+    { sheet: 'Monthly Cash Flow', field: 'Dalje Investime Banke Leke', to: 0,
+      note: 'Investimet e gushtit u shlyen në euro; pagesa në Lek ishte zero. Konfirmuar nga COO-ja dhe në përputhje me uljen e angazhimeve të investimeve brenda muajit.' },
+  ],
+};
+const CORR = CORRECTIONS[AY] || [];
+const correctionFor = (sheet, field) => CORR.find(c => c.sheet === sheet && c.field === field);
+
 // ── cash flow ────────────────────────────────────────────────────────────────
 const cfS=S('Monthly Cash Flow'), CH=cfS[0].map(h=>String(h).trim());
 const LBL={'Hyrje Non Cash Lek':'Non Cash Lek','Hyrje Non Cash Bank Euro':'Non Cash Bankë Euro','Hyrje recepsion Cash Euro':'Recepsion Cash Euro','Hyrje Recepsion Cash Lek':'Recepsion Cash Lek','Hyrje Allotments/guarantee Euro':'Allotments/garanci Euro','Disbursim Kredi Euro':'Disbursim Kredi Euro','Hyrje F&B Lek':'F&B Lek','Hyrje MICE Euro':'MICE Euro','Hyrje MICE Lek':'MICE Lek','Dalje Paga Lek':'Paga Lek','Dalje Taksa dhe Utilitete Lek':'Taksa dhe Utilitete Lek','Dalje Kredi Euro':'Kredi Euro','Dalje Kredi Leke':'Kredi Lek','Dalje House Use Lek':'House Use Lek','Dalje Furnitore Cash Lek':'Furnitorë Cash Lek','Dalje Furnitore Cash Euro':'Furnitorë Cash Euro','Dalje Furnitore Banke Leke':'Furnitorë Bankë Lek','Dalje Furnitore Banke Euro':'Furnitorë Bankë Euro','Dalje Investime Banke Euro':'Investime Bankë Euro','Dalje Investime Banke Leke':'Investime Bankë Lek','Dalje Investime Cash Lek':'Investime Cash Lek'};
@@ -131,8 +143,14 @@ const cfBuild=k=>{ const r=cfS.slice(1).find(x=>mk(x[0])===k); if(!r) return nul
   CH.forEach((h,i)=>{ if(i===0||!h) return; const v=r[i], isIn=/^Hyrje|^Disbursim/i.test(h), isOut=/^Dalje/i.test(h);
     if(!isIn&&!isOut) return;
     if(typeof v!=='number'){ broken.push({field:LBL[h]||h, value: v===''?'(bosh)':String(v)}); return; }
-    (isIn?inn:out).push({label:LBL[h]||h.replace(/^(Hyrje|Dalje)\s*/,''), eur:r0(/Lek|Leke/i.test(h)? v/R : v)}); });
-  inn.sort((a,b)=>b.eur-a.eur); out.sort((a,b)=>b.eur-a.eur);
+    const fix = k===AY ? correctionFor('Monthly Cash Flow', h) : null;
+    const raw = fix ? fix.to : v;
+    if (fix) { fix.was = v; fix.label = LBL[h]||h; }
+    if (fix && raw === 0) return; // zëri hiqet nga lista, jo shfaqet si zero
+    (isIn?inn:out).push({label:LBL[h]||h.replace(/^(Hyrje|Dalje)\s*/,''), eur:r0(/Lek|Leke/i.test(h)? raw/R : raw)}); });
+  const nz=a=>a.filter(x=>x.eur!==0);
+  const innN=nz(inn).sort((a,b)=>b.eur-a.eur), outN=nz(out).sort((a,b)=>b.eur-a.eur);
+  inn.length=0; inn.push(...innN); out.length=0; out.push(...outN);
   const iS=inn.reduce((s,x)=>s+x.eur,0), oS=out.reduce((s,x)=>s+x.eur,0);
   const g=n=>{ const i=CH.indexOf(n); return i<0? null : (typeof r[i]==='number'? r[i] : null); };
   return { in:inn, out:out, totals:{in:iS,out:oS,net:iS-oS}, broken,
@@ -155,6 +173,9 @@ F.cash.obligationMove={ furnitore:r0(ob.furnitoreEnd-ob.furnitoreStart), investi
   totalStart:r0(ob.furnitoreStart+ob.investimeStart), totalEnd:r0(ob.furnitoreEnd+ob.investimeEnd) };
 F.cash.prevObligations = cPrev ? cPrev.obligations : null;
 F.cash.complete = cAyF.broken.length === 0;
+F.corrections = CORR.map(c => ({ sheet:c.sheet, field:c.field, label:c.label||c.field, was:c.was==null?null:c.was,
+  wasEur: c.was==null? null : r0(/Lek|Leke/i.test(c.field)? c.was/R : c.was), to:c.to, note:c.note }));
+F.cash.corrections = F.corrections.filter(c => c.sheet === 'Monthly Cash Flow');
 
 // ── marketingu ───────────────────────────────────────────────────────────────
 const mc=S('MARKETING COST'), MH=mc[0].map(h=>String(h).trim());

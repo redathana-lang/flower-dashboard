@@ -667,21 +667,9 @@
     {
      "label": "Recepsion Cash Lek",
      "eur": 2
-    },
-    {
-     "label": "Disbursim Kredi Euro",
-     "eur": 0
-    },
-    {
-     "label": "MICE Lek",
-     "eur": 0
     }
    ],
    "out": [
-    {
-     "label": "Investime Bankë Lek",
-     "eur": 150675
-    },
     {
      "label": "Furnitorë Bankë Lek",
      "eur": 137311
@@ -721,16 +709,12 @@
     {
      "label": "Furnitorë Cash Euro",
      "eur": 9331
-    },
-    {
-     "label": "Investime Cash Lek",
-     "eur": 0
     }
    ],
    "totals": {
     "in": 981662,
-    "out": 771808,
-    "net": 209854
+    "out": 621133,
+    "net": 360529
    },
    "broken": [],
    "obligations": {
@@ -775,10 +759,6 @@
     {
      "label": "Recepsion Cash Lek",
      "eur": 2
-    },
-    {
-     "label": "Disbursim Kredi Euro",
-     "eur": 0
     }
    ],
    "out": [
@@ -848,7 +828,7 @@
   },
   "groups": {
    "investime": {
-    "ay": 287621,
+    "ay": 136946,
     "ly": 211532
    },
    "furnitore": {
@@ -867,7 +847,7 @@
     "ay": 75454,
     "ly": 66732
    },
-   "investimeShare": 37.3,
+   "investimeShare": 22,
    "furnitoreDelta": -31.9
   },
   "obligationMove": {
@@ -885,8 +865,30 @@
    "miceReceivable": 4642,
    "otaReceivable": 83375
   },
-  "complete": true
+  "complete": true,
+  "corrections": [
+   {
+    "sheet": "Monthly Cash Flow",
+    "field": "Dalje Investime Banke Leke",
+    "label": "Investime Bankë Lek",
+    "was": 15067542.71,
+    "wasEur": 150675,
+    "to": 0,
+    "note": "Investimet e gushtit u shlyen në euro; pagesa në Lek ishte zero. Konfirmuar nga COO-ja dhe në përputhje me uljen e angazhimeve të investimeve brenda muajit."
+   }
+  ]
  },
+ "corrections": [
+  {
+   "sheet": "Monthly Cash Flow",
+   "field": "Dalje Investime Banke Leke",
+   "label": "Investime Bankë Lek",
+   "was": 15067542.71,
+   "wasEur": 150675,
+   "to": 0,
+   "note": "Investimet e gushtit u shlyen në euro; pagesa në Lek ishte zero. Konfirmuar nga COO-ja dhe në përputhje me uljen e angazhimeve të investimeve brenda muajit."
+  }
+ ],
  "marketing": {
   "totalEur": 19949,
   "houseUse": 6060,
