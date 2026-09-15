@@ -100,7 +100,6 @@ html += page(`
 // ── page 2 · P&L ─────────────────────────────────────────────────────────────
 const serie = F.series.filter(s => s.rev != null);
 html += page(`
-  ${vbars(serie.map(s => ({ l: s.month.slice(2).replace('-', '/'), v: s.rev, c: s.month.startsWith('2026') ? GOLD : '#b9c6d6' })), { caption: `Të ardhurat operative sipas muajve · 2025 (gri) dhe ${YEAR} (ari).` })}
   ${body(sec('pl'))}
   ${callouts(sec('pl'))}
   ${table(['ZËRI P&L (€)', (MONTH + ' 2025').toUpperCase(), (MONTH + ' ' + YEAR).toUpperCase(), 'Δ NDAJ VK', 'BUXHETI ' + YEAR, 'VARIANCA'], [
@@ -122,8 +121,9 @@ html += page(`
   ${callouts(sec('rooms'))}
   ${vbars(F.daily.map(d => ({ l: String(d.day), v: d.occ, c: d.occ >= 95 ? GREEN : d.occ >= 88 ? GOLD : RED })), { caption: `Okupanca ditore, ${MONTH} ${YEAR}. Jeshile ≥95% · e artë 88–94% · e kuqe <88%.` })}
   <h3>Miksi i paketave</h3>
-  ${hbars(F.board.map(b => ({ l: b.board, v: b.rev, d: null })), {})}
-  <div class="cap">Të ardhurat e dhomave sipas paketës (€). Pesha: ${F.board.map(b => b.board + ' ' + pctP(b.share)).join(' · ')}.</div>
+  ${table(['PAKETA', 'TË ARDHURA', 'PESHA', 'PESHA VJET'], F.board.map(b => ({
+    cells: [b.board, eur(b.rev), pctP(b.share), b.lyShare != null ? pctP(b.lyShare) : '—'],
+  })))}
 `);
 
 // ── page 4 · markets + segments ──────────────────────────────────────────────
@@ -142,8 +142,6 @@ const chTop = F.channels.filter(c => c.rev > 0).slice(0, 10);
 html += page(`
   ${body(sec('channels'))}
   ${callouts(sec('channels'))}
-  ${hbars(chTop.map(c => ({ l: c.channel, v: c.rev, d: c.d })))}
-  <div class="cap">Dhjetë kanalet kryesore sipas të ardhurave (€), me ndryshimin ndaj ${MONTH.toLowerCase()}it 2025.</div>
 `);
 html += page(`
   ${table(['KANALI', 'TË ARDHURA', 'NETË', 'REZERVIME', 'ADR', 'ALOS', 'PESHA', 'Δ NDAJ VK'], [
@@ -164,7 +162,6 @@ html += page(`
 html += page(`
   ${body(sec('fnb'))}
   ${callouts(sec('fnb'))}
-  ${hbars(F.outlets.map(o => ({ l: o.outlet, v: o.lek, d: o.d })), { fmt: v => lekM(v) + ' Lek' })}
   ${table(['OUTLET (LEK)', 'BRUTO 25', 'BRUTO 26', 'Δ'], [
     ...F.outlets.map(o => ({ cells: [o.outlet, num(o.lyLek), num(o.lek), { v: pctS(o.d), color: sign(o.d) }] })),
     { cells: ['Totali outlete', num(F.outletTotal.lyLek), num(F.outletTotal.lek), { v: pctS(F.outletTotal.d), color: sign(F.outletTotal.d) }], total: true },
@@ -175,7 +172,6 @@ html += page(`
 html += page(`
   ${body(sec('expenses'))}
   ${callouts(sec('expenses'))}
-  ${hbars(F.expenses.map(e => ({ l: e.cat, v: e.lek, d: e.d })), { fmt: v => lekM(v) + ' Lek' })}
   ${table(['KATEGORIA (LEK)', MONTH.toUpperCase() + ' 2025', MONTH.toUpperCase() + ' ' + YEAR, 'Δ NDAJ VK', 'BUXHETI', 'VARIANCA'], [
     ...F.expenses.map(e => ({ cells: [e.cat, num(e.lyLek), num(e.lek), { v: pctS(e.d), color: sign(-e.d) }, num(e.budget), { v: (e.varr >= 0 ? '+' : '') + num(e.varr), color: sign(-e.varr) }] })),
     { cells: ['Totali', '—', num(F.expenseTotalLek), '—', '—', '—'], total: true },
@@ -210,7 +206,6 @@ const ob = CF.ay.obligations, obm = CF.obligationMove;
 html += page(`
   ${body(sec('cash'))}
   ${callouts(sec('cash'))}
-  ${vbars([{ l: 'Hyrje', v: CF.ay.totals.in, c: GREEN }, { l: 'Dalje', v: CF.ay.totals.out, c: RED }, { l: 'Neto', v: CF.ay.totals.net, c: GOLD }], { caption: `Fluksi i parasë, ${MONTH} ${YEAR} (€). Korriku: hyrje ${eur(CF.prev.totals.in)} · dalje ${eur(CF.prev.totals.out)} · neto ${eur(CF.prev.totals.net)}.` })}
   ${table(['HYRJET (€)', 'VLERA', 'DALJET (€)', 'VLERA'], cfRows)}
   <h3>Detyrimet dhe arkëtimet — lëvizja brenda muajit</h3>
   ${table(['ZËRI', 'FILLIM MUAJI', 'FUND MUAJI', 'NDRYSHIMI'], [
