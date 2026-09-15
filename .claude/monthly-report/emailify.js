@@ -51,7 +51,7 @@ function calTable(inner) {
   const cell = it => {
     const g = c => { const i = it.indexOf(`<div class="${c}">`); return i === -1 ? '' : sliceDiv(it, i).inner; };
     const l = g('cal-l'), v = g('cal-v'), n = g('cal-n');
-    return `<td width="50%" style="${S({ padding: '8px 10px', border: `1px solid ${LINE}`, 'border-top': `2px solid ${GOLD}`, background: '#fafbfc', 'vertical-align': 'top' })}">`
+    return `<td width="50%" style="${S({ padding: '8px 10px', border: `1px solid ${LINE}`, 'border-top': `2px solid ${GOLD}`, 'background-color': '#fafbfc', 'vertical-align': 'top' })}">`
       + `<div style="${S({ 'font-size': '8.5px', 'letter-spacing': '1.3px', 'text-transform': 'uppercase', color: MUTED, 'font-weight': '700' })}">${l}</div>`
       + `<div style="${S({ 'font-size': '19px', 'font-weight': '700', color: NAVY, 'line-height': '1.2', margin: '3px 0' })}">${v}</div>`
       + (n ? `<div style="${S({ 'font-size': '10px', color: MUTED })}">${n}</div>` : '') + '</td>';
@@ -68,19 +68,37 @@ for (let i; (i = h.indexOf('<div class="cal">')) !== -1;) {
   h = h.slice(0, i) + calTable(inner) + h.slice(end);
 }
 
-// 3 · shtyllat vertikale: div-i flex → tabelë e ngulitur me përafrim poshtë
-// td-ja e ka tashmë përafrimin vertikal; valign/height si atribute kursejnë ~8 KB
-h = h.replace(/<td><div class="vb"><span style="height:(\d+)px;background:([^"]+)"><\/span><\/div>/g,
-  (m, px, col) => `<td valign="bottom" height="96"><div style="height:${px}px;background:${col}"></div>`);
+// 3 · Grafikët me shtylla vertikale → tabelë me tri rreshta: mbushës, shtyllë, etiketë.
+// Dy arsye. (a) Ngjyra duhet të jetë atribut `bgcolor` te një <td>, jo `background` te
+// një <div>: Gmail-i e heq atë shkurtore dhe shtyllat zhduken krejt — pikërisht ajo
+// hapësirë bosh që doli në celular. (b) Stili i etiketave vihet një herë te <tr> dhe
+// trashëgohet, në vend që të përsëritet te 51 qeliza.
+h = h.replace(/<table class="vbars"><tr>(.*?)<\/tr><\/table>/gs, (m, body) => {
+  const bars = [...body.matchAll(/<td><div class="vb"><span style="height:(\d+)px;background:([^"]+)"><\/span><\/div><div class="vl">([^<]*)<\/div><\/td>/g)]
+    .map(x => ({ h: +x[1], c: x[2], l: x[3] }));
+  if (!bars.length) return m;
+  // Etiketat e gjata nuk nisin në një ekran 390px (20 × "25/01" ≈ 440px): hiqet çdo e dyta.
+  const thin = bars.length >= 13 && bars.some(b => b.l.length > 3);
+  // Çdo shtyllë e ka tabelën e vet: brenda një rreshti të vetëm të gjitha qelizat
+  // marrin lartësinë e rreshtit, ndaj tri rreshta të përbashkët i bëjnë shtyllat njësoj.
+  const bar = b => `<td valign="bottom"><table width="100%" cellspacing="0"><tr>`
+    + `<td height="${b.h}" bgcolor="${b.c}"></td></tr></table></td>`;
+  return '<table cellpadding="1" cellspacing="0" width="100%" style="table-layout:fixed;width:100%">'
+    + `<tr>${bars.map(bar).join('')}</tr>`
+    + `<tr style="${S({ 'font-size': '7.5px', color: MUTED, 'text-align': 'center', 'white-space': 'nowrap' })}">`
+    + `${bars.map((b, i) => `<td>${thin && i % 2 ? '' : b.l}</td>`).join('')}</tr></table>`;
+});
 
-// 4 · tabelat: padding te atributi cellpadding, kufiri te <tr> — kursen ~40 KB
-h = h.replace(/<table class="tbl">/g, `<table cellpadding="6" cellspacing="0" width="100%" style="${S({ 'border-collapse': 'collapse', width: '100%', 'font-size': '11.5px' })}">`);
+
+// 4 · Tabelat: padding te atributi `cellpadding`, jo te çdo qelizë — 780 qeliza ×
+// ~50 bajt do ta kalonin kufirin e Gmail-it vetëm nga padding-u. Padding 4 dhe 10,5px
+// (në vend të 6 dhe 11,5) i fut tabelat e gjera brenda një ekrani 390px; me 6/11,5
+// tabela e kanaleve del 488px dhe kolona e fundit pritet.
+h = h.replace(/<table class="tbl">/g, `<table cellpadding="4" cellspacing="0" width="100%" style="${S({ 'border-collapse': 'collapse', width: '100%', 'font-size': '10.5px' })}">`);
 h = h.replace(/<table class="bars">/g, `<table cellpadding="5" cellspacing="0" width="100%" style="${S({ 'border-collapse': 'collapse', width: '100%', 'font-size': '11.5px' })}">`);
-// cellpadding="1" jep hapësirën mes shtyllave që e jepte më parë `width:72%`
-h = h.replace(/<table class="vbars">/g, `<table cellpadding="1" cellspacing="0" width="100%" style="${S({ 'table-layout': 'fixed', width: '100%' })}">`);
 
 // stili i kokës vihet një herë te <thead> — vetitë e tekstit trashëgohen te çdo <th>
-const THEAD = `<thead bgcolor="${NAVY}" style="${S({ background: NAVY, color: '#fff', 'font-size': '8.5px', 'letter-spacing': '1px', 'text-transform': 'uppercase', 'font-weight': '700' })}">`;
+const THEAD = `<thead bgcolor="${NAVY}" style="${S({ 'background-color': NAVY, color: '#fff', 'font-size': '8.5px', 'letter-spacing': '1px', 'text-transform': 'uppercase', 'font-weight': '700' })}">`;
 h = h.replace(/<thead>/g, THEAD)
      .replace(/<th class="r">/g, '<th align="right">')
      .replace(/<th>/g, '<th align="left">');
@@ -124,7 +142,8 @@ h = h.replace(/<td class="r"/g, '<td align="right"')
      .replace(/<td class="bd"/g, '<td width="14%" align="right" style="white-space:nowrap;font-size:10.5px"');
 // shtyllat horizontale: span → div me lartësi (span-i inline nuk merr height)
 h = h.replace(/<span style="width:(\d+)%;background:([^"]+)"><\/span>/g,
-  (m, w, c) => `<div style="${S({ width: w + '%', height: '8px', background: c, 'border-radius': '2px' })}"></div>`);
+  (m, w, c) => `<table width="${w}%" cellpadding="0" cellspacing="0"><tr>`
+    + `<td height="8" bgcolor="${c}" style="font-size:0;line-height:0">&nbsp;</td></tr></table>`);
 
 // 5 · kontejnerët
 const D = {
@@ -133,9 +152,8 @@ const D = {
   eyebrow: { 'font-size': '9px', 'letter-spacing': '3px', color: GOLD, 'font-weight': '700', 'text-transform': 'uppercase' },
   sub: { 'font-size': '12px', color: MUTED },
   fine: { 'font-size': '10.5px', color: MUTED, 'line-height': '1.55', margin: '0 0 10px' },
-  warn: { background: '#fdf6e3', 'border-left': `3px solid ${GOLD}`, padding: '10px 12px', margin: '10px 0', 'font-size': '12.5px' },
+  warn: { 'background-color': '#fdf6e3', 'border-left': `3px solid ${GOLD}`, padding: '10px 12px', margin: '10px 0', 'font-size': '12.5px' },
   cap: { 'font-size': '10px', color: MUTED, margin: '4px 0 12px', 'font-style': 'italic' },
-  vl: { 'font-size': '7.5px', color: MUTED, 'padding-top': '3px', 'text-align': 'center' },
   vwrap: { margin: '14px 0' },
   tw: { 'overflow-x': 'auto' },
   recs: {},
@@ -144,8 +162,8 @@ for (const [cls, st] of Object.entries(D)) {
   const tag = cls === 'fine' ? 'p' : 'div';
   h = h.replace(new RegExp(`<${tag} class="${cls}">`, 'g'), Object.keys(st).length ? `<${tag} style="${S(st)}">` : `<${tag}>`);
 }
-h = h.replace(/<section class="pg">/g, `<div style="${S({ background: '#fff', 'max-width': '900px', margin: '14px auto', 'border-top': `4px solid ${GOLD}` })}">`)
-     .replace(/<\/section>/g, '</div>');
+h = h.replace(/<section class="pg">/g, `<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="${S({ 'background-color': '#fff', 'max-width': '900px', margin: '14px auto', 'border-top': `4px solid ${GOLD}` })}"><tr><td>`)
+     .replace(/<\/section>/g, '</td></tr></table>');
 
 // 6 · tipografia — pa bllok <style>, çdo kokë e ka stilin e vet
 h = h.replace(/<h1>/g, `<h1 style="${S({ 'font-size': '28px', margin: '8px 0 6px', color: NAVY, 'line-height': '1.15' })}">`)
@@ -154,8 +172,10 @@ h = h.replace(/<h1>/g, `<h1 style="${S({ 'font-size': '28px', margin: '8px 0 6px
      .replace(/<p>/g, '<p style="margin:0 0 10px">');
 
 const out = `<!DOCTYPE html><html lang="sq"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head>
-<body style="${S({ margin: '0', background: '#eef1f5', color: INK, font: '14px/1.6 Arial,Helvetica,sans-serif' })}">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
+<title>${title}</title></head>
+<body style="${S({ margin: '0', 'background-color': '#eef1f5', color: INK, font: '14px/1.6 Arial,Helvetica,sans-serif' })}">
 ${h}
 </body></html>`;
 
