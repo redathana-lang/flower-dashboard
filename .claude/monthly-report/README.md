@@ -110,12 +110,11 @@ Raporti i plotë është ~100 KB HTML; Gmail e pret mesazhin mbi ~102 KB. Pranda
 Që butoni ta gjejë raportin, skedari duhet ruajtur në Drive me emër që fillon me
 `Raporti_Mujor_` dhe mbaron me `.html`.
 
-## Email te financa (Brunilda) — i planifikuar
+## Email te financa (Brunilda) — I DËRGUAR
 
 **Draft Gmail** `r-2388506497762178891`, te `financa@hotel-flower.com`, në llogarinë
-`flowreport26@gmail.com`. I miratuar nga COO-ja dhe **planifikuar të dërgohet e martë
-15 shtator 2026, 08:30 Tirana** (routine `trig_01Kd3fqBFXbvBDQY9w4xKFsA`). Nëse drafti
-dërgohet ose fshihet me dorë para asaj ore, routine-i nuk duhet të dërgojë asgjë.
+`flowreport26@gmail.com`. **U dërgua e martë 15 shtator 2026, 08:30 Tirana** — mesazhi `1a0a3c726a38d293`,
+fill `1a0a19aa384b745c`. Pret përgjigjen e Brunildës.
 
 Temë: *Cash Flow mujor Gusht 2026 — të dhëna që mungojnë, dhe korrigjimi i shpenzimeve
 të marketingut*. Kërkon:
