@@ -64,39 +64,33 @@ pohime vetë-kontradiktore, dhe ekzagjerime cilësore. Asnjë nuk do të ishte k
 - **Test i dërguar** vetëm te redathana@gmail.com më 14 shtator (id `1a0a17183a4759fc`)
 - **Nuk është dërguar te ekipi** — pret miratimin e COO-s
 
-### Korrigjime të bëra pas testit të parë
+### Versioni final — 15 shtator 2026
 
-1. **Cash flow.** Qelia `Dalje Investime Cash Lek` kthen `#REF!` për gushtin (korrik:
-   223.500 Lek = €2.235). Prandaj dalja €771.808 është **dysheme**, jo përfundimtare,
-   dhe fluksi neto €209.854 është aq ose më pak. Gjashtë kolona të tjera janë bosh:
-   detyrimet e furnitorëve dhe angazhimet e investimeve (fillim/fund muaji), arkëtimet
-   MICE (€9.442 në korrik) dhe OTA (€83.375 në korrik).
-   → U shtua një gjetje e re: pagesat ndaj furnitorëve ranë në €197.496 nga €289.884
-   (−31,9%) pikërisht në muajin me xhiron më të lartë — dhe pa kolonat e borxhit nuk
-   dihet nëse është ulje reale apo shtyrje pagese.
-2. **Marketing.** Google/metasearch ishte shtuar në fletë pas nxjerrjes së parë:
-   €128,70, jo €0. Totali €17.899 (jo €17.770), cash €11.839, 1,6% e të ardhurave.
+Financa e plotësoi workbook-un dhe raporti u rindërtua mbi të. Tri gjëra ndryshuan.
 
-### E hapur — për t'u sqaruar nga COO-ja
+**1 · Marketingu rakordon.** Linja te libra ra nga 1,56M në **1,39M Lek** dhe tani
+përputhet saktësisht me fletën MARKETING COST minus House Use: **€13.888,70** nga të dyja
+anët (më parë €15.605 kundrejt €11.839). U shtua edhe zëri *Events* €2.050, ndaj totali i
+fletës është €19.949. Kjo uli shpenzimet totale dhe ngriti pak GOP-in e fitimin.
 
-> **Ka diçka të pasaktë te marketingu.** COO-ja do ta saktësojë; asgjë s'duhet dërguar
-> te ekipi para kësaj.
+**2 · Cash flow-i është i plotë.** Formula `#REF!` u rregullua dhe gjashtë kolonat u
+mbushën, gjë që i jep përgjigje pyetjes që raporti e kishte lënë hapur — dhe përgjigjja
+nuk është e favorshme: pagesat ndaj furnitorëve ranë 31,9% ndërsa detyrimet ndaj tyre
+**u rritën €22.128**. Ishte shtyrje pagese. Paralelisht angazhimet e investimeve u ulën
+€88.290 — CAPEX i shlyer vërtet. Detyrimet totale ranë €66.162, por struktura u
+përkeqësua: borxh investimi afatgjatë u shkëmbye me borxh furnitori afatshkurtër.
 
-Konteksti i pyetjes: ndarja `cash = MARKETING COST − HOUSE USE` u mor nga vetë raporti
-i Korrikut ("€21.517 total, prej të cilave €14.317 cash" — 21.517,25 − 7.200 = 14.317,25).
-House Use për marketingun merret nga **kolona N e fletës MARKETING COST** (gusht: 6.060).
-Në workbook ka katër «House Use» të ndryshme që nuk duhen ngatërruar:
+**3 · Investimet u shlyen në euro.** Fleta mbante 15.067.542,71 Lek te *Dalje Investime
+Banke Leke* përveç €136.946 në euro; pagesa në Lek ishte zero. Regjistruar te
+`CORRECTIONS` në `facts.js` dhe e shpallur hapur në raport. Daljet bien në **€621.133**
+dhe fluksi neto në **+€360.529** — €144.681 mbi korrikun, jo nën të.
 
-| Burimi | Gusht 2026 | Çfarë është |
-|---|---|---|
-| MARKETING COST · N | €6.060 | pjesa e marketingut e mbuluar me house use |
-| EX. SUMMARY · HOUSE USE | €15.150,55 | house use i plotë i muajit |
-| Monthly Cash Flow · Dalje House Use Lek | 1.088.451 Lek (€10.885) | dalje reale arke |
-| DAILY F&B REVENUES · House Use | −1.979.205 Lek | konsum i brendshëm te outletet |
+Shifrat përfundimtare: të ardhura €1.153.310 · shpenzime €443.727 · GOP €735.664 ·
+fitim neto €709.583 (102,2% e buxhetit) · flow-through 85,6% · hendek YTD −€305.992.
 
-Gjithashtu: **emaili test i dërguar ka dy shifra të vjetruara** — rekomandimi 9 thotë ende
-"€0 në Google" dhe rekomandimi 8 nuk e përmend `#REF!`-in. PDF-ja dhe preview-ja janë të
-sakta. Emaili duhet ridërguar para se të shkojë te ekipi.
+**Gjendja:** preview-ja dhe PDF-ja janë të përditësuara. **Nuk është dërguar te ekipi** —
+pret miratimin e COO-s. Emaili test i 14 shtatorit ka shifra para këtyre korrigjimeve dhe
+duhet ridërguar përpara.
 
 ## Kufizimi i emailit
 

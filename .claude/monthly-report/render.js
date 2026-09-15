@@ -205,21 +205,34 @@ for (let i = 0; i < maxRows; i++) {
   const a = cfIn[i], b = cfOut[i];
   cfRows.push({ cells: [a ? a.label : '', a ? eur(a.eur) : '', b ? b.label : '', b ? eur(b.eur) : ''] });
 }
-cfRows.push({ cells: [{ v: 'Investime Cash Lek', color: RED }, '', { v: 'nuk llogaritet — #REF!', color: RED }, { v: '?', color: RED }] });
 cfRows.push({ cells: ['Gjithsej hyrje', eur(CF.ay.totals.in), 'Gjithsej dalje', eur(CF.ay.totals.out)], total: true });
+const ob = CF.ay.obligations, obm = CF.obligationMove;
 html += page(`
   ${body(sec('cash'))}
   ${callouts(sec('cash'))}
-  ${vbars([{ l: 'Hyrje', v: CF.ay.totals.in, c: GREEN }, { l: 'Dalje', v: CF.ay.totals.out, c: RED }, { l: 'Neto', v: CF.ay.totals.net, c: GOLD }], { caption: `Fluksi i parasë, ${MONTH} ${YEAR} (€). Daljet janë dysheme — një zë nuk llogaritet.` })}
+  ${vbars([{ l: 'Hyrje', v: CF.ay.totals.in, c: GREEN }, { l: 'Dalje', v: CF.ay.totals.out, c: RED }, { l: 'Neto', v: CF.ay.totals.net, c: GOLD }], { caption: `Fluksi i parasë, ${MONTH} ${YEAR} (€). Korriku: hyrje ${eur(CF.prev.totals.in)} · dalje ${eur(CF.prev.totals.out)} · neto ${eur(CF.prev.totals.net)}.` })}
   ${table(['HYRJET (€)', 'VLERA', 'DALJET (€)', 'VLERA'], cfRows)}
-  <div class="warn"><b>Mangësi të dhënash në fletën e gushtit.</b> Qelia «Dalje Investime Cash Lek» kthen <b>#REF!</b> (në korrik ishte ${eur(F.cash.dataGaps.brokenPrevValue)}), ndaj dalja totale është dysheme. Gjashtë kolona të tjera janë bosh: detyrimet ndaj furnitorëve dhe angazhimet e investimeve në fillim e në fund të muajit, dhe arkëtimet e mbetura nga MICE (${eur(CF.obligationsPrev.miceReceivable)} në korrik) dhe OTA (${eur(CF.obligationsPrev.otaReceivable)} në korrik).</div>
+  <h3>Detyrimet dhe arkëtimet — lëvizja brenda muajit</h3>
+  ${table(['ZËRI', 'FILLIM MUAJI', 'FUND MUAJI', 'NDRYSHIMI'], [
+    { cells: ['Detyrime ndaj furnitorëve', eur(ob.furnitoreStart), eur(ob.furnitoreEnd),
+      { v: (obm.furnitore >= 0 ? '+' : '') + eur(obm.furnitore), color: obm.furnitore > 0 ? RED : GREEN }] },
+    { cells: ['Angazhime investimesh', eur(ob.investimeStart), eur(ob.investimeEnd),
+      { v: (obm.investime >= 0 ? '+' : '') + eur(obm.investime), color: obm.investime > 0 ? RED : GREEN }] },
+    { cells: ['Gjithsej detyrime', eur(obm.totalStart), eur(obm.totalEnd),
+      { v: (obm.total >= 0 ? '+' : '') + eur(obm.total), color: obm.total > 0 ? RED : GREEN }], total: true },
+    { cells: ['Arkëtim i mbetur · OTA', eur(CF.prev.obligations.otaReceivable), eur(ob.otaReceivable),
+      { v: eur(ob.otaReceivable - CF.prev.obligations.otaReceivable), color: GREEN }] },
+    { cells: ['Arkëtim i mbetur · MICE', eur(CF.prev.obligations.miceReceivable), eur(ob.miceReceivable),
+      { v: eur(ob.miceReceivable - CF.prev.obligations.miceReceivable), color: MUTED }] },
+  ], { caption: 'Kolona "fillim muaji" e furnitorëve dhe e investimeve është gjendja më 1 gusht; për arkëtimet, kolonat tregojnë korrikun dhe gushtin.' })}
+  ${(F.corrections && F.corrections.length) ? `<div class="warn"><b>Korrigjim i deklaruar.</b> ${F.corrections.map(c => `Fleta <i>${esc(c.sheet)}</i> mban ${esc(c.label)} me ${c.was != null ? num(c.was) + ' Lek (' + eur(c.wasEur) + ')' : '—'} për ${MONTH.toLowerCase()}in; vlera e saktë është <b>${eur(c.to)}</b>. ${esc(c.note)}`).join(' ')} Shifrat e këtij seksioni janë llogaritur mbi vlerën e korrigjuar; fleta duhet përditësuar që të përputhet.</div>` : ''}
   ${table(['GRUPIMI I DALJEVE', MONTH.toUpperCase() + ' ' + YEAR, 'KORRIK ' + YEAR, 'PESHA'], [
-    { cells: ['Investime', eur(CF.groups.investime.ay), eur(CF.groups.investime.ly), pctP(CF.groups.investimeShare)] },
     { cells: ['Furnitorë', eur(CF.groups.furnitore.ay), eur(CF.groups.furnitore.ly), { v: pctS(CF.groups.furnitoreDelta), color: MUTED }] },
+    { cells: ['Investime', eur(CF.groups.investime.ay), eur(CF.groups.investime.ly), pctP(CF.groups.investimeShare)] },
     { cells: ['Paga', eur(CF.groups.paga.ay), eur(CF.groups.paga.ly), '—'] },
     { cells: ['Taksa dhe utilitete', eur(CF.groups.taksa.ay), eur(CF.groups.taksa.ly), '—'] },
     { cells: ['Kredi', eur(CF.groups.kredi.ay), eur(CF.groups.kredi.ly), '—'] },
-  ], { caption: 'Kolona e fundit: pesha ndaj daljeve për investimet, ndryshimi ndaj korrikut për furnitorët.' })}
+  ], { caption: 'Kolona e fundit: ndryshimi ndaj korrikut për furnitorët, pesha ndaj daljeve për investimet.' })}
 `);
 
 // ── page 11–12 · reputation ──────────────────────────────────────────────────
