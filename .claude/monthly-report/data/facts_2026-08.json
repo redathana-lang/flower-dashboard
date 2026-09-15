@@ -1,8 +1,6 @@
 {
  "period": {
-  "month": "Gusht",
-  "year": 2026,
-  "ay": "2026-08",
+  "month": "2026-08",
   "ly": "2025-08",
   "prev": "2026-07"
  },
@@ -51,34 +49,34 @@
    "gap": -28485
   },
   "exp": {
-   "ay": 445443,
+   "ay": 443727,
    "ly": 404891,
-   "d": 10,
+   "d": 9.6,
    "bud": 487502,
-   "vsBud": 91.4,
-   "gap": -42059
+   "vsBud": 91,
+   "gap": -43776
   },
   "gop": {
-   "ay": 734076,
+   "ay": 735664,
    "ly": 504510,
-   "d": 45.5,
-   "marginAy": 63.6,
+   "d": 45.8,
+   "marginAy": 63.8,
    "marginLy": 57
   },
   "ebitda": {
-   "ay": 733397,
+   "ay": 734985,
    "ly": 503975,
-   "d": 45.5
+   "d": 45.8
   },
   "nop": {
-   "ay": 707866,
+   "ay": 709583,
    "ly": 479629,
-   "d": 47.6,
-   "marginAy": 61.4,
+   "d": 47.9,
+   "marginAy": 61.5,
    "marginLy": 54.2,
    "bud": 694292,
-   "vsBud": 102,
-   "gap": 13574
+   "vsBud": 102.2,
+   "gap": 15291
   },
   "labor": {
    "ay": 143854,
@@ -96,7 +94,7 @@
   "cpor": {
    "ay": 41,
    "ly": 50.9,
-   "sheetAy": 92.5,
+   "sheetAy": 92.1,
    "sheetLy": 50.9
   },
   "roomsRev": {
@@ -122,10 +120,10 @@
    "pctLy": 33.2
   },
   "undistExp": {
-   "ay": 113574,
+   "ay": 111986,
    "ly": 86683,
-   "d": 31,
-   "pctAy": 9.8
+   "d": 29.2,
+   "pctAy": 9.7
   },
   "houseUse": {
    "ay": 15151,
@@ -138,9 +136,9 @@
    "brutalLy": 147.81
   }
  },
- "flowThrough": 84.9,
  "revDelta": 268790,
- "prfDelta": 228238,
+ "prfDelta": 229954,
+ "flowThrough": 85.6,
  "vsPrev": {
   "rev": 1037154,
   "nop": 592251,
@@ -148,13 +146,13 @@
   "occ": 95.6,
   "nights": 4740,
   "revD": 11.2,
-  "nopD": 19.5,
+  "nopD": 19.8,
   "adrD": 11.4
  },
  "ytd": {
   "ay": {
    "rev": 4052751,
-   "nop": 1493641,
+   "nop": 1495357,
    "nights": 19182,
    "avail": 30730
   },
@@ -165,10 +163,10 @@
    "avail": 26840
   },
   "revD": 27.9,
-  "nopD": 47.8,
+  "nopD": 48,
   "budRev": 4207897,
   "budPrf": 1801349,
-  "prfGap": -307708
+  "prfGap": -305992
  },
  "channels": [
   {
@@ -498,7 +496,7 @@
    "varr": 1605476,
    "lyLek": 12171317,
    "d": 18.2,
-   "share": 32.3
+   "share": 32.4
   },
   {
    "cat": "Hotel & Spa F&B All Inclusive",
@@ -508,7 +506,7 @@
    "varr": -642937,
    "lyLek": 8858854,
    "d": 10.7,
-   "share": 22
+   "share": 22.1
   },
   {
    "cat": "F&B Cost of Sale",
@@ -518,7 +516,7 @@
    "varr": -2635525,
    "lyLek": 6477592,
    "d": -23.4,
-   "share": 11.1
+   "share": 11.2
   },
   {
    "cat": "Utilities and Taxes",
@@ -538,7 +536,7 @@
    "varr": -2157937,
    "lyLek": 3181063,
    "d": 14.1,
-   "share": 8.1
+   "share": 8.2
   },
   {
    "cat": "Loan",
@@ -562,13 +560,13 @@
   },
   {
    "cat": "Marketing",
-   "lek": 1560506,
-   "lekM": 1.56,
+   "lek": 1388870,
+   "lekM": 1.39,
    "budget": 2363589,
-   "varr": -803083,
+   "varr": -974719,
    "lyLek": 1543370,
-   "d": 1.1,
-   "share": 3.5
+   "d": -10,
+   "share": 3.1
   },
   {
    "cat": "Repairs & Maintenance",
@@ -578,7 +576,7 @@
    "varr": 438313,
    "lyLek": 72330,
    "d": 851.6,
-   "share": 1.5
+   "share": 1.6
   },
   {
    "cat": "Overheads F&B",
@@ -601,7 +599,7 @@
    "share": 0.2
   }
  ],
- "expenseTotalLek": 44544318,
+ "expenseTotalLek": 44372682,
  "outlets": [
   {
    "outlet": "Brutal Garden",
@@ -639,109 +637,281 @@
   "lyLek": 20222575,
   "d": -29.6
  },
- "cashIn": [
-  {
-   "label": "Non Cash Bank Euro",
-   "eur": 378414
+ "cash": {
+  "ay": {
+   "in": [
+    {
+     "label": "Non Cash Bankë Euro",
+     "eur": 378414
+    },
+    {
+     "label": "Recepsion Cash Euro",
+     "eur": 288837
+    },
+    {
+     "label": "Allotments/garanci Euro",
+     "eur": 179053
+    },
+    {
+     "label": "F&B Lek",
+     "eur": 72851
+    },
+    {
+     "label": "Non Cash Lek",
+     "eur": 50975
+    },
+    {
+     "label": "MICE Euro",
+     "eur": 11530
+    },
+    {
+     "label": "Recepsion Cash Lek",
+     "eur": 2
+    },
+    {
+     "label": "Disbursim Kredi Euro",
+     "eur": 0
+    },
+    {
+     "label": "MICE Lek",
+     "eur": 0
+    }
+   ],
+   "out": [
+    {
+     "label": "Investime Bankë Lek",
+     "eur": 150675
+    },
+    {
+     "label": "Furnitorë Bankë Lek",
+     "eur": 137311
+    },
+    {
+     "label": "Investime Bankë Euro",
+     "eur": 136946
+    },
+    {
+     "label": "Paga Lek",
+     "eur": 125799
+    },
+    {
+     "label": "Taksa dhe Utilitete Lek",
+     "eur": 75454
+    },
+    {
+     "label": "Kredi Euro",
+     "eur": 52839
+    },
+    {
+     "label": "Furnitorë Cash Lek",
+     "eur": 32447
+    },
+    {
+     "label": "Kredi Lek",
+     "eur": 21714
+    },
+    {
+     "label": "Furnitorë Bankë Euro",
+     "eur": 18407
+    },
+    {
+     "label": "House Use Lek",
+     "eur": 10885
+    },
+    {
+     "label": "Furnitorë Cash Euro",
+     "eur": 9331
+    },
+    {
+     "label": "Investime Cash Lek",
+     "eur": 0
+    }
+   ],
+   "totals": {
+    "in": 981662,
+    "out": 771808,
+    "net": 209854
+   },
+   "broken": [],
+   "obligations": {
+    "furnitoreStart": 541628,
+    "furnitoreEnd": 563756,
+    "investimeStart": 382557,
+    "investimeEnd": 294267,
+    "miceReceivable": 4642,
+    "otaReceivable": 31598
+   }
   },
-  {
-   "label": "recepsion Cash Euro",
-   "eur": 288837
+  "prev": {
+   "in": [
+    {
+     "label": "Non Cash Bankë Euro",
+     "eur": 399291
+    },
+    {
+     "label": "Allotments/garanci Euro",
+     "eur": 226461
+    },
+    {
+     "label": "Recepsion Cash Euro",
+     "eur": 204229
+    },
+    {
+     "label": "F&B Lek",
+     "eur": 62927
+    },
+    {
+     "label": "Non Cash Lek",
+     "eur": 59199
+    },
+    {
+     "label": "MICE Euro",
+     "eur": 28041
+    },
+    {
+     "label": "MICE Lek",
+     "eur": 1335
+    },
+    {
+     "label": "Recepsion Cash Lek",
+     "eur": 2
+    },
+    {
+     "label": "Disbursim Kredi Euro",
+     "eur": 0
+    }
+   ],
+   "out": [
+    {
+     "label": "Furnitorë Bankë Lek",
+     "eur": 234923
+    },
+    {
+     "label": "Paga Lek",
+     "eur": 119102
+    },
+    {
+     "label": "Investime Bankë Euro",
+     "eur": 118740
+    },
+    {
+     "label": "Investime Bankë Lek",
+     "eur": 90557
+    },
+    {
+     "label": "Taksa dhe Utilitete Lek",
+     "eur": 66732
+    },
+    {
+     "label": "Kredi Euro",
+     "eur": 52363
+    },
+    {
+     "label": "Furnitorë Cash Lek",
+     "eur": 33525
+    },
+    {
+     "label": "Kredi Lek",
+     "eur": 21724
+    },
+    {
+     "label": "Furnitorë Cash Euro",
+     "eur": 19258
+    },
+    {
+     "label": "House Use Lek",
+     "eur": 4300
+    },
+    {
+     "label": "Investime Cash Lek",
+     "eur": 2235
+    },
+    {
+     "label": "Furnitorë Bankë Euro",
+     "eur": 2178
+    }
+   ],
+   "totals": {
+    "in": 981485,
+    "out": 765637,
+    "net": 215848
+   },
+   "broken": [],
+   "obligations": {
+    "furnitoreStart": 633465,
+    "furnitoreEnd": 541628,
+    "investimeStart": 448222,
+    "investimeEnd": 382557,
+    "miceReceivable": 4642,
+    "otaReceivable": 83375
+   }
   },
-  {
-   "label": "Allotments/guarantee Euro",
-   "eur": 179053
+  "groups": {
+   "investime": {
+    "ay": 287621,
+    "ly": 211532
+   },
+   "furnitore": {
+    "ay": 197496,
+    "ly": 289884
+   },
+   "paga": {
+    "ay": 125799,
+    "ly": 119102
+   },
+   "kredi": {
+    "ay": 74553,
+    "ly": 74087
+   },
+   "taksa": {
+    "ay": 75454,
+    "ly": 66732
+   },
+   "investimeShare": 37.3,
+   "furnitoreDelta": -31.9
   },
-  {
-   "label": "F&B Lek",
-   "eur": 72851
+  "obligationMove": {
+   "furnitore": 22128,
+   "investime": -88290,
+   "total": -66162,
+   "totalStart": 924185,
+   "totalEnd": 858023
   },
-  {
-   "label": "Non Cash Lek",
-   "eur": 50975
+  "prevObligations": {
+   "furnitoreStart": 633465,
+   "furnitoreEnd": 541628,
+   "investimeStart": 448222,
+   "investimeEnd": 382557,
+   "miceReceivable": 4642,
+   "otaReceivable": 83375
   },
-  {
-   "label": "MICE Euro",
-   "eur": 11530
-  },
-  {
-   "label": "Recepsion Cash Lek",
-   "eur": 2
-  }
- ],
- "cashOut": [
-  {
-   "label": "Investime Banke Leke",
-   "eur": 150675
-  },
-  {
-   "label": "Furnitore Banke Leke",
-   "eur": 137311
-  },
-  {
-   "label": "Investime Banke Euro",
-   "eur": 136946
-  },
-  {
-   "label": "Paga Lek",
-   "eur": 125799
-  },
-  {
-   "label": "Taksa dhe Utilitete Lek",
-   "eur": 75454
-  },
-  {
-   "label": "Kredi Euro",
-   "eur": 52839
-  },
-  {
-   "label": "Furnitore Cash Lek",
-   "eur": 32447
-  },
-  {
-   "label": "Kredi Leke",
-   "eur": 21714
-  },
-  {
-   "label": "Furnitore Banke Euro",
-   "eur": 18407
-  },
-  {
-   "label": "House Use Lek",
-   "eur": 10885
-  },
-  {
-   "label": "Furnitore Cash Euro",
-   "eur": 9331
-  }
- ],
- "cashTotals": {
-  "in": 981662,
-  "out": 771808,
-  "net": 209854
- },
- "cashPrev": {
-  "in": 981484,
-  "out": 765638,
-  "net": 215846
+  "complete": true
  },
  "marketing": {
-  "totalEur": 17899,
+  "totalEur": 19949,
   "houseUse": 6060,
-  "cashEur": 11839,
+  "cashEur": 13889,
   "meta": 9910,
   "google": 128.7,
+  "events": 2050,
   "advertising": 500,
   "subscriptions": 1300,
-  "pctOfRev": 1.6,
+  "pctOfRev": 1.7,
   "prev": {
    "totalEur": 21517,
    "meta": 8317,
    "google": 105.25,
-   "pctOfRev": 2.1
+   "events": 3800
   },
-  "accountingLineLek": 1560506,
-  "googleShare": 1.1
+  "accountingLineLek": 1388870,
+  "accountingLineEur": 13889,
+  "budgetLek": 2363589,
+  "varianceLek": -974719,
+  "lyLek": 1543370,
+  "dLy": -10,
+  "shareOfExpenses": 3.1,
+  "googleShare": 0.9,
+  "reconciles": true
  },
  "daily": [
   {
@@ -1064,11 +1234,10 @@
   {
    "month": "2026-08",
    "rev": 1153310,
-   "nop": 707866,
+   "nop": 709583,
    "budRev": 1181794
   }
  ],
- "reputationAvailable": true,
  "reputation": {
   "period": "01 Gusht 2026 – 31 Gusht 2026",
   "source": "Guestflip",
@@ -1483,252 +1652,5 @@
    "tripadvisor": 3
   }
  },
- "cash": {
-  "ay": {
-   "in": [
-    {
-     "label": "Non Cash Bankë Euro",
-     "eur": 378414
-    },
-    {
-     "label": "Recepsion Cash Euro",
-     "eur": 288837
-    },
-    {
-     "label": "Allotments/garanci Euro",
-     "eur": 179053
-    },
-    {
-     "label": "F&B Lek",
-     "eur": 72851
-    },
-    {
-     "label": "Non Cash Lek",
-     "eur": 50975
-    },
-    {
-     "label": "MICE Euro",
-     "eur": 11530
-    },
-    {
-     "label": "Recepsion Cash Lek",
-     "eur": 2
-    },
-    {
-     "label": "Disbursim Kredi Euro",
-     "eur": 0
-    },
-    {
-     "label": "MICE Lek",
-     "eur": 0
-    }
-   ],
-   "out": [
-    {
-     "label": "Investime Bankë Lek",
-     "eur": 150675
-    },
-    {
-     "label": "Furnitorë Bankë Lek",
-     "eur": 137311
-    },
-    {
-     "label": "Investime Bankë Euro",
-     "eur": 136946
-    },
-    {
-     "label": "Paga Lek",
-     "eur": 125799
-    },
-    {
-     "label": "Taksa dhe Utilitete Lek",
-     "eur": 75454
-    },
-    {
-     "label": "Kredi Euro",
-     "eur": 52839
-    },
-    {
-     "label": "Furnitorë Cash Lek",
-     "eur": 32447
-    },
-    {
-     "label": "Kredi Lek",
-     "eur": 21714
-    },
-    {
-     "label": "Furnitorë Bankë Euro",
-     "eur": 18407
-    },
-    {
-     "label": "House Use Lek",
-     "eur": 10885
-    },
-    {
-     "label": "Furnitorë Cash Euro",
-     "eur": 9331
-    }
-   ],
-   "totals": {
-    "in": 981662,
-    "out": 771808,
-    "net": 209854
-   },
-   "broken": [
-    {
-     "field": "Investime Cash Lek",
-     "value": "#REF!"
-    }
-   ],
-   "missing": [
-    "Detyrimet e Furnitoreve ne fillim te muajit  Lek",
-    "Detyrimet e Investimeve ne fillim te muajit Lek",
-    "Detyrimet e Furnitoreve ne fund te muajit  Lek",
-    "Detyrimet e Investimeve ne fund te muajit  Lek",
-    "Pagesa per tu mbledhur nga MICE Euro",
-    "Pagesa per tu mbledhur nga OTA Euro"
-   ]
-  },
-  "prev": {
-   "in": [
-    {
-     "label": "Non Cash Bankë Euro",
-     "eur": 399291
-    },
-    {
-     "label": "Allotments/garanci Euro",
-     "eur": 226461
-    },
-    {
-     "label": "Recepsion Cash Euro",
-     "eur": 204229
-    },
-    {
-     "label": "F&B Lek",
-     "eur": 62927
-    },
-    {
-     "label": "Non Cash Lek",
-     "eur": 59199
-    },
-    {
-     "label": "MICE Euro",
-     "eur": 28041
-    },
-    {
-     "label": "MICE Lek",
-     "eur": 1335
-    },
-    {
-     "label": "Recepsion Cash Lek",
-     "eur": 2
-    },
-    {
-     "label": "Disbursim Kredi Euro",
-     "eur": 0
-    }
-   ],
-   "out": [
-    {
-     "label": "Furnitorë Bankë Lek",
-     "eur": 234923
-    },
-    {
-     "label": "Paga Lek",
-     "eur": 119102
-    },
-    {
-     "label": "Investime Bankë Euro",
-     "eur": 118740
-    },
-    {
-     "label": "Investime Bankë Lek",
-     "eur": 90557
-    },
-    {
-     "label": "Taksa dhe Utilitete Lek",
-     "eur": 66732
-    },
-    {
-     "label": "Kredi Euro",
-     "eur": 52363
-    },
-    {
-     "label": "Furnitorë Cash Lek",
-     "eur": 33525
-    },
-    {
-     "label": "Kredi Lek",
-     "eur": 21724
-    },
-    {
-     "label": "Furnitorë Cash Euro",
-     "eur": 19258
-    },
-    {
-     "label": "House Use Lek",
-     "eur": 4300
-    },
-    {
-     "label": "Investime Cash Lek",
-     "eur": 2235
-    },
-    {
-     "label": "Furnitorë Bankë Euro",
-     "eur": 2178
-    }
-   ],
-   "totals": {
-    "in": 981485,
-    "out": 765637,
-    "net": 215848
-   },
-   "broken": [],
-   "missing": []
-  },
-  "groups": {
-   "investime": {
-    "ay": 287621,
-    "ly": 211532
-   },
-   "furnitore": {
-    "ay": 197496,
-    "ly": 289884
-   },
-   "paga": {
-    "ay": 125799,
-    "ly": 119102
-   },
-   "kredi": {
-    "ay": 74553,
-    "ly": 74087
-   },
-   "taksa": {
-    "ay": 75454,
-    "ly": 66732
-   },
-   "investimeShare": 37.3,
-   "furnitoreDelta": -31.9
-  },
-  "obligationsPrev": {
-   "furnitoreStart": 633465,
-   "furnitoreEnd": 541628,
-   "investimeStart": 448222,
-   "investimeEnd": 382557,
-   "miceReceivable": 9442,
-   "otaReceivable": 83375
-  },
-  "dataGaps": {
-   "brokenFormula": "Dalje Investime Cash Lek = #REF!",
-   "brokenPrevValue": 2235,
-   "emptyColumns": [
-    "Detyrimet e Furnitorëve në fillim të muajit",
-    "Detyrimet e Investimeve në fillim të muajit",
-    "Detyrimet e Furnitorëve në fund të muajit",
-    "Detyrimet e Investimeve në fund të muajit",
-    "Pagesa për t’u mbledhur nga MICE",
-    "Pagesa për t’u mbledhur nga OTA"
-   ]
-  }
- }
+ "reputationAvailable": true
 }
